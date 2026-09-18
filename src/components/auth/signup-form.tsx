@@ -108,8 +108,8 @@ export function SignupForm() {
       )}
 
       {/* Step 1: Account Info */}
-      {step === 1 && (
-        <>
+      <div className={step === 1 ? 'block' : 'hidden'}>
+        <div className="space-y-4">
           <div className="space-y-2">
             <label htmlFor="fullName" className="block text-sm font-medium">
               الاسم الكامل
@@ -118,9 +118,9 @@ export function SignupForm() {
               id="fullName"
               name="fullName"
               type="text"
-              required
+              required={step === 1}
               className="block w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-              placeholder="أحمد محمد"
+              placeholder="د. محمد أحمد"
             />
           </div>
 
@@ -132,7 +132,7 @@ export function SignupForm() {
               id="email"
               name="email"
               type="email"
-              required
+              required={step === 1}
               dir="ltr"
               className="block w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
               placeholder="you@example.com"
@@ -147,7 +147,7 @@ export function SignupForm() {
               id="phone"
               name="phone"
               type="tel"
-              required
+              required={step === 1}
               dir="ltr"
               className="block w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
               placeholder="01xxxxxxxxx"
@@ -162,7 +162,7 @@ export function SignupForm() {
               id="password"
               name="password"
               type="password"
-              required
+              required={step === 1}
               dir="ltr"
               minLength={8}
               className="block w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
@@ -178,7 +178,7 @@ export function SignupForm() {
               id="confirmPassword"
               name="confirmPassword"
               type="password"
-              required
+              required={step === 1}
               dir="ltr"
               minLength={8}
               className="block w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
@@ -193,12 +193,12 @@ export function SignupForm() {
           >
             التالي
           </button>
-        </>
-      )}
+        </div>
+      </div>
 
       {/* Step 2: Clinic Info + Slug */}
-      {step === 2 && (
-        <>
+      <div className={step === 2 ? 'block' : 'hidden'}>
+        <div className="space-y-4">
           <div className="space-y-2">
             <label htmlFor="clinicName" className="block text-sm font-medium">
               اسم العيادة
@@ -207,7 +207,7 @@ export function SignupForm() {
               id="clinicName"
               name="clinicName"
               type="text"
-              required
+              required={step === 2}
               value={clinicName}
               onChange={(e) => setClinicName(e.target.value)}
               className="block w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
@@ -217,21 +217,21 @@ export function SignupForm() {
 
           <div className="space-y-2">
             <label htmlFor="slug" className="block text-sm font-medium">
-              عنوان الموقع
+              عنوان الموقع الفرعي
             </label>
-            <div className="flex items-center gap-1 rounded-lg border border-border bg-background">
+            <div dir="ltr" className="flex items-center rounded-lg border border-border bg-background px-3">
               <input
                 id="slug"
                 name="slug"
                 type="text"
-                required
+                required={step === 2}
                 value={slug}
                 onChange={(e) => handleSlugChange(e.target.value)}
                 dir="ltr"
-                className="flex-1 bg-transparent px-3 py-2.5 text-sm focus:outline-none"
+                className="w-full min-w-0 flex-1 bg-transparent py-2.5 text-sm focus:outline-none text-right"
                 placeholder="clinic-name"
               />
-              <span className="pe-3 text-sm text-muted-foreground" dir="ltr">
+              <span className="text-sm text-muted-foreground whitespace-nowrap pl-1" dir="ltr">
                 .{rootDomain}
               </span>
             </div>
@@ -240,7 +240,7 @@ export function SignupForm() {
             {slug.length >= 3 && (
               <div className="text-sm">
                 {slugStatus === 'checking' && (
-                  <span className="text-muted-foreground">جارٍ التحقق...</span>
+                  <span className="text-muted-foreground">جاري التحقق...</span>
                 )}
                 {slugStatus === 'available' && (
                   <span className="text-emerald-600 dark:text-emerald-400">✓ متاح</span>
@@ -265,18 +265,11 @@ export function SignupForm() {
               disabled={isPending || slugStatus !== 'available'}
               className="flex-1 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {isPending ? 'جارٍ الإنشاء...' : 'إنشاء العيادة'}
+              {isPending ? 'جاري الإنشاء...' : 'إنشاء العيادة'}
             </button>
           </div>
-        </>
-      )}
-
-      {/* Hidden inputs for step 1 data when on step 2 */}
-      {step === 2 && (
-        <>
-          {/* These are set in the form fields on step 1, but we need them available */}
-        </>
-      )}
+        </div>
+      </div>
 
       <p className="text-center text-sm text-muted-foreground">
         لديك حساب بالفعل؟{' '}
