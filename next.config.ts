@@ -8,6 +8,8 @@ const nextConfig: NextConfig = {
         '*.localhost:3000',
         'dr-puce-one.vercel.app',
         '*.dr-puce-one.vercel.app',
+        'beyoondgroup.com',
+        '*.beyoondgroup.com',
       ],
     },
   },
