@@ -2,6 +2,9 @@ import { prisma } from '@/lib/db/prisma'
 import { requireAuth, getCurrentSession } from '@/lib/auth/dal'
 import Link from 'next/link'
 import { ExternalLink, Palette, LayoutList } from 'lucide-react'
+import { updateWebsiteSettings } from '@/actions/dashboard'
+import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -45,11 +48,11 @@ export default async function WebsitePage() {
   const totalSections = website?.sections.length || 0
 
   return (
-    <div>
-      <h1 className="text-page-title mb-6">الموقع الإلكتروني</h1>
+    <div className="space-y-6">
+      <h1 className="text-page-title">الموقع الإلكتروني</h1>
 
       {/* Site URL */}
-      <div className="mb-6 rounded-xl border border-border bg-card p-4">
+      <div className="rounded-xl border border-border bg-card p-4">
         <p className="text-small text-muted-foreground mb-1">عنوان الموقع</p>
         <div className="flex items-center gap-2">
           <p className="text-sm font-medium" dir="ltr">{siteUrl}</p>
@@ -67,36 +70,42 @@ export default async function WebsitePage() {
         ))}
       </div>
 
-      {/* Quick actions */}
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <Link
-          href="/dashboard/website/sections"
-          className="rounded-xl border border-border bg-card p-4 transition-colors hover:bg-accent/50"
-        >
-          <LayoutList className="mb-2 h-5 w-5 text-primary" strokeWidth={1.5} />
-          <p className="text-sm font-medium">أقسام الموقع</p>
-          <p className="text-xs text-muted-foreground">{enabledSections} من {totalSections} قسم مفعل</p>
-        </Link>
+      <div className="max-w-xl">
+        <form action={updateWebsiteSettings} className="space-y-4 bg-card border border-border p-6 rounded-xl">
+          <h2 className="text-lg font-medium">إعدادات النشر</h2>
+          
+          <div className="flex items-center space-x-2 space-x-reverse">
+            <input 
+              type="checkbox" 
+              id="isPublished" 
+              name="isPublished" 
+              defaultChecked={website?.isPublished} 
+              className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+            />
+            <Label htmlFor="isPublished">نشر الموقع الإلكتروني (متاح للعامة)</Label>
+          </div>
+          
+          <Button type="submit">حفظ التغييرات</Button>
+        </form>
+      </div>
 
-        <Link
-          href="/dashboard/website/branding"
-          className="rounded-xl border border-border bg-card p-4 transition-colors hover:bg-accent/50"
-        >
-          <Palette className="mb-2 h-5 w-5 text-primary" strokeWidth={1.5} />
-          <p className="text-sm font-medium">العلامة التجارية</p>
-          <p className="text-xs text-muted-foreground">الشعار والألوان والخطوط</p>
-        </Link>
-
-        <div className="rounded-xl border border-border bg-card p-4">
-          <p className="text-sm font-medium mb-1">القالب</p>
-          <p className="text-xs text-muted-foreground">
-            {website?.theme?.nameAr || 'القالب الافتراضي'}
-          </p>
-          <p className="mt-2">
-            <span className={`rounded-md px-2 py-0.5 text-xs font-medium ${website?.isPublished ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300' : 'bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300'}`}>
-              {website?.isPublished ? 'منشور' : 'مسودة'}
-            </span>
-          </p>
+      <div>
+        <h2 className="text-xl font-semibold mb-4 mt-8">أقسام الموقع</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {website?.sections.map((section) => (
+             <div key={section.id} className="border border-border bg-card rounded-xl p-4 flex items-center justify-between">
+                <div>
+                  <p className="font-medium">{section.title || section.type}</p>
+                  <p className="text-xs text-muted-foreground">الترتيب: {section.sortOrder}</p>
+                </div>
+                <span className={`text-xs px-2 py-1 rounded-full ${section.isEnabled ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-800'}`}>
+                  {section.isEnabled ? 'مفعل' : 'معطل'}
+                </span>
+             </div>
+          ))}
+          {(!website?.sections || website.sections.length === 0) && (
+            <p className="text-muted-foreground text-sm">لا توجد أقسام مضافة بعد.</p>
+          )}
         </div>
       </div>
     </div>

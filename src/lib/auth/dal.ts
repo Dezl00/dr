@@ -50,7 +50,18 @@ export const requireAuth = cache(async (): Promise<SessionUser> => {
  */
 export const requireAdmin = cache(async (): Promise<SessionUser> => {
   const user = await requireAuth()
-  if (!user.isAdmin) {
+  if (!user.isAdmin && !user.isSuperAdmin) {
+    redirect('/dashboard')
+  }
+  return user
+})
+
+/**
+ * Require super admin access.
+ */
+export const requireSuperAdmin = cache(async (): Promise<SessionUser> => {
+  const user = await requireAuth()
+  if (!user.isSuperAdmin) {
     redirect('/dashboard')
   }
   return user

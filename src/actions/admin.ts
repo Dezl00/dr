@@ -3,7 +3,7 @@
 import { redirect } from 'next/navigation'
 import { cookies, headers } from 'next/headers'
 import { prisma } from '@/lib/db/prisma'
-import { requireAdmin, getCurrentSession } from '@/lib/auth/dal'
+import { requireAdmin, requireSuperAdmin, getCurrentSession } from '@/lib/auth/dal'
 import { hashSessionToken } from '@/lib/auth/session'
 import { writeAuditLog } from '@/lib/security/audit'
 
@@ -105,4 +105,82 @@ export async function exitClinicAsAdmin() {
   }
 
   redirect('/admin/clinics')
+}
+
+export async function savePlan(formData: FormData, id?: string) {
+  const admin = await requireSuperAdmin()
+
+  const name = formData.get('name') as string
+  const nameAr = formData.get('nameAr') as string
+  const slug = formData.get('slug') as string
+  const description = formData.get('description') as string
+  const priceMonthly = formData.get('priceMonthly') ? Number(formData.get('priceMonthly')) : null
+  const priceYearly = formData.get('priceYearly') ? Number(formData.get('priceYearly')) : null
+  const isActive = formData.get('isActive') === 'on'
+  const sortOrder = parseInt(formData.get('sortOrder') as string) || 0
+
+  if (!name || !nameAr || !slug) {
+    return { error: 'الرجاء ملء جميع الحقول المطلوبة' }
+  }
+
+  try {
+    if (id) {
+      await prisma.plan.update({
+        where: { id },
+        data: { name, nameAr, slug, description, priceMonthly, priceYearly, isActive, sortOrder },
+      })
+    } else {
+      await prisma.plan.create({
+        data: { name, nameAr, slug, description, priceMonthly, priceYearly, isActive, sortOrder },
+      })
+    }
+  } catch (error: any) {
+    return { error: 'حدث خطأ أثناء الحفظ. تأكد من أن الرابط اللطيف غير مكرر.' }
+  }
+
+  return { success: true }
+}
+
+export async function verifyDomain(domainId: string) {
+  const admin = await requireSuperAdmin()
+  
+  await prisma.domain.update({
+    where: { id: domainId },
+    data: { 
+      status: 'VERIFIED',
+      verifiedAt: new Date()
+    }
+  })
+
+  const { revalidatePath } = await import('next/cache')
+  revalidatePath('/admin/domains')
+  
+  return { success: true }
+}
+
+export async function savePlatformSettings(formData: FormData) {
+  const admin = await requireSuperAdmin()
+
+  const platformName = formData.get('platformName') as string
+  const primaryColor = (formData.get('primaryColorText') || formData.get('primaryColor')) as string
+  const accentColor = (formData.get('accentColorText') || formData.get('accentColor')) as string
+  const defaultRadius = formData.get('defaultRadius') as string
+
+  const settings = await prisma.platformSettings.findFirst()
+
+  if (settings) {
+    await prisma.platformSettings.update({
+      where: { id: settings.id },
+      data: { platformName, primaryColor, accentColor, defaultRadius }
+    })
+  } else {
+    await prisma.platformSettings.create({
+      data: { platformName, primaryColor, accentColor, defaultRadius }
+    })
+  }
+
+  const { revalidatePath } = await import('next/cache')
+  revalidatePath('/admin/settings')
+
+  return { success: true }
 }
