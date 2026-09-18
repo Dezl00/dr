@@ -1,0 +1,74 @@
+import { PERMISSIONS } from './constants'
+
+export const DEFAULT_ROLES = [
+  {
+    name: 'Owner',
+    nameAr: 'مالك',
+    isSystem: true,
+    permissions: Object.values(PERMISSIONS), // All permissions
+  },
+  {
+    name: 'Manager',
+    nameAr: 'مدير',
+    isSystem: true,
+    permissions: [
+      PERMISSIONS.PATIENTS_VIEW,
+      PERMISSIONS.PATIENTS_CREATE,
+      PERMISSIONS.PATIENTS_UPDATE,
+      PERMISSIONS.PATIENTS_DELETE,
+      PERMISSIONS.APPOINTMENTS_VIEW,
+      PERMISSIONS.APPOINTMENTS_CREATE,
+      PERMISSIONS.APPOINTMENTS_UPDATE,
+      PERMISSIONS.APPOINTMENTS_DELETE,
+      PERMISSIONS.DOCTORS_VIEW,
+      PERMISSIONS.DOCTORS_MANAGE,
+      PERMISSIONS.SERVICES_VIEW,
+      PERMISSIONS.SERVICES_MANAGE,
+      PERMISSIONS.WEBSITE_VIEW,
+      PERMISSIONS.WEBSITE_MANAGE,
+      PERMISSIONS.USERS_VIEW,
+      PERMISSIONS.SETTINGS_VIEW,
+      PERMISSIONS.REPORTS_VIEW,
+    ],
+  },
+  {
+    name: 'Doctor',
+    nameAr: 'طبيب',
+    isSystem: true,
+    permissions: [
+      PERMISSIONS.PATIENTS_VIEW,
+      PERMISSIONS.PATIENTS_UPDATE,
+      PERMISSIONS.APPOINTMENTS_VIEW,
+      PERMISSIONS.APPOINTMENTS_CREATE,
+      PERMISSIONS.APPOINTMENTS_UPDATE,
+      PERMISSIONS.DOCTORS_VIEW,
+      PERMISSIONS.SERVICES_VIEW,
+      PERMISSIONS.WEBSITE_VIEW,
+      PERMISSIONS.REPORTS_VIEW,
+    ],
+  },
+  {
+    name: 'Receptionist',
+    nameAr: 'موظف استقبال',
+    isSystem: true,
+    permissions: [
+      PERMISSIONS.PATIENTS_VIEW,
+      PERMISSIONS.PATIENTS_CREATE,
+      PERMISSIONS.PATIENTS_UPDATE,
+      PERMISSIONS.APPOINTMENTS_VIEW,
+      PERMISSIONS.APPOINTMENTS_CREATE,
+      PERMISSIONS.APPOINTMENTS_UPDATE,
+      PERMISSIONS.SERVICES_VIEW,
+    ],
+  },
+  {
+    name: 'Staff',
+    nameAr: 'موظف',
+    isSystem: true,
+    permissions: [
+      PERMISSIONS.PATIENTS_VIEW,
+      PERMISSIONS.APPOINTMENTS_VIEW,
+      PERMISSIONS.SERVICES_VIEW,
+    ],
+  },
+] as const
