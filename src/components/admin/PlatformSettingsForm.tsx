@@ -16,7 +16,7 @@ export default function PlatformSettingsForm({ initialData }: { initialData: any
     
     const formData = new FormData(e.currentTarget);
     try {
-      const res = await savePlatformSettings(formData);
+      const res = await savePlatformSettings(formData) as any;
       if (res?.error) {
         setError(res.error);
       } else {
