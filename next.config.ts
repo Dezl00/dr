@@ -6,9 +6,12 @@ const nextConfig: NextConfig = {
       allowedOrigins: [
         'localhost:3000',
         '*.localhost:3000',
+        'dr-puce-one.vercel.app',
+        '*.dr-puce-one.vercel.app',
       ],
     },
   },
+  serverExternalPackages: ['@node-rs/argon2'],
   images: {
     remotePatterns: [
       {
