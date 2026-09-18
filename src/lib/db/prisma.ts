@@ -1,9 +1,9 @@
 import { Pool, neonConfig } from '@neondatabase/serverless'
 import { PrismaNeon } from '@prisma/adapter-neon'
 import { PrismaClient } from '@prisma/client'
+import ws from 'ws'
 
-// WebSocket is natively available in Edge/Vercel runtimes
-// For local Node.js development, we'd need the 'ws' package
+neonConfig.webSocketConstructor = ws
 // but Prisma 6+ with adapter-neon handles this internally
 
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient }
