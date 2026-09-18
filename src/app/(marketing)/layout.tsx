@@ -6,7 +6,7 @@ export default function MarketingLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" dir="ltr" suppressHydrationWarning>
+    <html lang="ar" dir="rtl" suppressHydrationWarning>
       <body>
         <ThemeProvider
           attribute="class"
