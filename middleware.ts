@@ -28,7 +28,7 @@ export const config = {
 export default function middleware(request: NextRequest) {
   const url = request.nextUrl
   const hostname = (request.headers.get('host') || '').replace(/:\d+$/, '').toLowerCase()
-  const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN?.replace(/:\d+$/, '') || 'localhost'
+  const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN?.replace(/:\d+$/, '') || 'beyoondgroup.com'
   const { pathname } = url
 
   // ─── Skip API routes (let them through directly) ───
