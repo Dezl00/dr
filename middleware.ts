@@ -75,7 +75,10 @@ export default function middleware(request: NextRequest) {
     }
 
     // All other root domain routes: marketing pages, etc.
-    return NextResponse.next()
+    const res = NextResponse.next()
+    res.headers.set('x-debug-hostname', hostname)
+    res.headers.set('x-debug-is-root', 'true')
+    return res
   }
 
   // ─── SUBDOMAIN / CUSTOM DOMAIN ROUTING ───
@@ -97,12 +100,18 @@ export default function middleware(request: NextRequest) {
     tenantIdentifier = hostname
   }
 
-  // Rewrite to tenant site route
   if (tenantIdentifier) {
     const tenantUrl = new URL(`/sites/${tenantIdentifier}${pathname}`, request.url)
     tenantUrl.search = url.search
-    return NextResponse.rewrite(tenantUrl)
+    const res = NextResponse.rewrite(tenantUrl)
+    res.headers.set('x-debug-hostname', hostname)
+    res.headers.set('x-debug-tenant', tenantIdentifier)
+    res.headers.set('x-debug-rewrite', tenantUrl.pathname)
+    return res
   }
 
-  return NextResponse.next()
+  const res = NextResponse.next()
+  res.headers.set('x-debug-hostname', hostname)
+  res.headers.set('x-debug-root', 'true')
+  return res
 }
