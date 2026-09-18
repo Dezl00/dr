@@ -12,7 +12,7 @@ export async function openClinicAsAdmin(formData: FormData) {
   const clinicId = formData.get('clinicId') as string
 
   if (!clinicId) {
-    return { error: 'العيادة غير محددة.' }
+    throw new Error('العيادة غير محددة.')
   }
 
   // Verify clinic exists
@@ -22,7 +22,7 @@ export async function openClinicAsAdmin(formData: FormData) {
   })
 
   if (!clinic) {
-    return { error: 'العيادة غير موجودة.' }
+    throw new Error('العيادة غير موجودة.')
   }
 
   // Get current session

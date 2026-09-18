@@ -24,7 +24,7 @@ export default async function TenantPage({
     },
   })
 
-  if (!website || (!website.isPublished && !tenant.isAdminAccess)) {
+  if (!website || !website.isPublished) {
     // If unpublished, only show to admins/owners of the clinic
     return (
       <div className="flex min-h-screen flex-col items-center justify-center p-4 text-center">
@@ -81,7 +81,7 @@ export default async function TenantPage({
                 </h2>
                 {section.content && (
                   <p className="mx-auto mt-4 max-w-2xl text-muted-foreground">
-                    {section.content}
+                    {typeof section.content === 'string' ? section.content : JSON.stringify(section.content)}
                   </p>
                 )}
               </div>

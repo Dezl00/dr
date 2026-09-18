@@ -25,7 +25,7 @@ export async function writeAuditLog(input: AuditLogInput): Promise<void> {
         action: input.action,
         resource: input.resource || null,
         resourceId: input.resourceId || null,
-        metadata: input.metadata || null,
+        metadata: input.metadata ? (input.metadata as any) : undefined,
         ipAddress: input.ipAddress || null,
         userAgent: input.userAgent ? input.userAgent.substring(0, 500) : null,
       },
