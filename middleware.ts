@@ -14,14 +14,7 @@ const RESERVED_SUBDOMAINS = new Set([
 
 export const config = {
   matcher: [
-    /*
-     * Match all paths except:
-     * - _next/static (static files)
-     * - _next/image (image optimization)
-     * - favicon.ico, sitemap.xml, robots.txt
-     * - Public assets (fonts, images)
-     */
-    '/((?!_next/static|_next/image|favicon\\.ico|sitemap\\.xml|robots\\.txt|fonts/|images/).*)',
+    '/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|fonts/|images/).*)',
   ],
 }
 
@@ -101,8 +94,8 @@ export default function middleware(request: NextRequest) {
   }
 
   if (tenantIdentifier) {
-    const tenantUrl = new URL(`/sites/${tenantIdentifier}${pathname}`, request.url)
-    tenantUrl.search = url.search
+    const tenantUrl = request.nextUrl.clone()
+    tenantUrl.pathname = `/sites/${tenantIdentifier}${pathname}`
     const res = NextResponse.rewrite(tenantUrl)
     res.headers.set('x-debug-hostname', hostname)
     res.headers.set('x-debug-tenant', tenantIdentifier)
