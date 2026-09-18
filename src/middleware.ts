@@ -96,15 +96,7 @@ export default function middleware(request: NextRequest) {
   if (tenantIdentifier) {
     const tenantUrl = request.nextUrl.clone()
     tenantUrl.pathname = `/sites/${tenantIdentifier}${pathname}`
-    
-    // TEMPORARY DEBUG REDIRECT TO PROVE MIDDLEWARE RUNS
-    return NextResponse.redirect(new URL('/login?debug=true', request.url))
-    
-    // const res = NextResponse.rewrite(tenantUrl)
-    // res.headers.set('x-debug-hostname', hostname)
-    // res.headers.set('x-debug-tenant', tenantIdentifier)
-    // res.headers.set('x-debug-rewrite', tenantUrl.pathname)
-    // return res
+    return NextResponse.rewrite(tenantUrl)
   }
 
   const res = NextResponse.next()

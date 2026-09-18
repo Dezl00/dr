@@ -1,17 +1,10 @@
 import Link from 'next/link'
-import { headers } from 'next/headers'
 
 export const dynamic = 'force-dynamic'
 
-export default async function HomePage() {
-  const headersList = await headers()
-  const host = headersList.get('host') || 'unknown'
-
+export default function HomePage() {
   return (
     <div className="flex min-h-screen flex-col font-sans">
-      <div className="bg-red-500 text-white text-center py-2 font-mono">
-        DEBUG HOST: {host}
-      </div>
       {/* Header */}
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
