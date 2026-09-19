@@ -27,7 +27,7 @@ export async function HeroSection({ section, clinicId, domain }: { section: Webs
             <Link 
               href={content.button2Link || '#services'} 
               className="rounded-none px-6 py-3 text-sm font-medium border transition-opacity hover:opacity-80 bg-[#FFFFFF]"
-              style={{ color: 'var(--clinic-primary)', borderColor: 'var(--clinic-primary)' }}
+              style={{ color: 'var(--clinic-secondary)', borderColor: 'var(--clinic-secondary)' }}
             >
               {content.button2Text || 'خدماتنا'}
             </Link>
@@ -89,7 +89,7 @@ export async function ServicesSection({ section, clinicId, domain }: { section: 
                 )}
                 <div className="mt-4 flex items-center justify-between text-sm">
                   <span className="font-medium text-[#050505]">{service.price ? `${service.price} ج.م` : 'حسب الاستشارة'}</span>
-                  <span className="font-medium" style={{ color: 'var(--clinic-primary)' }}>قراءة المزيد &larr;</span>
+                  <span className="font-medium" style={{ color: 'var(--clinic-secondary)' }}>قراءة المزيد &larr;</span>
                 </div>
               </div>
             </Link>
@@ -120,13 +120,13 @@ export async function DoctorsSection({ section, clinicId }: { section: WebsiteSe
                 {doctor.imageUrl ? (
                   <Image src={doctor.imageUrl} alt={doctor.fullName} fill className="object-cover" />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-2xl font-semibold bg-[#E5E7EB] text-[#050505]">
+                  <div className="w-full h-full flex items-center justify-center text-2xl font-semibold bg-[#E5E7EB]" style={{ color: 'var(--clinic-secondary)' }}>
                     {doctor.fullName.charAt(0)}
                   </div>
                 )}
               </div>
               <h3 className="text-lg font-medium text-[#050505]">{doctor.fullName}</h3>
-              <p className="font-normal text-sm mt-1" style={{ color: 'var(--clinic-primary)' }}>{doctor.specialty || 'طبيب أسنان'}</p>
+              <p className="font-normal text-sm mt-1" style={{ color: 'var(--clinic-secondary)' }}>{doctor.specialty || 'طبيب أسنان'}</p>
             </div>
           ))}
         </div>
