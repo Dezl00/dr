@@ -9,7 +9,9 @@ import {
   GallerySection,
   TestimonialsSection,
   FaqSection,
-  BookingSection
+  BookingSection,
+  ContactSection,
+  WhyChooseUsSection
 } from './_components/sections'
 import Link from 'next/link'
 
@@ -94,6 +96,10 @@ export default async function TenantPage({
               return <FaqSection key={section.id} section={section} />
             case 'BOOKING':
               return <BookingSection key={section.id} section={section} clinicId={tenant.clinicId} domain={domain} />
+            case 'CONTACT':
+              return <ContactSection key={section.id} section={section} />
+            case 'WHY_CHOOSE_US':
+              return <WhyChooseUsSection key={section.id} section={section} />
             default:
               return null
           }

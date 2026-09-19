@@ -94,7 +94,8 @@ export async function ServicesSection({ section, clinicId, domain }: { section: 
 
 export async function DoctorsSection({ section, clinicId }: { section: WebsiteSection, clinicId: string }) {
   const doctors = await prisma.doctor.findMany({
-    where: { clinicId, isActive: true }
+    where: { clinicId, isActive: true, showOnWebsite: true },
+    orderBy: { sortOrder: 'asc' },
   })
 
   return (
@@ -210,6 +211,30 @@ export async function BookingSection({ section, clinicId, domain }: { section: W
         <div className="bg-[#FFFFFF] rounded-none border border-[#E5E7EB] p-6 md:p-8">
           <BookingForm domain={domain} services={services} doctors={doctors} />
         </div>
+      </div>
+    </section>
+  )
+}
+
+export async function ContactSection({ section }: { section: WebsiteSection }) {
+  const content = section.content as any || {}
+  return (
+    <section id="contact" className="py-16 md:py-24 bg-[#FAFAFA] border-t border-[#E5E7EB]">
+      <div className="mx-auto max-w-3xl px-4 sm:px-6 text-center">
+        <h2 className="text-3xl font-semibold text-[#000000] mb-6">{section.title || 'اتصل بنا'}</h2>
+        <p className="text-[#050505] font-normal text-lg">{content.welcomeMessage || 'يسعدنا تواصلكم معنا للرد على استفساراتكم.'}</p>
+      </div>
+    </section>
+  )
+}
+
+export async function WhyChooseUsSection({ section }: { section: WebsiteSection }) {
+  const content = section.content as any || {}
+  return (
+    <section id="why-choose-us" className="py-16 md:py-24 bg-[#FFFFFF] border-t border-[#E5E7EB]">
+      <div className="mx-auto max-w-3xl px-4 sm:px-6 text-center">
+        <h2 className="text-3xl font-semibold text-[#000000] mb-6">{section.title || 'لماذا تختارنا'}</h2>
+        <p className="text-[#050505] font-normal text-lg">{content.description || 'نحن نقدم رعاية صحية متميزة بفضل أحدث التقنيات.'}</p>
       </div>
     </section>
   )

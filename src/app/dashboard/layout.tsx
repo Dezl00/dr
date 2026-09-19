@@ -3,6 +3,7 @@ import { prisma } from '@/lib/db/prisma'
 import { redirect } from 'next/navigation'
 import { DashboardShell } from '@/components/dashboard/dashboard-shell'
 import { ThemeProvider } from '@/components/shared/theme-provider'
+import { Toaster } from '@/components/ui/toaster'
 import { getUserPermissions } from '@/lib/permissions/service'
 import type { Metadata } from 'next'
 
@@ -114,6 +115,7 @@ export default async function DashboardLayout({
           >
             {children}
           </DashboardShell>
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>
