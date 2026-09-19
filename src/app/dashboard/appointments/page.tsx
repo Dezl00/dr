@@ -10,11 +10,11 @@ export const metadata: Metadata = {
 }
 
 const STATUS_MAP: Record<string, { label: string; class: string }> = {
-  SCHEDULED: { label: 'مجدول', class: 'status-scheduled' },
-  CONFIRMED: { label: 'مؤكد', class: 'status-confirmed' },
-  COMPLETED: { label: 'مكتمل', class: 'status-completed' },
-  CANCELLED: { label: 'ملغي', class: 'status-cancelled' },
-  NO_SHOW: { label: 'لم يحضر', class: 'status-noshow' },
+  SCHEDULED: { label: 'مجدول', class: 'border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-900/50 dark:bg-blue-950/30 dark:text-blue-400' },
+  CONFIRMED: { label: 'مؤكد', class: 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-400' },
+  COMPLETED: { label: 'مكتمل', class: 'border-slate-200 bg-slate-50 text-slate-700 dark:border-slate-800 dark:bg-slate-900/50 dark:text-slate-400' },
+  CANCELLED: { label: 'ملغي', class: 'border-red-200 bg-red-50 text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-400' },
+  NO_SHOW: { label: 'لم يحضر', class: 'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-400' },
 }
 
 async function getClinicId() {
@@ -65,12 +65,12 @@ export default async function AppointmentsPage({
     <div>
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-page-title">المواعيد</h1>
-          <p className="mt-1 text-small text-muted-foreground">{total} موعد</p>
+          <h1 className="text-xl font-semibold">المواعيد</h1>
+          <p className="mt-1 text-sm text-muted-foreground">{total} موعد</p>
         </div>
         <Link
           href="/dashboard/appointments/new"
-          className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+          className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors duration-150 hover:bg-primary/90"
         >
           <Plus className="h-4 w-4" strokeWidth={1.5} />
           موعد جديد
@@ -78,14 +78,14 @@ export default async function AppointmentsPage({
       </div>
 
       {/* Status filters */}
-      <div className="mb-4 flex flex-wrap gap-2">
+      <div className="mb-6 flex flex-wrap gap-2">
         <Link
           href="/dashboard/appointments"
           className={cn(
-            'rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors',
+            'rounded-md border px-4 py-2 text-sm font-medium transition-colors duration-150',
             !statusFilter
               ? 'border-primary bg-primary/10 text-primary'
-              : 'border-border hover:bg-accent'
+              : 'border-border text-muted-foreground hover:bg-accent hover:text-foreground'
           )}
         >
           الكل
@@ -95,10 +95,10 @@ export default async function AppointmentsPage({
             key={key}
             href={`/dashboard/appointments?status=${key}`}
             className={cn(
-              'rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors',
+              'rounded-md border px-4 py-2 text-sm font-medium transition-colors duration-150',
               statusFilter === key
                 ? 'border-primary bg-primary/10 text-primary'
-                : 'border-border hover:bg-accent'
+                : 'border-border text-muted-foreground hover:bg-accent hover:text-foreground'
             )}
           >
             {label}
@@ -108,35 +108,41 @@ export default async function AppointmentsPage({
 
       {appointments.length === 0 ? (
         <div className="rounded-xl border border-border bg-card p-12 text-center">
-          <p className="text-body text-muted-foreground">لا توجد مواعيد</p>
+          <p className="text-base text-muted-foreground">لا توجد مواعيد</p>
         </div>
       ) : (
         <>
           {/* Desktop table */}
           <div className="hidden overflow-hidden rounded-xl border border-border bg-card sm:block">
-            <table className="w-full">
+            <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-border">
-                  <th className="px-4 py-3 text-start text-xs font-medium text-muted-foreground">التاريخ</th>
-                  <th className="px-4 py-3 text-start text-xs font-medium text-muted-foreground">الوقت</th>
-                  <th className="px-4 py-3 text-start text-xs font-medium text-muted-foreground">المريض</th>
-                  <th className="px-4 py-3 text-start text-xs font-medium text-muted-foreground">الطبيب</th>
-                  <th className="px-4 py-3 text-start text-xs font-medium text-muted-foreground">الخدمة</th>
-                  <th className="px-4 py-3 text-start text-xs font-medium text-muted-foreground">الحالة</th>
+                <tr className="border-b border-border bg-muted/50">
+                  <th className="px-5 py-3.5 text-start font-medium text-muted-foreground">التاريخ</th>
+                  <th className="px-5 py-3.5 text-start font-medium text-muted-foreground">الوقت</th>
+                  <th className="px-5 py-3.5 text-start font-medium text-muted-foreground">المريض</th>
+                  <th className="px-5 py-3.5 text-start font-medium text-muted-foreground">الطبيب</th>
+                  <th className="px-5 py-3.5 text-start font-medium text-muted-foreground">الخدمة</th>
+                  <th className="px-5 py-3.5 text-start font-medium text-muted-foreground">الحالة</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
                 {appointments.map((apt) => {
                   const status = STATUS_MAP[apt.status] || STATUS_MAP.SCHEDULED
                   return (
-                    <tr key={apt.id} className="transition-colors hover:bg-accent/50">
-                      <td className="px-4 py-3 text-sm">{apt.date.toLocaleDateString('ar-EG')}</td>
-                      <td className="px-4 py-3 text-sm" dir="ltr">{apt.startTime}</td>
-                      <td className="px-4 py-3 text-sm font-medium">{apt.patient.fullName}</td>
-                      <td className="px-4 py-3 text-sm text-muted-foreground">{apt.doctor.fullName}</td>
-                      <td className="px-4 py-3 text-sm text-muted-foreground">{apt.service?.name || '—'}</td>
-                      <td className="px-4 py-3">
-                        <span className={cn('rounded-md px-2 py-0.5 text-xs font-medium', status.class)}>
+                    <tr key={apt.id} className="transition-colors duration-150 hover:bg-accent/50">
+                      <td className="px-5 py-3.5 text-foreground">{apt.date.toLocaleDateString('ar-EG')}</td>
+                      <td className="px-5 py-3.5 text-foreground font-medium" dir="ltr">{apt.startTime}</td>
+                      <td className="px-5 py-3.5 font-medium text-foreground">{apt.patient.fullName}</td>
+                      <td className="px-5 py-3.5 text-muted-foreground">{apt.doctor.fullName}</td>
+                      <td className="px-5 py-3.5 text-muted-foreground">
+                        {apt.service?.name ? (
+                          <span className="inline-flex rounded-md bg-muted px-2 py-1 text-xs border border-border">
+                            {apt.service.name}
+                          </span>
+                        ) : '—'}
+                      </td>
+                      <td className="px-5 py-3.5">
+                        <span className={cn('inline-flex items-center rounded-md border px-2 py-1 text-xs font-medium', status.class)}>
                           {status.label}
                         </span>
                       </td>
@@ -148,38 +154,43 @@ export default async function AppointmentsPage({
           </div>
 
           {/* Mobile cards */}
-          <div className="space-y-2 sm:hidden">
+          <div className="space-y-3 sm:hidden">
             {appointments.map((apt) => {
               const status = STATUS_MAP[apt.status] || STATUS_MAP.SCHEDULED
               return (
-                <div key={apt.id} className="rounded-xl border border-border bg-card p-3">
+                <div key={apt.id} className="rounded-xl border border-border bg-card p-4">
                   <div className="flex items-start justify-between">
                     <div>
-                      <p className="text-sm font-medium">{apt.patient.fullName}</p>
-                      <p className="mt-0.5 text-xs text-muted-foreground">
-                        {apt.doctor.fullName} {apt.service && `· ${apt.service.name}`}
+                      <p className="font-medium">{apt.patient.fullName}</p>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        {apt.doctor.fullName} {apt.service && <span className="mx-1">•</span>} {apt.service?.name}
                       </p>
                     </div>
-                    <span className={cn('rounded-md px-2 py-0.5 text-xs font-medium', status.class)}>
+                    <span className={cn('inline-flex items-center rounded-md border px-2 py-1 text-xs font-medium', status.class)}>
                       {status.label}
                     </span>
                   </div>
-                  <p className="mt-2 text-xs text-muted-foreground" dir="ltr">
-                    {apt.date.toLocaleDateString('ar-EG')} · {apt.startTime}
-                  </p>
+                  <div className="mt-4 flex items-center justify-between border-t border-border pt-3">
+                    <p className="text-sm text-muted-foreground">
+                      {apt.date.toLocaleDateString('ar-EG')}
+                    </p>
+                    <p className="text-sm font-medium text-foreground" dir="ltr">
+                      {apt.startTime}
+                    </p>
+                  </div>
                 </div>
               )
             })}
           </div>
 
           {totalPages > 1 && (
-            <div className="mt-4 flex items-center justify-center gap-2">
+            <div className="mt-6 flex items-center justify-center gap-2">
               {page > 1 && (
-                <Link href={`/dashboard/appointments?page=${page - 1}${statusFilter ? `&status=${statusFilter}` : ''}`} className="rounded-lg border border-border px-3 py-1.5 text-sm hover:bg-accent">السابق</Link>
+                <Link href={`/dashboard/appointments?page=${page - 1}${statusFilter ? `&status=${statusFilter}` : ''}`} className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-muted-foreground transition-colors duration-150 hover:bg-accent hover:text-foreground">السابق</Link>
               )}
-              <span className="text-sm text-muted-foreground">{page} من {totalPages}</span>
+              <span className="px-2 text-sm font-medium text-muted-foreground">{page} من {totalPages}</span>
               {page < totalPages && (
-                <Link href={`/dashboard/appointments?page=${page + 1}${statusFilter ? `&status=${statusFilter}` : ''}`} className="rounded-lg border border-border px-3 py-1.5 text-sm hover:bg-accent">التالي</Link>
+                <Link href={`/dashboard/appointments?page=${page + 1}${statusFilter ? `&status=${statusFilter}` : ''}`} className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-muted-foreground transition-colors duration-150 hover:bg-accent hover:text-foreground">التالي</Link>
               )}
             </div>
           )}

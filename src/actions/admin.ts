@@ -184,3 +184,23 @@ export async function savePlatformSettings(formData: FormData) {
 
   return { success: true }
 }
+
+export async function updateClinicColors(clinicId: string, formData: FormData) {
+  await requireAdmin()
+  
+  const primaryColor = (formData.get('primaryColorText') as string) || (formData.get('primaryColor') as string) || '#2563EB'
+  const secondaryColor = (formData.get('secondaryColorText') as string) || (formData.get('secondaryColor') as string) || '#1E40AF'
+  const accentColor = (formData.get('accentColorText') as string) || (formData.get('accentColor') as string) || '#3B82F6'
+
+  await prisma.clinicSettings.upsert({
+    where: { clinicId },
+    update: { primaryColor, secondaryColor, accentColor },
+    create: { clinicId, primaryColor, secondaryColor, accentColor }
+  })
+
+  const { revalidatePath } = await import('next/cache')
+  revalidatePath(`/admin/clinics/${clinicId}`)
+  revalidatePath('/admin/clinics')
+
+  return { success: true }
+}

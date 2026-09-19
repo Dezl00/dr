@@ -17,6 +17,7 @@ const STATUS_MAP: Record<string, { label: string; class: string }> = {
 export default async function AdminClinicsPage() {
   const clinics = await prisma.clinic.findMany({
     include: {
+      settings: { select: { primaryColor: true } },
       _count: { select: { memberships: true, patients: true } },
       subscription: { include: { plan: { select: { nameAr: true } } } },
       domains: { where: { type: 'PLATFORM_SUBDOMAIN', status: 'ACTIVE' }, take: 1 },
@@ -46,8 +47,16 @@ export default async function AdminClinicsPage() {
               return (
                 <tr key={clinic.id} className="transition-colors hover:bg-accent/50">
                   <td className="px-4 py-3">
-                    <p className="text-sm font-medium">{clinic.name}</p>
-                    <p className="text-xs text-muted-foreground">{clinic.slug}</p>
+                    <div className="flex items-center gap-3">
+                      <div 
+                        className="h-3 w-3 shrink-0 rounded-full border border-border" 
+                        style={{ backgroundColor: clinic.settings?.primaryColor || '#2563EB' }}
+                      />
+                      <div>
+                        <p className="text-sm font-medium">{clinic.name}</p>
+                        <p className="text-xs text-muted-foreground">{clinic.slug}</p>
+                      </div>
+                    </div>
                   </td>
                   <td className="hidden px-4 py-3 text-sm text-muted-foreground sm:table-cell" dir="ltr">
                     {clinic.domains[0]?.domain || clinic.slug}

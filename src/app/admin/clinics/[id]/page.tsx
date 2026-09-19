@@ -1,9 +1,10 @@
 import { prisma } from '@/lib/db/prisma'
 import { requireAdmin } from '@/lib/auth/dal'
 import { notFound } from 'next/navigation'
-import { openClinicAsAdmin } from '@/actions/admin'
+import { openClinicAsAdmin, updateClinicColors } from '@/actions/admin'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
+import { ClinicColorsForm } from './clinic-colors-form'
 
 export default async function AdminClinicDetailPage({
   params,
@@ -71,6 +72,18 @@ export default async function AdminClinicDetailPage({
           <p className="text-stat">{clinic._count.memberships}</p>
           <p className="text-xs text-muted-foreground">أعضاء</p>
         </div>
+      </div>
+
+      {/* Colors */}
+      <div className="rounded-xl border border-border bg-card p-4">
+        <h2 className="text-section-title mb-4">ألوان العيادة</h2>
+        <ClinicColorsForm
+          clinicId={clinic.id}
+          initialPrimary={clinic.settings?.primaryColor || undefined}
+          initialSecondary={clinic.settings?.secondaryColor || undefined}
+          initialAccent={clinic.settings?.accentColor || undefined}
+          action={updateClinicColors}
+        />
       </div>
 
       {/* Domains */}

@@ -83,7 +83,7 @@ export function DashboardShell({
         {/* Mobile backdrop */}
         {sidebarOpen && (
           <div
-            className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+            className="fixed inset-0 z-40 bg-black/50 lg:hidden transition-opacity"
             onClick={() => setSidebarOpen(false)}
           />
         )}
@@ -99,16 +99,16 @@ export function DashboardShell({
             <span className="text-sm font-semibold truncate">{clinic.name}</span>
             <button
               onClick={() => setSidebarOpen(false)}
-              className="p-1 lg:hidden"
+              className="rounded p-1 text-muted-foreground transition-colors duration-150 hover:bg-accent lg:hidden"
               aria-label="إغلاق القائمة"
             >
-              <X className="h-5 w-5" />
+              <X className="h-5 w-5" strokeWidth={1.5} />
             </button>
           </div>
 
           {/* Nav */}
-          <nav className="flex-1 overflow-y-auto p-3">
-            <ul className="space-y-1">
+          <nav className="flex-1 overflow-y-auto py-3">
+            <ul className="space-y-1 px-2">
               {filteredNav.map((item) => {
                 const isActive =
                   item.href === '/dashboard'
@@ -119,12 +119,15 @@ export function DashboardShell({
                     <Link
                       href={item.href}
                       onClick={() => setSidebarOpen(false)}
-                      className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                      className={`relative flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors duration-150 ${
                         isActive
-                          ? 'bg-primary/10 text-primary'
+                          ? 'bg-accent/50 text-primary'
                           : 'text-muted-foreground hover:bg-accent hover:text-foreground'
                       }`}
                     >
+                      {isActive && (
+                        <div className="absolute inset-y-1 end-0 w-[3px] rounded-s-md bg-primary" />
+                      )}
                       <item.icon className="h-4.5 w-4.5 shrink-0" strokeWidth={1.5} />
                       {item.label}
                     </Link>
@@ -135,20 +138,20 @@ export function DashboardShell({
           </nav>
 
           {/* User section */}
-          <div className="border-t border-border p-3">
-            <div className="flex items-center gap-3 rounded-lg px-3 py-2">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-medium text-primary">
+          <div className="border-t border-border p-4">
+            <div className="mb-2 flex items-center gap-3 rounded-lg border border-border p-3 transition-colors duration-150 hover:border-primary/50">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-accent text-sm font-medium text-foreground">
                 {user.fullName.charAt(0)}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium">{user.fullName}</p>
+                <p className="truncate text-sm font-medium text-foreground">{user.fullName}</p>
                 <p className="truncate text-xs text-muted-foreground">{roleName}</p>
               </div>
             </div>
             <form action={logoutAction}>
               <button
                 type="submit"
-                className="mt-1 flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors duration-150 hover:bg-accent hover:text-foreground"
               >
                 <LogOut className="h-4 w-4" strokeWidth={1.5} />
                 تسجيل الخروج
@@ -161,16 +164,16 @@ export function DashboardShell({
         <div className="flex flex-1 flex-col overflow-hidden">
           {/* Admin access banner */}
           {isAdminAccess && (
-            <div className="flex items-center justify-between bg-amber-50 px-4 py-2 text-sm text-amber-800 dark:bg-amber-950 dark:text-amber-200">
+            <div className="flex items-center justify-between border-b border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-950/50 dark:text-amber-200">
               <div className="flex items-center gap-2">
                 <Shield className="h-4 w-4" strokeWidth={1.5} />
                 <span>
-                  أنت تعمل الآن داخل <strong>{clinic.name}</strong> بصلاحيات مدير المنصة.
+                  أنت تعمل الآن داخل <span className="font-semibold">{clinic.name}</span> بصلاحيات مدير المنصة.
                 </span>
               </div>
               <Link
                 href="/admin/clinics"
-                className="rounded-md border border-amber-300 px-3 py-1 text-xs font-medium transition-colors hover:bg-amber-100 dark:border-amber-700 dark:hover:bg-amber-900"
+                className="rounded-md border border-amber-300 px-3 py-1 text-xs font-medium transition-colors duration-150 hover:bg-amber-100 dark:border-amber-800 dark:hover:bg-amber-900"
               >
                 الخروج من العيادة
               </Link>
@@ -178,11 +181,11 @@ export function DashboardShell({
           )}
 
           {/* Header */}
-          <header className="flex h-14 items-center justify-between border-b border-border px-4 lg:px-6">
+          <header className="flex h-14 items-center justify-between border-b border-border bg-background px-4 lg:px-6">
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setSidebarOpen(true)}
-                className="p-1.5 lg:hidden"
+                className="rounded p-1.5 text-muted-foreground transition-colors duration-150 hover:bg-accent hover:text-foreground lg:hidden"
                 aria-label="فتح القائمة"
               >
                 <Menu className="h-5 w-5" strokeWidth={1.5} />
@@ -192,7 +195,7 @@ export function DashboardShell({
 
             <div className="flex items-center gap-2">
               <button
-                className="relative rounded-lg p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                className="relative rounded-lg p-2 text-muted-foreground transition-colors duration-150 hover:bg-accent hover:text-foreground"
                 aria-label="الإشعارات"
               >
                 <Bell className="h-4.5 w-4.5" strokeWidth={1.5} />
@@ -201,7 +204,7 @@ export function DashboardShell({
               {user.isAdmin && (
                 <Link
                   href="/admin"
-                  className="hidden rounded-lg p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground sm:block"
+                  className="hidden rounded-lg p-2 text-muted-foreground transition-colors duration-150 hover:bg-accent hover:text-foreground sm:block"
                   aria-label="لوحة الإدارة"
                 >
                   <Shield className="h-4.5 w-4.5" strokeWidth={1.5} />

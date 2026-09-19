@@ -50,7 +50,7 @@ export function AdminShell({ children, user }: AdminShellProps) {
   return (
     <div className="flex h-screen overflow-hidden bg-background">
       {sidebarOpen && (
-        <div className="fixed inset-0 z-40 bg-black/50 lg:hidden" onClick={() => setSidebarOpen(false)} />
+        <div className="fixed inset-0 z-40 bg-black/50 transition-opacity lg:hidden" onClick={() => setSidebarOpen(false)} />
       )}
 
       <aside
@@ -63,13 +63,13 @@ export function AdminShell({ children, user }: AdminShellProps) {
             <Shield className="h-5 w-5 text-primary" strokeWidth={1.5} />
             <span className="text-sm font-semibold">إدارة المنصة</span>
           </div>
-          <button onClick={() => setSidebarOpen(false)} className="p-1 lg:hidden" aria-label="إغلاق">
-            <X className="h-5 w-5" />
+          <button onClick={() => setSidebarOpen(false)} className="rounded p-1 text-muted-foreground transition-colors duration-150 hover:bg-accent lg:hidden" aria-label="إغلاق">
+            <X className="h-5 w-5" strokeWidth={1.5} />
           </button>
         </div>
 
-        <nav className="flex-1 overflow-y-auto p-3">
-          <ul className="space-y-1">
+        <nav className="flex-1 overflow-y-auto py-3">
+          <ul className="space-y-1 px-2">
             {NAV_ITEMS.map((item) => {
               const isActive =
                 item.href === '/admin'
@@ -80,12 +80,15 @@ export function AdminShell({ children, user }: AdminShellProps) {
                   <Link
                     href={item.href}
                     onClick={() => setSidebarOpen(false)}
-                    className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                    className={`relative flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors duration-150 ${
                       isActive
-                        ? 'bg-primary/10 text-primary'
+                        ? 'bg-accent/50 text-primary'
                         : 'text-muted-foreground hover:bg-accent hover:text-foreground'
                     }`}
                   >
+                    {isActive && (
+                      <div className="absolute inset-y-1 end-0 w-[3px] rounded-s-md bg-primary" />
+                    )}
                     <item.icon className="h-4.5 w-4.5 shrink-0" strokeWidth={1.5} />
                     {item.label}
                   </Link>
@@ -95,25 +98,25 @@ export function AdminShell({ children, user }: AdminShellProps) {
           </ul>
         </nav>
 
-        <div className="border-t border-border p-3">
+        <div className="border-t border-border p-4">
           <Link
             href="/dashboard"
-            className="mb-2 flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+            className="mb-3 flex items-center gap-3 rounded-md border border-border px-3 py-2 text-sm font-medium text-foreground transition-colors duration-150 hover:border-primary/50 hover:bg-accent"
           >
-            <Building2 className="h-4 w-4" strokeWidth={1.5} />
+            <Building2 className="h-4 w-4 text-primary" strokeWidth={1.5} />
             لوحة العيادة
           </Link>
-          <div className="flex items-center gap-3 rounded-lg px-3 py-2">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-medium text-primary">
+          <div className="mb-2 flex items-center gap-3 rounded-lg border border-border p-3 transition-colors duration-150 hover:border-primary/50">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-accent text-sm font-medium text-foreground">
               {user.fullName.charAt(0)}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium">{user.fullName}</p>
+              <p className="truncate text-sm font-medium text-foreground">{user.fullName}</p>
               <p className="truncate text-xs text-muted-foreground">مدير المنصة</p>
             </div>
           </div>
           <form action={logoutAction}>
-            <button type="submit" className="mt-1 flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-foreground">
+            <button type="submit" className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors duration-150 hover:bg-accent hover:text-foreground">
               <LogOut className="h-4 w-4" strokeWidth={1.5} />
               تسجيل الخروج
             </button>
@@ -122,8 +125,8 @@ export function AdminShell({ children, user }: AdminShellProps) {
       </aside>
 
       <div className="flex flex-1 flex-col overflow-hidden">
-        <header className="flex h-14 items-center justify-between border-b border-border px-4 lg:px-6">
-          <button onClick={() => setSidebarOpen(true)} className="p-1.5 lg:hidden" aria-label="فتح القائمة">
+        <header className="flex h-14 items-center justify-between border-b border-border bg-background px-4 lg:px-6">
+          <button onClick={() => setSidebarOpen(true)} className="rounded p-1.5 text-muted-foreground transition-colors duration-150 hover:bg-accent hover:text-foreground lg:hidden" aria-label="فتح القائمة">
             <Menu className="h-5 w-5" strokeWidth={1.5} />
           </button>
           <div />

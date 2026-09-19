@@ -5,6 +5,7 @@ import { ExternalLink, Palette, LayoutList } from 'lucide-react'
 import { updateWebsiteSettings } from '@/actions/dashboard'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
+import { Switch } from '@/components/ui/switch'
 import type { Metadata } from 'next'
 import { WebsiteSectionsManager } from './components/WebsiteSectionsManager'
 
@@ -48,43 +49,50 @@ export default async function WebsitePage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-page-title">الموقع الإلكتروني</h1>
-
-      {/* Site URL */}
-      <div className="rounded-xl border border-border bg-card p-4">
-        <p className="text-small text-muted-foreground mb-1">عنوان الموقع</p>
-        <div className="flex items-center gap-2">
-          <p className="text-sm font-medium" dir="ltr">{siteUrl}</p>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-semibold">الموقع الإلكتروني</h1>
+        <Button variant="outline" asChild className="rounded-xl border border-border">
           <a
             href={`http://${siteUrl}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-primary"
           >
-            <ExternalLink className="h-3.5 w-3.5" strokeWidth={1.5} />
+            معاينة الموقع
+            <ExternalLink className="h-4 w-4 ms-2" strokeWidth={1.5} />
           </a>
+        </Button>
+      </div>
+
+      {/* Site URL */}
+      <div className="rounded-xl border border-border bg-card p-4">
+        <p className="text-sm text-muted-foreground mb-1">عنوان الموقع</p>
+        <div className="flex items-center gap-2">
+          <p className="text-base font-medium" dir="ltr">{siteUrl}</p>
         </div>
         {domains.filter(d => d.type === 'CUSTOM_DOMAIN').map(d => (
-          <p key={d.id} className="mt-1 text-xs text-muted-foreground" dir="ltr">{d.domain}</p>
+          <p key={d.id} className="mt-1 text-sm text-muted-foreground" dir="ltr">{d.domain}</p>
         ))}
       </div>
 
       <div className="max-w-xl">
-        <form action={updateWebsiteSettings} className="space-y-4 bg-card border border-border p-6 rounded-xl">
-          <h2 className="text-lg font-medium">إعدادات النشر</h2>
+        <form action={updateWebsiteSettings} className="space-y-6 bg-card border border-border p-6 rounded-xl">
+          <h2 className="text-lg font-semibold">إعدادات النشر</h2>
           
-          <div className="flex items-center space-x-2 space-x-reverse">
-            <input 
-              type="checkbox" 
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <Label htmlFor="isPublished" className="text-base font-medium">نشر الموقع الإلكتروني</Label>
+              <p className="text-sm text-muted-foreground">عند التفعيل، سيكون الموقع متاحاً للعامة</p>
+            </div>
+            {/* The Switch needs to submit a form, we can use a hidden input for the actual value or handle it if Switch has name prop. Switch typically supports name prop in Radix/shadcn */}
+            <Switch 
               id="isPublished" 
               name="isPublished" 
               defaultChecked={website?.isPublished} 
-              className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+              dir="ltr"
             />
-            <Label htmlFor="isPublished">نشر الموقع الإلكتروني (متاح للعامة)</Label>
           </div>
           
-          <Button type="submit">حفظ التغييرات</Button>
+          <Button type="submit" className="rounded-xl">حفظ التغييرات</Button>
         </form>
       </div>
 
