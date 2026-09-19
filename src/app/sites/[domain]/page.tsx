@@ -57,24 +57,23 @@ export default async function TenantPage({
 
   // Fallback colors if not set
   const primaryColor = settings?.primaryColor || '#000000'
-  const secondaryColor = settings?.secondaryColor || '#FAFAFA'
+  const secondaryColor = settings?.secondaryColor || '#000000'
   const accentColor = settings?.accentColor || '#E5E7EB'
 
   return (
     <div 
-      className="min-h-screen" 
+      className="min-h-screen bg-[#FFFFFF]" 
       dir="rtl" 
       lang="ar"
       style={{
         '--clinic-primary': primaryColor,
         '--clinic-secondary': secondaryColor,
         '--clinic-accent': accentColor,
-        backgroundColor: 'var(--clinic-secondary)',
       } as React.CSSProperties}
     >
-      <header className="sticky top-0 z-50 border-b" style={{ borderColor: 'var(--clinic-accent)', backgroundColor: 'var(--clinic-secondary)' }}>
+      <header className="sticky top-0 z-50 border-b border-[#E5E7EB] bg-[#FFFFFF]/80 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
-          <Link href="/" className="text-xl font-semibold" style={{ color: 'var(--clinic-primary)' }}>
+          <Link href="/" className="text-xl font-bold" style={{ color: 'var(--clinic-primary)' }}>
             {tenant.clinicName}
           </Link>
           <nav className="hidden space-x-6 space-x-reverse md:flex">
@@ -82,8 +81,7 @@ export default async function TenantPage({
               <a
                 key={section.id}
                 href={`#${section.type.toLowerCase()}`}
-                className="text-sm font-medium hover:opacity-80 transition-opacity"
-                style={{ color: 'var(--clinic-primary)' }}
+                className="text-sm font-medium text-[#050505] hover:opacity-70 transition-opacity"
               >
                 {section.title}
               </a>
@@ -91,8 +89,8 @@ export default async function TenantPage({
           </nav>
           <a
             href={`#booking`}
-            className="rounded-none px-4 py-2 text-sm font-medium transition-opacity hover:opacity-90"
-            style={{ backgroundColor: 'var(--clinic-primary)', color: 'var(--clinic-secondary)' }}
+            className="rounded-none px-4 py-2 text-sm font-medium transition-opacity hover:opacity-90 text-[#FFFFFF]"
+            style={{ backgroundColor: 'var(--clinic-primary)' }}
           >
             احجز موعدك
           </a>
@@ -128,12 +126,12 @@ export default async function TenantPage({
         })}
       </main>
 
-      <footer className="border-t py-12" style={{ borderColor: 'var(--clinic-accent)', backgroundColor: 'var(--clinic-secondary)' }}>
+      <footer className="border-t border-[#E5E7EB] bg-[#FAFAFA] py-12">
         <div className="mx-auto max-w-7xl px-4 text-center sm:px-6">
-          <p className="text-sm font-normal" style={{ color: 'var(--clinic-primary)' }}>
+          <p className="text-sm text-[#050505] font-normal">
             © {new Date().getFullYear()} {tenant.clinicName}. جميع الحقوق محفوظة.
           </p>
-          <p className="mt-2 text-xs font-normal opacity-70" style={{ color: 'var(--clinic-primary)' }}>
+          <p className="mt-2 text-xs font-normal opacity-50 text-[#050505]">
             مشغل بواسطة منصة DRS
           </p>
         </div>
