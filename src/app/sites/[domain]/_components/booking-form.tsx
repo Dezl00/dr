@@ -180,7 +180,6 @@ export function BookingForm({
                 locale={ar}
                 dir="rtl"
                 disabled={(date) => date < new Date(new Date().setHours(0,0,0,0))}
-                initialFocus
               />
             </PopoverContent>
           </Popover>
