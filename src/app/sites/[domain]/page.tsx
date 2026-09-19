@@ -27,15 +27,20 @@ export default async function TenantPage({
     notFound()
   }
 
-  const website = await prisma.website.findUnique({
-    where: { clinicId: tenant.clinicId },
-    include: {
-      sections: {
-        where: { isEnabled: true },
-        orderBy: { sortOrder: 'asc' },
+  const [website, settings] = await Promise.all([
+    prisma.website.findUnique({
+      where: { clinicId: tenant.clinicId },
+      include: {
+        sections: {
+          where: { isEnabled: true },
+          orderBy: { sortOrder: 'asc' },
+        },
       },
-    },
-  })
+    }),
+    prisma.clinicSettings.findUnique({
+      where: { clinicId: tenant.clinicId },
+    })
+  ])
 
   if (!website || !website.isPublished) {
     return (
@@ -50,11 +55,26 @@ export default async function TenantPage({
     )
   }
 
+  // Fallback colors if not set
+  const primaryColor = settings?.primaryColor || '#000000'
+  const secondaryColor = settings?.secondaryColor || '#FAFAFA'
+  const accentColor = settings?.accentColor || '#E5E7EB'
+
   return (
-    <div className="min-h-screen bg-[#FFFFFF]" dir="rtl" lang="ar">
-      <header className="sticky top-0 z-50 border-b border-[#E5E7EB] bg-[#FFFFFF]">
+    <div 
+      className="min-h-screen" 
+      dir="rtl" 
+      lang="ar"
+      style={{
+        '--clinic-primary': primaryColor,
+        '--clinic-secondary': secondaryColor,
+        '--clinic-accent': accentColor,
+        backgroundColor: 'var(--clinic-secondary)',
+      } as React.CSSProperties}
+    >
+      <header className="sticky top-0 z-50 border-b" style={{ borderColor: 'var(--clinic-accent)', backgroundColor: 'var(--clinic-secondary)' }}>
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
-          <Link href="/" className="text-xl font-semibold text-[#000000]">
+          <Link href="/" className="text-xl font-semibold" style={{ color: 'var(--clinic-primary)' }}>
             {tenant.clinicName}
           </Link>
           <nav className="hidden space-x-6 space-x-reverse md:flex">
@@ -62,7 +82,8 @@ export default async function TenantPage({
               <a
                 key={section.id}
                 href={`#${section.type.toLowerCase()}`}
-                className="text-sm font-medium text-[#050505] hover:text-[#000000]"
+                className="text-sm font-medium hover:opacity-80 transition-opacity"
+                style={{ color: 'var(--clinic-primary)' }}
               >
                 {section.title}
               </a>
@@ -70,7 +91,8 @@ export default async function TenantPage({
           </nav>
           <a
             href={`#booking`}
-            className="rounded-none bg-[#000000] px-4 py-2 text-sm font-medium text-[#FFFFFF] transition-colors hover:bg-[#050505]"
+            className="rounded-none px-4 py-2 text-sm font-medium transition-opacity hover:opacity-90"
+            style={{ backgroundColor: 'var(--clinic-primary)', color: 'var(--clinic-secondary)' }}
           >
             احجز موعدك
           </a>
@@ -106,12 +128,12 @@ export default async function TenantPage({
         })}
       </main>
 
-      <footer className="border-t border-[#E5E7EB] bg-[#FAFAFA] py-12">
+      <footer className="border-t py-12" style={{ borderColor: 'var(--clinic-accent)', backgroundColor: 'var(--clinic-secondary)' }}>
         <div className="mx-auto max-w-7xl px-4 text-center sm:px-6">
-          <p className="text-sm text-[#050505] font-normal">
+          <p className="text-sm font-normal" style={{ color: 'var(--clinic-primary)' }}>
             © {new Date().getFullYear()} {tenant.clinicName}. جميع الحقوق محفوظة.
           </p>
-          <p className="mt-2 text-xs text-[#050505] font-normal opacity-50">
+          <p className="mt-2 text-xs font-normal opacity-70" style={{ color: 'var(--clinic-primary)' }}>
             مشغل بواسطة منصة DRS
           </p>
         </div>

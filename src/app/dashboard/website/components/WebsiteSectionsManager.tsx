@@ -26,6 +26,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Textarea } from "@/components/ui/textarea"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { ImageUpload } from "@/components/ui/image-upload"
 import { updateSectionOrder, toggleSectionVisibility, updateSectionContent } from "@/actions/dashboard"
 import { toast } from "@/hooks/use-toast"
 
@@ -193,20 +194,43 @@ export function WebsiteSectionsManager({ initialSections }: WebsiteSectionsManag
               onChange={(e) => setContent({...content, subtitle: e.target.value})} 
             />
           </div>
-          <div className="space-y-2">
-            <Label>نص الزر</Label>
-            <Input 
-              value={content?.buttonText || ''} 
-              onChange={(e) => setContent({...content, buttonText: e.target.value})} 
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>نص الزر الأول</Label>
+              <Input 
+                value={content?.button1Text || ''} 
+                onChange={(e) => setContent({...content, button1Text: e.target.value})} 
+                placeholder="احجز موعدك الآن"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>رابط الزر الأول</Label>
+              <Input 
+                value={content?.button1Link || ''} 
+                onChange={(e) => setContent({...content, button1Link: e.target.value})} 
+                dir="ltr"
+                placeholder="#booking"
+              />
+            </div>
           </div>
-          <div className="space-y-2">
-            <Label>رابط الزر</Label>
-            <Input 
-              value={content?.buttonLink || ''} 
-              onChange={(e) => setContent({...content, buttonLink: e.target.value})} 
-              dir="ltr"
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>نص الزر الثاني</Label>
+              <Input 
+                value={content?.button2Text || ''} 
+                onChange={(e) => setContent({...content, button2Text: e.target.value})} 
+                placeholder="خدماتنا"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>رابط الزر الثاني</Label>
+              <Input 
+                value={content?.button2Link || ''} 
+                onChange={(e) => setContent({...content, button2Link: e.target.value})} 
+                dir="ltr"
+                placeholder="#services"
+              />
+            </div>
           </div>
         </div>
       )
@@ -231,11 +255,10 @@ export function WebsiteSectionsManager({ initialSections }: WebsiteSectionsManag
             />
           </div>
           <div className="space-y-2">
-            <Label>رابط الصورة</Label>
-            <Input 
+            <Label>صورة القسم</Label>
+            <ImageUpload 
               value={content?.imageUrl || ''} 
-              onChange={(e) => setContent({...content, imageUrl: e.target.value})} 
-              dir="ltr"
+              onChange={(url) => setContent({...content, imageUrl: url})} 
             />
           </div>
         </div>
@@ -357,19 +380,19 @@ export function WebsiteSectionsManager({ initialSections }: WebsiteSectionsManag
               </Button>
             </div>
             
-            <div className="space-y-2">
+            <div className="space-y-4">
               {images.map((img: string, idx: number) => (
-                <div key={idx} className="flex items-center gap-2">
-                  <Input 
-                    value={img || ''} 
-                    dir="ltr"
-                    placeholder="https://..."
-                    onChange={(e) => {
-                      const newArr = [...images];
-                      newArr[idx] = e.target.value;
-                      setContent({...content, images: newArr})
-                    }} 
-                  />
+                <div key={idx} className="flex items-start gap-4 p-4 border border-border rounded-xl">
+                  <div className="flex-1">
+                    <ImageUpload 
+                      value={img || ''} 
+                      onChange={(url) => {
+                        const newArr = [...images];
+                        newArr[idx] = url;
+                        setContent({...content, images: newArr})
+                      }} 
+                    />
+                  </div>
                   <Button 
                     variant="ghost" 
                     size="icon"
