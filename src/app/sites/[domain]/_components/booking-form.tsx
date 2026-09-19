@@ -8,6 +8,12 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { toast } from '@/hooks/use-toast'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Calendar } from '@/components/ui/calendar'
+import { format } from 'date-fns'
+import { ar } from 'date-fns/locale'
+import { CalendarIcon } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 type Service = { id: string, name: string }
 type Doctor = { id: string, fullName: string }
@@ -23,10 +29,10 @@ export function BookingForm({
 }) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
+  const [dateObj, setDateObj] = useState<Date>()
   const [formData, setFormData] = useState({
     serviceId: '',
     doctorId: '',
-    date: '',
     startTime: '',
     fullName: '',
     phone: '',
@@ -34,10 +40,21 @@ export function BookingForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!dateObj) {
+      toast({
+        variant: "destructive",
+        title: "خطأ",
+        description: "يرجى تحديد تاريخ الموعد",
+      })
+      return
+    }
+
     setLoading(true)
+    const formattedDate = format(dateObj, 'yyyy-MM-dd')
 
     const result = await bookAppointment({
       ...formData,
+      date: formattedDate,
       domain
     })
 
@@ -49,11 +66,11 @@ export function BookingForm({
       setFormData({
         serviceId: '',
         doctorId: '',
-        date: '',
         startTime: '',
         fullName: '',
         phone: '',
       })
+      setDateObj(undefined)
       router.refresh()
     } else {
       toast({
@@ -69,18 +86,19 @@ export function BookingForm({
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-2">
-          <Label htmlFor="fullName" className="font-medium text-[#000000]">الاسم بالكامل</Label>
+          <Label htmlFor="fullName" className="font-medium text-[#050505]">الاسم بالكامل</Label>
           <Input 
             id="fullName" 
             required 
             value={formData.fullName}
             onChange={(e) => setFormData(prev => ({ ...prev, fullName: e.target.value }))}
             placeholder="أدخل اسمك الكامل"
-            className="rounded-none border-[#E5E7EB] focus-visible:ring-[#000000] font-normal"
+            className="rounded-none border-[#E5E7EB] font-normal"
+            style={{ '--tw-ring-color': 'var(--clinic-primary)' } as any}
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="phone" className="font-medium text-[#000000]">رقم الهاتف</Label>
+          <Label htmlFor="phone" className="font-medium text-[#050505]">رقم الهاتف</Label>
           <Input 
             id="phone" 
             type="tel"
@@ -89,20 +107,21 @@ export function BookingForm({
             onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
             placeholder="05xxxxxxxx"
             dir="ltr"
-            className="text-right rounded-none border-[#E5E7EB] focus-visible:ring-[#000000] font-normal"
+            className="text-right rounded-none border-[#E5E7EB] font-normal"
+            style={{ '--tw-ring-color': 'var(--clinic-primary)' } as any}
           />
         </div>
         
         <div className="space-y-2">
-          <Label htmlFor="service" className="font-medium text-[#000000]">الخدمة (اختياري)</Label>
+          <Label htmlFor="service" className="font-medium text-[#050505]">الخدمة (اختياري)</Label>
           <Select 
             value={formData.serviceId} 
             onValueChange={(val) => setFormData(prev => ({ ...prev, serviceId: val }))}
           >
-            <SelectTrigger id="service" className="rounded-none border-[#E5E7EB] focus:ring-[#000000] font-normal">
+            <SelectTrigger id="service" className="rounded-none border-[#E5E7EB] font-normal" style={{ '--tw-ring-color': 'var(--clinic-primary)' } as any}>
               <SelectValue placeholder="اختر الخدمة" />
             </SelectTrigger>
-            <SelectContent className="rounded-none border-[#E5E7EB]">
+            <SelectContent className="rounded-none border-[#E5E7EB]" dir="rtl">
               {services.map(s => (
                 <SelectItem key={s.id} value={s.id} className="font-normal">{s.name}</SelectItem>
               ))}
@@ -111,16 +130,16 @@ export function BookingForm({
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="doctor" className="font-medium text-[#000000]">الطبيب</Label>
+          <Label htmlFor="doctor" className="font-medium text-[#050505]">الطبيب</Label>
           <Select 
             value={formData.doctorId} 
             onValueChange={(val) => setFormData(prev => ({ ...prev, doctorId: val }))}
             required
           >
-            <SelectTrigger id="doctor" className="rounded-none border-[#E5E7EB] focus:ring-[#000000] font-normal">
+            <SelectTrigger id="doctor" className="rounded-none border-[#E5E7EB] font-normal" style={{ '--tw-ring-color': 'var(--clinic-primary)' } as any}>
               <SelectValue placeholder="اختر الطبيب" />
             </SelectTrigger>
-            <SelectContent className="rounded-none border-[#E5E7EB]">
+            <SelectContent className="rounded-none border-[#E5E7EB]" dir="rtl">
               {doctors.map(d => (
                 <SelectItem key={d.id} value={d.id} className="font-normal">{d.fullName}</SelectItem>
               ))}
@@ -128,33 +147,60 @@ export function BookingForm({
           </Select>
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="date" className="font-medium text-[#000000]">تاريخ الموعد</Label>
-          <Input 
-            id="date" 
-            type="date"
-            required 
-            value={formData.date}
-            onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
-            min={new Date().toISOString().split('T')[0]}
-            className="rounded-none border-[#E5E7EB] focus-visible:ring-[#000000] font-normal"
-          />
+        <div className="space-y-2 flex flex-col justify-end">
+          <Label className="font-medium text-[#050505]">تاريخ الموعد</Label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant={"outline"}
+                className={cn(
+                  "w-full justify-start text-right font-normal rounded-none border-[#E5E7EB]",
+                  !dateObj && "text-muted-foreground"
+                )}
+                style={{ '--tw-ring-color': 'var(--clinic-primary)' } as any}
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" style={{ color: 'var(--clinic-primary)' }} />
+                {dateObj ? format(dateObj, "PPP", { locale: ar }) : <span>اختر التاريخ</span>}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0 rounded-none border-[#E5E7EB] custom-calendar-wrapper">
+              <style>{`
+                .custom-calendar-wrapper .bg-primary {
+                  background-color: var(--clinic-primary) !important;
+                  color: #FFFFFF !important;
+                }
+                .custom-calendar-wrapper .text-primary {
+                  color: var(--clinic-primary) !important;
+                }
+              `}</style>
+              <Calendar
+                mode="single"
+                selected={dateObj}
+                onSelect={setDateObj}
+                locale={ar}
+                dir="rtl"
+                disabled={(date) => date < new Date(new Date().setHours(0,0,0,0))}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="startTime" className="font-medium text-[#000000]">الوقت المفضل</Label>
+        <div className="space-y-2 flex flex-col justify-end">
+          <Label htmlFor="startTime" className="font-medium text-[#050505]">الوقت المفضل</Label>
           <Input 
             id="startTime" 
             type="time"
             required 
             value={formData.startTime}
             onChange={(e) => setFormData(prev => ({ ...prev, startTime: e.target.value }))}
-            className="rounded-none border-[#E5E7EB] focus-visible:ring-[#000000] font-normal"
+            className="rounded-none border-[#E5E7EB] font-normal"
+            style={{ '--tw-ring-color': 'var(--clinic-primary)' } as any}
           />
         </div>
       </div>
 
-      <Button type="submit" className="w-full rounded-none bg-[#000000] text-[#FFFFFF] hover:bg-[#050505] font-medium" disabled={loading}>
+      <Button type="submit" className="w-full rounded-none font-medium hover:opacity-90 transition-opacity text-[#FFFFFF]" disabled={loading} style={{ backgroundColor: 'var(--clinic-primary)' }}>
         {loading ? 'جاري الإرسال...' : 'تأكيد الحجز'}
       </Button>
     </form>

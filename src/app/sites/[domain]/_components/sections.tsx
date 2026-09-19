@@ -7,9 +7,9 @@ import { WebsiteSection } from '@prisma/client'
 export async function HeroSection({ section, clinicId, domain }: { section: WebsiteSection, clinicId: string, domain: string }) {
   const content = section.content as any || {}
   return (
-    <section id="hero" className="py-16 md:py-24 bg-[#FAFAFA]">
+    <section id="hero" className="py-16 md:py-24 bg-[#FFFFFF]">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <div className="rounded-none p-8 text-center md:p-16 border border-[#E5E7EB] bg-[#FFFFFF]">
+        <div className="rounded-none p-8 text-center md:p-16 bg-[#FFFFFF]">
           <h1 className="mb-6 text-4xl font-semibold md:text-6xl leading-tight" style={{ color: 'var(--clinic-primary)' }}>
             {content.title || section.title || 'مرحباً بكم في عيادتنا'}
           </h1>
@@ -41,7 +41,7 @@ export async function HeroSection({ section, clinicId, domain }: { section: Webs
 export async function AboutSection({ section }: { section: WebsiteSection }) {
   const content = section.content as any || {}
   return (
-    <section id="about" className="py-16 md:py-24 border-t border-[#E5E7EB] bg-[#FFFFFF]">
+    <section id="about" className="py-16 md:py-24 bg-[#FFFFFF]">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div>
@@ -51,7 +51,7 @@ export async function AboutSection({ section }: { section: WebsiteSection }) {
             </div>
           </div>
           {content.imageUrl && (
-            <div className="relative h-64 md:h-96 rounded-none overflow-hidden border border-[#E5E7EB]">
+            <div className="relative h-64 md:h-96 rounded-none overflow-hidden">
               <Image src={content.imageUrl} alt="About Clinic" fill className="object-cover" />
             </div>
           )}
@@ -68,7 +68,7 @@ export async function ServicesSection({ section, clinicId, domain }: { section: 
   })
 
   return (
-    <section id="services" className="py-16 md:py-24 border-t border-[#E5E7EB] bg-[#FAFAFA]">
+    <section id="services" className="py-16 md:py-24 bg-[#FFFFFF]">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-semibold" style={{ color: 'var(--clinic-primary)' }}>{section.title || 'خدماتنا'}</h2>
@@ -77,9 +77,9 @@ export async function ServicesSection({ section, clinicId, domain }: { section: 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {services.map(service => (
             <Link key={service.id} href={`/services/${service.slug || service.id}`} className="block group">
-              <div className="rounded-none border border-[#E5E7EB] bg-[#FFFFFF] p-6 h-full transition-colors group-hover:border-[var(--clinic-primary)]">
+              <div className="rounded-none border border-[#E5E7EB] bg-[#FFFFFF] p-6 h-full transition-colors group-hover:border-[var(--clinic-primary)] shadow-sm">
                 {service.imageUrl && (
-                  <div className="relative h-48 mb-4 rounded-none overflow-hidden border border-[#E5E7EB]">
+                  <div className="relative h-48 mb-4 rounded-none overflow-hidden">
                     <Image src={service.imageUrl} alt={service.name} fill className="object-cover" />
                   </div>
                 )}
@@ -107,7 +107,7 @@ export async function DoctorsSection({ section, clinicId }: { section: WebsiteSe
   })
 
   return (
-    <section id="doctors" className="py-16 md:py-24 border-t border-[#E5E7EB] bg-[#FFFFFF]">
+    <section id="doctors" className="py-16 md:py-24 bg-[#FFFFFF]">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-semibold" style={{ color: 'var(--clinic-primary)' }}>{section.title || 'أطبائنا'}</h2>
@@ -115,8 +115,8 @@ export async function DoctorsSection({ section, clinicId }: { section: WebsiteSe
         </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {doctors.map(doctor => (
-            <div key={doctor.id} className="rounded-none border border-[#E5E7EB] bg-[#FAFAFA] p-6 text-center">
-              <div className="relative w-32 h-32 mx-auto mb-4 rounded-none overflow-hidden border border-[#E5E7EB]">
+            <div key={doctor.id} className="rounded-none border border-[#E5E7EB] bg-[#FFFFFF] p-6 text-center shadow-sm">
+              <div className="relative w-32 h-32 mx-auto mb-4 rounded-none overflow-hidden">
                 {doctor.imageUrl ? (
                   <Image src={doctor.imageUrl} alt={doctor.fullName} fill className="object-cover" />
                 ) : (
@@ -142,7 +142,7 @@ export async function GallerySection({ section }: { section: WebsiteSection }) {
   if (images.length === 0) return null
 
   return (
-    <section id="gallery" className="py-16 md:py-24 border-t border-[#E5E7EB] bg-[#FAFAFA]">
+    <section id="gallery" className="py-16 md:py-24 bg-[#FFFFFF]">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-semibold" style={{ color: 'var(--clinic-primary)' }}>{section.title || 'معرض الصور'}</h2>
@@ -166,14 +166,14 @@ export async function TestimonialsSection({ section }: { section: WebsiteSection
   if (testimonials.length === 0) return null
 
   return (
-    <section id="testimonials" className="py-16 md:py-24 border-t border-[#E5E7EB] bg-[#FFFFFF]">
+    <section id="testimonials" className="py-16 md:py-24 bg-[#FFFFFF]">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-semibold" style={{ color: 'var(--clinic-primary)' }}>{section.title || 'آراء العملاء'}</h2>
         </div>
         <div className="grid md:grid-cols-3 gap-6">
           {testimonials.map((t: any, i: number) => (
-            <div key={i} className="rounded-none border border-[#E5E7EB] bg-[#FAFAFA] p-6">
+            <div key={i} className="rounded-none border border-[#E5E7EB] bg-[#FFFFFF] p-6 shadow-sm">
               <p className="font-normal mb-4 text-[#050505]">"{t.text || t.content}"</p>
               <div className="font-medium" style={{ color: 'var(--clinic-primary)' }}>- {t.name}</div>
             </div>
@@ -191,17 +191,22 @@ export async function FaqSection({ section }: { section: WebsiteSection }) {
   if (faqs.length === 0) return null
 
   return (
-    <section id="faq" className="py-16 md:py-24 border-t border-[#E5E7EB] bg-[#FAFAFA]">
+    <section id="faq" className="py-16 md:py-24 bg-[#FFFFFF]">
       <div className="mx-auto max-w-3xl px-4 sm:px-6">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-semibold" style={{ color: 'var(--clinic-primary)' }}>{section.title || 'الأسئلة الشائعة'}</h2>
         </div>
         <div className="space-y-4">
           {faqs.map((faq: any, i: number) => (
-            <div key={i} className="rounded-none border border-[#E5E7EB] bg-[#FFFFFF] p-6">
-              <h3 className="text-lg font-medium mb-2 text-[#050505]">{faq.question}</h3>
-              <p className="font-normal text-[#050505]/80">{faq.answer}</p>
-            </div>
+            <details key={i} className="group rounded-none border border-[#E5E7EB] bg-[#FFFFFF] p-6 cursor-pointer shadow-sm">
+              <summary className="text-lg font-medium text-[#050505] marker:content-none flex justify-between items-center outline-none">
+                {faq.question}
+                <span className="transition-transform duration-300 group-open:-rotate-180" style={{ color: 'var(--clinic-primary)' }}>
+                  <svg fill="none" height="24" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
+                </span>
+              </summary>
+              <p className="mt-4 font-normal text-[#050505]/80 leading-relaxed">{faq.answer}</p>
+            </details>
           ))}
         </div>
       </div>
@@ -214,13 +219,13 @@ export async function BookingSection({ section, clinicId, domain }: { section: W
   const doctors = await prisma.doctor.findMany({ where: { clinicId, isActive: true } })
 
   return (
-    <section id="booking" className="py-16 md:py-24 border-t border-[#E5E7EB] bg-[#FFFFFF]">
+    <section id="booking" className="py-16 md:py-24 bg-[#FFFFFF]">
       <div className="mx-auto max-w-3xl px-4 sm:px-6">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-semibold" style={{ color: 'var(--clinic-primary)' }}>{section.title || 'احجز موعدك'}</h2>
           <p className="mt-4 font-normal text-[#050505]">سجل بياناتك وسنقوم بتأكيد الموعد معك قريباً</p>
         </div>
-        <div className="rounded-none border border-[#E5E7EB] bg-[#FAFAFA] p-6 md:p-8">
+        <div className="rounded-none border border-[#E5E7EB] bg-[#FFFFFF] p-6 md:p-8 shadow-sm">
           <BookingForm domain={domain} services={services} doctors={doctors} />
         </div>
       </div>
@@ -231,7 +236,7 @@ export async function BookingSection({ section, clinicId, domain }: { section: W
 export async function ContactSection({ section }: { section: WebsiteSection }) {
   const content = section.content as any || {}
   return (
-    <section id="contact" className="py-16 md:py-24 border-t border-[#E5E7EB] bg-[#FAFAFA]">
+    <section id="contact" className="py-16 md:py-24 bg-[#FFFFFF]">
       <div className="mx-auto max-w-3xl px-4 sm:px-6 text-center">
         <h2 className="text-3xl font-semibold mb-6" style={{ color: 'var(--clinic-primary)' }}>{section.title || 'اتصل بنا'}</h2>
         <p className="font-normal text-lg text-[#050505]">{content.welcomeMessage || 'يسعدنا تواصلكم معنا للرد على استفساراتكم.'}</p>
@@ -243,7 +248,7 @@ export async function ContactSection({ section }: { section: WebsiteSection }) {
 export async function WhyChooseUsSection({ section }: { section: WebsiteSection }) {
   const content = section.content as any || {}
   return (
-    <section id="why-choose-us" className="py-16 md:py-24 border-t border-[#E5E7EB] bg-[#FFFFFF]">
+    <section id="why-choose-us" className="py-16 md:py-24 bg-[#FFFFFF]">
       <div className="mx-auto max-w-3xl px-4 sm:px-6 text-center">
         <h2 className="text-3xl font-semibold mb-6" style={{ color: 'var(--clinic-primary)' }}>{section.title || 'لماذا تختارنا'}</h2>
         <p className="font-normal text-lg text-[#050505]">{content.description || 'نحن نقدم رعاية صحية متميزة بفضل أحدث التقنيات.'}</p>
