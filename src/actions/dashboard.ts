@@ -327,3 +327,49 @@ export async function updateService(id: string, formData: FormData) {
   revalidatePath(`/dashboard/services/${id}`)
   redirect('/dashboard/services')
 }
+
+export async function updateSectionOrder(sections: {id: string, sortOrder: number}[]) {
+  const user = await requireAuth();
+  const clinicId = await getActiveClinicId(user.id);
+  const website = await prisma.website.findUnique({ where: { clinicId } });
+  if (!website) throw new Error('Website not found');
+  
+  await prisma.$transaction(
+    sections.map(section => 
+      prisma.websiteSection.update({ 
+        where: { id: section.id, websiteId: website.id }, 
+        data: { sortOrder: section.sortOrder } 
+      })
+    )
+  );
+  
+  revalidatePath('/dashboard/website');
+}
+
+export async function toggleSectionVisibility(id: string, isEnabled: boolean) {
+  const user = await requireAuth();
+  const clinicId = await getActiveClinicId(user.id);
+  const website = await prisma.website.findUnique({ where: { clinicId } });
+  if (!website) throw new Error('Website not found');
+
+  await prisma.websiteSection.update({
+    where: { id, websiteId: website.id },
+    data: { isEnabled }
+  });
+
+  revalidatePath('/dashboard/website');
+}
+
+export async function updateSectionContent(id: string, content: any) {
+  const user = await requireAuth();
+  const clinicId = await getActiveClinicId(user.id);
+  const website = await prisma.website.findUnique({ where: { clinicId } });
+  if (!website) throw new Error('Website not found');
+
+  await prisma.websiteSection.update({
+    where: { id, websiteId: website.id },
+    data: { content }
+  });
+
+  revalidatePath('/dashboard/website');
+}

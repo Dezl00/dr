@@ -39,16 +39,18 @@ export async function createPatientAction(_prev: unknown, formData: FormData) {
     return { error: result.error.errors[0]?.message || 'بيانات غير صالحة.' }
   }
 
+  const { fullName, phone, email, dateOfBirth, gender, address, notes } = result.data
+
   await prisma.patient.create({
     data: {
       clinicId,
-      fullName: result.data.fullName,
-      phone: result.data.phone || null,
-      email: result.data.email || null,
-      dateOfBirth: result.data.dateOfBirth ? new Date(result.data.dateOfBirth) : null,
-      gender: result.data.gender as any || null,
-      address: result.data.address || null,
-      notes: result.data.notes || null,
+      fullName,
+      phone: phone || '',
+      email: email || null,
+      dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
+      gender: gender as any || null,
+      address: address || null,
+      notes: notes || null,
     },
   })
 

@@ -123,6 +123,7 @@ model User {
 
   sessions            Session[]
   memberships          ClinicMembership[]
+  doctors              Doctor[]
   auditLogs            AuditLog[]        @relation("AuditActor")
   verificationTokens   VerificationToken[]
   passwordResetTokens  PasswordResetToken[]
@@ -297,39 +298,41 @@ model RolePermission {
 model Doctor {
   id           String   @id @default(cuid())
   clinicId     String
+  userId       String?
   fullName     String
   specialty    String?
-  bio          String?
-  photoUrl     String?
   phone        String?
   email        String?
+  imageUrl     String?
+  bio          String?  @db.Text
   isActive     Boolean  @default(true)
   showOnWebsite Boolean @default(true)
-  sortOrder    Int      @default(0)
-  workingHours Json?    // { "sunday": {"start": "09:00", "end": "17:00"}, ... }
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  sortOrder     Int      @default(0)
+  workingHours  Json?
+  createdAt     DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  clinic       Clinic        @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+  clinic       Clinic          @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+  user         User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
   appointments Appointment[]
   services     DoctorService[]
 
   @@index([clinicId])
-  @@index([clinicId, isActive])
+  @@index([userId])
 }
 
 model Patient {
-  id           String   @id @default(cuid())
+  id           String    @id @default(cuid())
   clinicId     String
   fullName     String
-  phone        String?
+  phone        String
   email        String?
   dateOfBirth  DateTime?
   gender       Gender?
   address      String?
   notes        String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   clinic       Clinic        @relation(fields: [clinicId], references: [id], onDelete: Cascade)
   appointments Appointment[]
@@ -342,9 +345,11 @@ model Patient {
 model Service {
   id            String   @id @default(cuid())
   clinicId      String
+  slug          String?  // Added for website (e.g. /services/teeth-whitening)
   name          String
   nameEn        String?
   description   String?
+  content       String?  @db.Text // Added for detailed service page
   price         Decimal? @db.Decimal(10, 2)
   duration      Int?     // minutes
   imageUrl      String?
@@ -359,6 +364,7 @@ model Service {
   doctors      DoctorService[]
 
   @@index([clinicId])
+  @@index([clinicId, slug])
   @@index([clinicId, isActive])
 }
 

@@ -6,6 +6,7 @@ import { updateWebsiteSettings } from '@/actions/dashboard'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import type { Metadata } from 'next'
+import { WebsiteSectionsManager } from './components/WebsiteSectionsManager'
 
 export const metadata: Metadata = {
   title: 'الموقع الإلكتروني | DRS',
@@ -44,8 +45,6 @@ export default async function WebsitePage() {
 
   const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'localhost:3000'
   const siteUrl = `${clinic?.slug}.${rootDomain.replace(/:\d+$/, '')}`
-  const enabledSections = website?.sections.filter(s => s.isEnabled).length || 0
-  const totalSections = website?.sections.length || 0
 
   return (
     <div className="space-y-6">
@@ -91,19 +90,10 @@ export default async function WebsitePage() {
 
       <div>
         <h2 className="text-xl font-semibold mb-4 mt-8">أقسام الموقع</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {website?.sections.map((section) => (
-             <div key={section.id} className="border border-border bg-card rounded-xl p-4 flex items-center justify-between">
-                <div>
-                  <p className="font-medium">{section.title || section.type}</p>
-                  <p className="text-xs text-muted-foreground">الترتيب: {section.sortOrder}</p>
-                </div>
-                <span className={`text-xs px-2 py-1 rounded-full ${section.isEnabled ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-800'}`}>
-                  {section.isEnabled ? 'مفعل' : 'معطل'}
-                </span>
-             </div>
-          ))}
-          {(!website?.sections || website.sections.length === 0) && (
+        <div className="max-w-3xl">
+          {website?.sections ? (
+            <WebsiteSectionsManager initialSections={website.sections} />
+          ) : (
             <p className="text-muted-foreground text-sm">لا توجد أقسام مضافة بعد.</p>
           )}
         </div>

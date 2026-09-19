@@ -1,6 +1,17 @@
 import { notFound } from 'next/navigation'
 import { resolveTenant } from '@/lib/tenant/resolver'
 import { prisma } from '@/lib/db/prisma'
+import {
+  HeroSection,
+  AboutSection,
+  ServicesSection,
+  DoctorsSection,
+  GallerySection,
+  TestimonialsSection,
+  FaqSection,
+  BookingSection
+} from './_components/sections'
+import Link from 'next/link'
 
 export default async function TenantPage({
   params,
@@ -25,13 +36,12 @@ export default async function TenantPage({
   })
 
   if (!website || !website.isPublished) {
-    // If unpublished, only show to admins/owners of the clinic
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center p-4 text-center">
-        <h1 className="text-3xl font-bold text-[var(--clinic-primary)]">
+      <div className="flex min-h-screen flex-col items-center justify-center p-4 text-center bg-[#FAFAFA]">
+        <h1 className="text-3xl font-semibold text-[#000000]">
           الموقع قيد الإنشاء
         </h1>
-        <p className="mt-4 text-muted-foreground">
+        <p className="mt-4 text-[#050505] font-normal">
           {tenant.clinicName} تعمل على تجهيز موقعها الإلكتروني.
         </p>
       </div>
@@ -39,19 +49,18 @@ export default async function TenantPage({
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Dynamic Header */}
-      <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md">
+    <div className="min-h-screen bg-[#FFFFFF]" dir="rtl" lang="ar">
+      <header className="sticky top-0 z-50 border-b border-[#E5E7EB] bg-[#FFFFFF]">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
-          <div className="text-xl font-bold text-[var(--clinic-primary)]">
+          <Link href="/" className="text-xl font-semibold text-[#000000]">
             {tenant.clinicName}
-          </div>
+          </Link>
           <nav className="hidden space-x-6 space-x-reverse md:flex">
             {website.sections.map((section) => (
               <a
                 key={section.id}
                 href={`#${section.type.toLowerCase()}`}
-                className="text-sm font-medium hover:text-[var(--clinic-primary)]"
+                className="text-sm font-medium text-[#050505] hover:text-[#000000]"
               >
                 {section.title}
               </a>
@@ -59,56 +68,44 @@ export default async function TenantPage({
           </nav>
           <a
             href={`#booking`}
-            className="rounded-lg bg-[var(--clinic-primary)] px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
+            className="rounded-none bg-[#000000] px-4 py-2 text-sm font-medium text-[#FFFFFF] transition-colors hover:bg-[#050505]"
           >
             احجز موعدك
           </a>
         </div>
       </header>
 
-      {/* Dynamic Sections */}
       <main>
-        {website.sections.map((section) => (
-          <section
-            key={section.id}
-            id={section.type.toLowerCase()}
-            className="border-b border-border py-16 last:border-0 md:py-24"
-          >
-            <div className="mx-auto max-w-7xl px-4 sm:px-6">
-              <div className="mb-8 text-center">
-                <h2 className="text-3xl font-bold text-[var(--clinic-primary)]">
-                  {section.title}
-                </h2>
-                {section.content && (
-                  <p className="mx-auto mt-4 max-w-2xl text-muted-foreground">
-                    {typeof section.content === 'string' ? section.content : JSON.stringify(section.content)}
-                  </p>
-                )}
-              </div>
-              
-              {/* Specialized rendering based on section type */}
-              {section.type === 'HERO' && (
-                <div className="rounded-2xl bg-[var(--clinic-primary)]/5 p-8 text-center md:p-16">
-                  <h1 className="mb-6 text-4xl font-extrabold text-[var(--clinic-primary)] md:text-6xl">
-                    مرحباً بكم في {tenant.clinicName}
-                  </h1>
-                  <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
-                    نحن نهتم بصحة أسنانك وابتسامتك باستخدام أحدث التقنيات الطبية المتقدمة.
-                  </p>
-                </div>
-              )}
-            </div>
-          </section>
-        ))}
+        {website.sections.map((section) => {
+          switch (section.type) {
+            case 'HERO':
+              return <HeroSection key={section.id} section={section} clinicId={tenant.clinicId} domain={domain} />
+            case 'ABOUT':
+              return <AboutSection key={section.id} section={section} />
+            case 'SERVICES':
+              return <ServicesSection key={section.id} section={section} clinicId={tenant.clinicId} domain={domain} />
+            case 'DOCTORS':
+              return <DoctorsSection key={section.id} section={section} clinicId={tenant.clinicId} />
+            case 'GALLERY':
+              return <GallerySection key={section.id} section={section} />
+            case 'TESTIMONIALS':
+              return <TestimonialsSection key={section.id} section={section} />
+            case 'FAQ':
+              return <FaqSection key={section.id} section={section} />
+            case 'BOOKING':
+              return <BookingSection key={section.id} section={section} clinicId={tenant.clinicId} domain={domain} />
+            default:
+              return null
+          }
+        })}
       </main>
 
-      {/* Dynamic Footer */}
-      <footer className="border-t border-border bg-card py-12">
+      <footer className="border-t border-[#E5E7EB] bg-[#FAFAFA] py-12">
         <div className="mx-auto max-w-7xl px-4 text-center sm:px-6">
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-[#050505] font-normal">
             © {new Date().getFullYear()} {tenant.clinicName}. جميع الحقوق محفوظة.
           </p>
-          <p className="mt-2 text-xs text-muted-foreground opacity-50">
+          <p className="mt-2 text-xs text-[#050505] font-normal opacity-50">
             مشغل بواسطة منصة DRS
           </p>
         </div>
