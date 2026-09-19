@@ -220,6 +220,9 @@ export function SignupForm() {
               عنوان الموقع الفرعي
             </label>
             <div dir="ltr" className="flex items-center rounded-lg border border-border bg-background px-3">
+              <span className="text-sm text-muted-foreground whitespace-nowrap pr-1 select-none">
+                https://
+              </span>
               <input
                 id="slug"
                 name="slug"
@@ -228,10 +231,10 @@ export function SignupForm() {
                 value={slug}
                 onChange={(e) => handleSlugChange(e.target.value)}
                 dir="ltr"
-                className="w-full min-w-0 flex-1 bg-transparent py-2.5 text-sm focus:outline-none text-right"
+                className="min-w-0 flex-1 bg-transparent py-2.5 text-sm font-medium focus:outline-none text-left"
                 placeholder="clinic-name"
               />
-              <span className="text-sm text-muted-foreground whitespace-nowrap pl-1" dir="ltr">
+              <span className="text-sm text-muted-foreground whitespace-nowrap pl-1 select-none">
                 .{rootDomain}
               </span>
             </div>

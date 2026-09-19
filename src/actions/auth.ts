@@ -30,8 +30,8 @@ async function getRequestMeta() {
 
 export async function loginAction(_prev: unknown, formData: FormData) {
   const raw = {
-    email: formData.get('email') as string,
-    password: formData.get('password') as string,
+    email: (formData.get('email') as string) || '',
+    password: (formData.get('password') as string) || '',
   }
 
   // Validate
@@ -89,13 +89,13 @@ export async function loginAction(_prev: unknown, formData: FormData) {
 
 export async function signupAction(_prev: unknown, formData: FormData) {
   const raw = {
-    fullName: formData.get('fullName') as string,
-    email: formData.get('email') as string,
-    phone: formData.get('phone') as string,
-    password: formData.get('password') as string,
-    confirmPassword: formData.get('confirmPassword') as string,
-    clinicName: formData.get('clinicName') as string,
-    slug: formData.get('slug') as string,
+    fullName: (formData.get('fullName') as string) || '',
+    email: (formData.get('email') as string) || '',
+    phone: (formData.get('phone') as string) || '',
+    password: (formData.get('password') as string) || '',
+    confirmPassword: (formData.get('confirmPassword') as string) || '',
+    clinicName: (formData.get('clinicName') as string) || '',
+    slug: (formData.get('slug') as string) || '',
   }
 
   // Validate
