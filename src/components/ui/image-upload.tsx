@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react'
 import { Button } from './button'
-import { uploadImageAction } from '@/actions/upload'
+import { uploadImageAction, deleteImageAction } from '@/actions/upload'
 import { Loader2, Upload, X } from 'lucide-react'
 import Image from 'next/image'
 
@@ -13,6 +13,7 @@ interface ImageUploadProps {
 
 export function ImageUpload({ value, onChange }: ImageUploadProps) {
   const [isUploading, setIsUploading] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -34,6 +35,20 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
     }
   }
 
+  const handleRemove = async () => {
+    if (!value) return
+    setIsDeleting(true)
+    try {
+      await deleteImageAction(value)
+      onChange('')
+    } catch (err) {
+      console.error('Failed to delete image', err)
+      alert('حدث خطأ أثناء حذف الصورة')
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
   return (
     <div className="space-y-4 w-full">
       {value ? (
@@ -41,10 +56,11 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
           <Image src={value} alt="Uploaded" fill className="object-cover" />
           <button
             type="button"
-            onClick={() => onChange('')}
-            className="absolute top-2 right-2 bg-red-500 text-white p-1.5 rounded-md hover:bg-red-600 transition-colors shadow-sm"
+            onClick={handleRemove}
+            disabled={isDeleting}
+            className="absolute top-2 right-2 bg-red-500 text-white p-1.5 rounded-md hover:bg-red-600 transition-colors shadow-sm disabled:opacity-50"
           >
-            <X className="w-4 h-4" />
+            {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <X className="w-4 h-4" />}
           </button>
         </div>
       ) : (

@@ -28,6 +28,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { ImageUpload } from "@/components/ui/image-upload"
 import { updateSectionOrder, toggleSectionVisibility, updateSectionContent } from "@/actions/dashboard"
+import { deleteImageAction } from "@/actions/upload"
 import { toast } from "@/hooks/use-toast"
 
 interface WebsiteSectionsManagerProps {
@@ -213,10 +214,13 @@ export function WebsiteSectionsManager({ initialSections }: WebsiteSectionsManag
                       variant="ghost"
                       size="icon"
                       className="text-destructive hover:text-destructive hover:bg-destructive/10 shrink-0"
-                      onClick={() => {
+                      onClick={async () => {
                         const newArr = [...heroImages];
-                        newArr.splice(idx, 1);
+                        const removedImg = newArr.splice(idx, 1)[0];
                         setContent({...content, images: newArr});
+                        if (removedImg) {
+                          try { await deleteImageAction(removedImg); } catch(e) {}
+                        }
                       }}
                     >
                       <Trash2 className="h-4 w-4" />
@@ -605,10 +609,13 @@ export function WebsiteSectionsManager({ initialSections }: WebsiteSectionsManag
                     variant="ghost" 
                     size="icon"
                     className="text-destructive hover:text-destructive hover:bg-destructive/10 shrink-0"
-                    onClick={() => {
+                    onClick={async () => {
                       const newArr = [...images];
-                      newArr.splice(idx, 1);
-                      setContent({...content, images: newArr})
+                      const removedImg = newArr.splice(idx, 1)[0];
+                      setContent({...content, images: newArr});
+                      if (removedImg) {
+                        try { await deleteImageAction(removedImg); } catch(e) {}
+                      }
                     }}
                   >
                     <Trash2 className="h-4 w-4" />
