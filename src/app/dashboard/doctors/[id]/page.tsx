@@ -1,10 +1,8 @@
 import { requireAuth, getCurrentSession } from '@/lib/auth/dal'
 import { prisma } from '@/lib/db/prisma'
 import { updateDoctor } from '@/actions/dashboard'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { notFound } from 'next/navigation'
+import { DoctorForm } from '../DoctorForm'
 
 async function getClinicId(userId: string) {
   const { session } = await getCurrentSession()
@@ -33,39 +31,19 @@ export default async function EditDoctorPage({ params }: { params: Promise<{ id:
     <div className="max-w-2xl">
       <h1 className="text-2xl font-semibold mb-6">تعديل بيانات الطبيب</h1>
       
-      <form action={updateDoctorWithId} className="space-y-6 bg-card border border-border p-6 rounded-xl">
-        <div className="space-y-2">
-          <Label htmlFor="fullName">الاسم بالكامل</Label>
-          <Input 
-            id="fullName" 
-            name="fullName" 
-            defaultValue={doctor.fullName} 
-            required 
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="specialty">التخصص</Label>
-          <Input 
-            id="specialty" 
-            name="specialty" 
-            defaultValue={doctor.specialty || ''} 
-          />
-        </div>
-        
-        <div className="space-y-2">
-          <Label htmlFor="phone">رقم الهاتف</Label>
-          <Input 
-            id="phone" 
-            name="phone" 
-            defaultValue={doctor.phone || ''} 
-            dir="ltr"
-            className="text-left"
-          />
-        </div>
-        
-        <Button type="submit">حفظ التغييرات</Button>
-      </form>
+      <div className="bg-white dark:bg-[#050505] border border-gray-200 dark:border-[#1F1F1F] p-6 rounded-xl">
+        <DoctorForm 
+          action={updateDoctorWithId}
+          submitLabel="حفظ التغييرات"
+          defaultValues={{
+            fullName: doctor.fullName,
+            specialty: doctor.specialty || '',
+            phone: doctor.phone || '',
+            email: doctor.email || '',
+            imageUrl: doctor.imageUrl || '',
+          }}
+        />
+      </div>
     </div>
   )
 }

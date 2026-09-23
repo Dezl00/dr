@@ -178,8 +178,71 @@ export function WebsiteSectionsManager({ initialSections }: WebsiteSectionsManag
     }
 
     if (type === 'HERO') {
+      const heroImages = content?.images || [];
       return (
         <div className="space-y-4">
+          {/* Hero Images */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <Label className="text-base font-semibold">صور الهيرو</Label>
+              <Button 
+                type="button" 
+                variant="outline" 
+                size="sm"
+                onClick={() => setContent({...content, images: [...heroImages, '']})}
+              >
+                <Plus className="h-4 w-4 me-2" />
+                إضافة صورة
+              </Button>
+            </div>
+            {heroImages.length > 0 && (
+              <div className="space-y-3">
+                {heroImages.map((img: string, idx: number) => (
+                  <div key={idx} className="flex items-start gap-3 p-3 border border-border rounded-xl">
+                    <div className="flex-1">
+                      <ImageUpload
+                        value={img || ''}
+                        onChange={(url) => {
+                          const newArr = [...heroImages];
+                          newArr[idx] = url;
+                          setContent({...content, images: newArr});
+                        }}
+                      />
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-destructive hover:text-destructive hover:bg-destructive/10 shrink-0"
+                      onClick={() => {
+                        const newArr = [...heroImages];
+                        newArr.splice(idx, 1);
+                        setContent({...content, images: newArr});
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Animation Type */}
+          {heroImages.length > 1 && (
+            <div className="space-y-2">
+              <Label>نوع الحركة</Label>
+              <select 
+                className="flex h-10 w-full items-center rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none"
+                value={content?.animationType || 'fade'}
+                onChange={(e) => setContent({...content, animationType: e.target.value})}
+              >
+                <option value="fade">تلاشي (Fade)</option>
+                <option value="slider">سلايدر (Slider)</option>
+              </select>
+            </div>
+          )}
+
+          {/* Titles */}
           <div className="space-y-2">
             <Label>العنوان الرئيسي</Label>
             <Input 
@@ -194,42 +257,187 @@ export function WebsiteSectionsManager({ initialSections }: WebsiteSectionsManag
               onChange={(e) => setContent({...content, subtitle: e.target.value})} 
             />
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>نص الزر الأول</Label>
-              <Input 
-                value={content?.button1Text || ''} 
-                onChange={(e) => setContent({...content, button1Text: e.target.value})} 
-                placeholder="احجز موعدك الآن"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>رابط الزر الأول</Label>
-              <Input 
-                value={content?.button1Link || ''} 
-                onChange={(e) => setContent({...content, button1Link: e.target.value})} 
-                dir="ltr"
-                placeholder="#booking"
-              />
+
+          {/* Text Colors */}
+          <div className="p-4 border border-border rounded-xl space-y-4">
+            <Label className="text-base font-semibold">ألوان النصوص</Label>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>لون العنوان الرئيسي</Label>
+                <div className="flex items-center gap-2">
+                  <input 
+                    type="color" 
+                    value={content?.titleColor || '#000000'} 
+                    onChange={(e) => setContent({...content, titleColor: e.target.value})}
+                    className="w-10 h-10 rounded border border-border cursor-pointer"
+                  />
+                  <Input 
+                    value={content?.titleColor || '#000000'} 
+                    onChange={(e) => setContent({...content, titleColor: e.target.value})}
+                    dir="ltr"
+                    className="flex-1"
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>لون العنوان الفرعي</Label>
+                <div className="flex items-center gap-2">
+                  <input 
+                    type="color" 
+                    value={content?.subtitleColor || '#050505'} 
+                    onChange={(e) => setContent({...content, subtitleColor: e.target.value})}
+                    className="w-10 h-10 rounded border border-border cursor-pointer"
+                  />
+                  <Input 
+                    value={content?.subtitleColor || '#050505'} 
+                    onChange={(e) => setContent({...content, subtitleColor: e.target.value})}
+                    dir="ltr"
+                    className="flex-1"
+                  />
+                </div>
+              </div>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>نص الزر الثاني</Label>
-              <Input 
-                value={content?.button2Text || ''} 
-                onChange={(e) => setContent({...content, button2Text: e.target.value})} 
-                placeholder="خدماتنا"
-              />
+
+          {/* Button 1 */}
+          <div className="p-4 border border-border rounded-xl space-y-4">
+            <Label className="text-base font-semibold">الزر الأول</Label>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>نص الزر</Label>
+                <Input 
+                  value={content?.button1Text || ''} 
+                  onChange={(e) => setContent({...content, button1Text: e.target.value})} 
+                  placeholder="احجز موعدك الآن"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>رابط الزر</Label>
+                <Input 
+                  value={content?.button1Link || ''} 
+                  onChange={(e) => setContent({...content, button1Link: e.target.value})} 
+                  dir="ltr"
+                  placeholder="#booking"
+                />
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label>رابط الزر الثاني</Label>
-              <Input 
-                value={content?.button2Link || ''} 
-                onChange={(e) => setContent({...content, button2Link: e.target.value})} 
-                dir="ltr"
-                placeholder="#services"
-              />
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label>ستايل الزر</Label>
+                <select 
+                  className="flex h-10 w-full items-center rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none"
+                  value={content?.button1Style || 'solid'}
+                  onChange={(e) => setContent({...content, button1Style: e.target.value})}
+                >
+                  <option value="solid">مصمت (Solid)</option>
+                  <option value="outline">إطار (Outline)</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <Label>لون الخلفية</Label>
+                <div className="flex items-center gap-2">
+                  <input 
+                    type="color" 
+                    value={content?.button1BgColor || '#000000'} 
+                    onChange={(e) => setContent({...content, button1BgColor: e.target.value})}
+                    className="w-10 h-10 rounded border border-border cursor-pointer"
+                  />
+                  <Input 
+                    value={content?.button1BgColor || '#000000'} 
+                    onChange={(e) => setContent({...content, button1BgColor: e.target.value})}
+                    dir="ltr"
+                    className="flex-1"
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>لون النص</Label>
+                <div className="flex items-center gap-2">
+                  <input 
+                    type="color" 
+                    value={content?.button1TextColor || '#FFFFFF'} 
+                    onChange={(e) => setContent({...content, button1TextColor: e.target.value})}
+                    className="w-10 h-10 rounded border border-border cursor-pointer"
+                  />
+                  <Input 
+                    value={content?.button1TextColor || '#FFFFFF'} 
+                    onChange={(e) => setContent({...content, button1TextColor: e.target.value})}
+                    dir="ltr"
+                    className="flex-1"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Button 2 */}
+          <div className="p-4 border border-border rounded-xl space-y-4">
+            <Label className="text-base font-semibold">الزر الثاني</Label>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>نص الزر</Label>
+                <Input 
+                  value={content?.button2Text || ''} 
+                  onChange={(e) => setContent({...content, button2Text: e.target.value})} 
+                  placeholder="خدماتنا"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>رابط الزر</Label>
+                <Input 
+                  value={content?.button2Link || ''} 
+                  onChange={(e) => setContent({...content, button2Link: e.target.value})} 
+                  dir="ltr"
+                  placeholder="#services"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label>ستايل الزر</Label>
+                <select 
+                  className="flex h-10 w-full items-center rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none"
+                  value={content?.button2Style || 'outline'}
+                  onChange={(e) => setContent({...content, button2Style: e.target.value})}
+                >
+                  <option value="solid">مصمت (Solid)</option>
+                  <option value="outline">إطار (Outline)</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <Label>لون الخلفية / الإطار</Label>
+                <div className="flex items-center gap-2">
+                  <input 
+                    type="color" 
+                    value={content?.button2BgColor || '#000000'} 
+                    onChange={(e) => setContent({...content, button2BgColor: e.target.value})}
+                    className="w-10 h-10 rounded border border-border cursor-pointer"
+                  />
+                  <Input 
+                    value={content?.button2BgColor || '#000000'} 
+                    onChange={(e) => setContent({...content, button2BgColor: e.target.value})}
+                    dir="ltr"
+                    className="flex-1"
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>لون النص</Label>
+                <div className="flex items-center gap-2">
+                  <input 
+                    type="color" 
+                    value={content?.button2TextColor || '#000000'} 
+                    onChange={(e) => setContent({...content, button2TextColor: e.target.value})}
+                    className="w-10 h-10 rounded border border-border cursor-pointer"
+                  />
+                  <Input 
+                    value={content?.button2TextColor || '#000000'} 
+                    onChange={(e) => setContent({...content, button2TextColor: e.target.value})}
+                    dir="ltr"
+                    className="flex-1"
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </div>

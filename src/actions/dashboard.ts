@@ -39,6 +39,7 @@ export async function createDoctor(formData: FormData) {
   const specialty = formData.get('specialty') as string
   const phone = formData.get('phone') as string
   const email = formData.get('email') as string
+  const imageUrl = formData.get('imageUrl') as string
   
   if (!fullName) {
     throw new Error('الاسم مطلوب')
@@ -51,6 +52,7 @@ export async function createDoctor(formData: FormData) {
       specialty,
       phone,
       email,
+      imageUrl: imageUrl || null,
     },
   })
 
@@ -65,17 +67,27 @@ export async function createService(formData: FormData) {
   const name = formData.get('name') as string
   const price = formData.get('price') as string
   const duration = formData.get('duration') as string
+  const description = formData.get('description') as string
+  const content = formData.get('content') as string
+  const imageUrl = formData.get('imageUrl') as string
   
   if (!name) {
     throw new Error('الاسم مطلوب')
   }
 
+  // Generate slug from name
+  const slug = name.toLowerCase().replace(/\s+/g, '-').replace(/[^\u0621-\u064Aa-zA-Z0-9-]/g, '') || undefined
+
   await prisma.service.create({
     data: {
       clinicId,
       name,
+      slug,
       price: price ? parseFloat(price) : null,
       duration: duration ? parseInt(duration, 10) : null,
+      description: description || null,
+      content: content || null,
+      imageUrl: imageUrl || null,
     },
   })
 
@@ -297,10 +309,11 @@ export async function updateDoctor(id: string, formData: FormData) {
   const fullName = formData.get('fullName') as string
   const specialty = formData.get('specialty') as string
   const phone = formData.get('phone') as string
+  const imageUrl = formData.get('imageUrl') as string
   
   await prisma.doctor.update({
     where: { id, clinicId },
-    data: { fullName, specialty, phone }
+    data: { fullName, specialty, phone, imageUrl: imageUrl || null }
   })
   
   revalidatePath(`/dashboard/doctors/${id}`)
@@ -314,13 +327,19 @@ export async function updateService(id: string, formData: FormData) {
   const name = formData.get('name') as string
   const price = formData.get('price') as string
   const duration = formData.get('duration') as string
+  const description = formData.get('description') as string
+  const content = formData.get('content') as string
+  const imageUrl = formData.get('imageUrl') as string
   
   await prisma.service.update({
     where: { id, clinicId },
     data: { 
       name, 
       price: price ? parseFloat(price) : null,
-      duration: duration ? parseInt(duration, 10) : null
+      duration: duration ? parseInt(duration, 10) : null,
+      description: description || null,
+      content: content || null,
+      imageUrl: imageUrl || null,
     }
   })
   

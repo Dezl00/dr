@@ -13,7 +13,8 @@ import {
   ContactSection,
   WhyChooseUsSection
 } from './_components/sections'
-import Link from 'next/link'
+import { SiteHeader } from './_components/SiteHeader'
+import { SiteFooter } from './_components/SiteFooter'
 
 export default async function TenantPage({
   params,
@@ -71,31 +72,11 @@ export default async function TenantPage({
         '--clinic-accent': accentColor,
       } as React.CSSProperties}
     >
-      <header className="sticky top-0 z-50 border-b border-[#E5E7EB] bg-[#FFFFFF]/80 backdrop-blur-md">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
-          <Link href="/" className="text-xl font-bold" style={{ color: 'var(--clinic-primary)' }}>
-            {tenant.clinicName}
-          </Link>
-          <nav className="hidden space-x-6 space-x-reverse md:flex">
-            {website.sections.map((section) => (
-              <a
-                key={section.id}
-                href={`#${section.type.toLowerCase()}`}
-                className="text-sm font-medium text-[#050505] hover:opacity-70 transition-opacity"
-              >
-                {section.title}
-              </a>
-            ))}
-          </nav>
-          <a
-            href={`#booking`}
-            className="rounded-none px-4 py-2 text-sm font-medium transition-opacity hover:opacity-90 text-[#FFFFFF]"
-            style={{ backgroundColor: 'var(--clinic-primary)' }}
-          >
-            احجز موعدك
-          </a>
-        </div>
-      </header>
+      <SiteHeader 
+        clinicName={tenant.clinicName} 
+        sections={website.sections}
+        primaryColor={primaryColor}
+      />
 
       <main>
         {website.sections.map((section) => {
@@ -126,16 +107,7 @@ export default async function TenantPage({
         })}
       </main>
 
-      <footer className="border-t border-[#E5E7EB] bg-[#FAFAFA] py-12">
-        <div className="mx-auto max-w-7xl px-4 text-center sm:px-6">
-          <p className="text-sm text-[#050505] font-normal">
-            © {new Date().getFullYear()} {tenant.clinicName}. جميع الحقوق محفوظة.
-          </p>
-          <p className="mt-2 text-xs font-normal opacity-50 text-[#050505]">
-            مشغل بواسطة منصة DRS
-          </p>
-        </div>
-      </footer>
+      <SiteFooter clinicName={tenant.clinicName} />
     </div>
   )
 }

@@ -2,32 +2,68 @@ import { prisma } from '@/lib/db/prisma'
 import Image from 'next/image'
 import Link from 'next/link'
 import { BookingForm } from './booking-form'
+import { HeroSlideshow } from './hero-slideshow'
 import { WebsiteSection } from '@prisma/client'
 
 export async function HeroSection({ section, clinicId, domain }: { section: WebsiteSection, clinicId: string, domain: string }) {
   const content = section.content as any || {}
+  const images: string[] = content.images || []
+  const hasImages = images.filter(Boolean).length > 0
+  const animationType = content.animationType || 'fade'
+
+  // Button styles
+  const btn1Style = content.button1Style || 'solid'
+  const btn1BgColor = content.button1BgColor || 'var(--clinic-primary)'
+  const btn1TextColor = content.button1TextColor || '#FFFFFF'
+  const btn2Style = content.button2Style || 'outline'
+  const btn2BgColor = content.button2BgColor || 'var(--clinic-secondary)'
+  const btn2TextColor = content.button2TextColor || 'var(--clinic-secondary)'
+
+  // Text colors
+  const titleColor = content.titleColor || (hasImages ? '#FFFFFF' : 'var(--clinic-primary)')
+  const subtitleColor = content.subtitleColor || (hasImages ? '#FFFFFFCC' : '#050505')
+
+  const btn1ClassName = btn1Style === 'outline'
+    ? 'rounded-none px-6 py-3 text-sm font-medium border-2 transition-opacity hover:opacity-80 bg-transparent'
+    : 'rounded-none px-6 py-3 text-sm font-medium transition-opacity hover:opacity-90'
+
+  const btn1StyleObj = btn1Style === 'outline'
+    ? { color: btn1BgColor, borderColor: btn1BgColor }
+    : { backgroundColor: btn1BgColor, color: btn1TextColor }
+
+  const btn2ClassName = btn2Style === 'outline'
+    ? 'rounded-none px-6 py-3 text-sm font-medium border-2 transition-opacity hover:opacity-80 bg-transparent'
+    : 'rounded-none px-6 py-3 text-sm font-medium transition-opacity hover:opacity-90'
+
+  const btn2StyleObj = btn2Style === 'outline'
+    ? { color: btn2BgColor, borderColor: btn2BgColor }
+    : { backgroundColor: btn2BgColor, color: btn2TextColor }
+
   return (
-    <section id="hero" className="py-16 md:py-24 bg-[#FFFFFF]">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <div className="rounded-none p-8 text-center md:p-16 bg-[#FFFFFF]">
-          <h1 className="mb-6 text-4xl font-semibold md:text-6xl leading-tight" style={{ color: 'var(--clinic-primary)' }}>
+    <section id="hero" className={`relative ${hasImages ? 'py-24 md:py-36' : 'py-16 md:py-24'} bg-[#FFFFFF]`}>
+      {hasImages && (
+        <HeroSlideshow images={images.filter(Boolean)} animationType={animationType} />
+      )}
+      <div className={`relative z-10 mx-auto max-w-7xl px-4 sm:px-6`}>
+        <div className="rounded-none p-8 text-center md:p-16">
+          <h1 className="mb-6 text-4xl font-semibold md:text-6xl leading-tight" style={{ color: titleColor }}>
             {content.title || section.title || 'مرحباً بكم في عيادتنا'}
           </h1>
-          <p className="mx-auto max-w-2xl text-lg font-normal text-[#050505]">
+          <p className="mx-auto max-w-2xl text-lg font-normal" style={{ color: subtitleColor }}>
             {content.subtitle || 'نحن نهتم بصحة أسنانك وابتسامتك باستخدام أحدث التقنيات الطبية المتقدمة.'}
           </p>
           <div className="mt-8 flex justify-center gap-4">
             <Link 
               href={content.button1Link || '#booking'} 
-              className="rounded-none px-6 py-3 text-sm font-medium transition-opacity hover:opacity-90 text-[#FFFFFF]"
-              style={{ backgroundColor: 'var(--clinic-primary)' }}
+              className={btn1ClassName}
+              style={btn1StyleObj}
             >
               {content.button1Text || 'احجز موعدك الآن'}
             </Link>
             <Link 
               href={content.button2Link || '#services'} 
-              className="rounded-none px-6 py-3 text-sm font-medium border transition-opacity hover:opacity-80 bg-[#FFFFFF]"
-              style={{ color: 'var(--clinic-secondary)', borderColor: 'var(--clinic-secondary)' }}
+              className={btn2ClassName}
+              style={btn2StyleObj}
             >
               {content.button2Text || 'خدماتنا'}
             </Link>
@@ -125,8 +161,8 @@ export async function DoctorsSection({ section, clinicId }: { section: WebsiteSe
                   </div>
                 )}
               </div>
-              <h3 className="text-lg font-medium text-[#050505]">{doctor.fullName}</h3>
-              <p className="font-normal text-sm mt-1" style={{ color: 'var(--clinic-secondary)' }}>{doctor.specialty || 'طبيب أسنان'}</p>
+              <h3 className="text-lg font-medium not-italic text-[#050505]" style={{ fontStyle: 'normal' }}>{doctor.fullName}</h3>
+              <p className="font-normal not-italic text-sm mt-1" style={{ color: 'var(--clinic-secondary)', fontStyle: 'normal' }}>{doctor.specialty || 'طبيب أسنان'}</p>
             </div>
           ))}
         </div>

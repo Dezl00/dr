@@ -1,7 +1,15 @@
+'use client'
+
+import { useState } from 'react'
 import { createService } from '@/actions/dashboard'
+import { ImageUpload } from '@/components/ui/image-upload'
+import { RichTextEditor } from '@/components/ui/rich-text-editor'
 import Link from 'next/link'
 
 export default function NewServicePage() {
+  const [imageUrl, setImageUrl] = useState('')
+  const [content, setContent] = useState('')
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -14,8 +22,11 @@ export default function NewServicePage() {
         </Link>
       </div>
 
-      <div className="bg-white dark:bg-[#050505] border border-gray-200 dark:border-[#1F1F1F] p-6 max-w-2xl">
-        <form action={createService} className="space-y-4">
+      <div className="bg-white dark:bg-[#050505] border border-gray-200 dark:border-[#1F1F1F] p-6 max-w-3xl rounded-xl">
+        <form action={createService} className="space-y-6">
+          <input type="hidden" name="imageUrl" value={imageUrl} />
+          <input type="hidden" name="content" value={content} />
+
           <div className="space-y-2">
             <label htmlFor="name" className="text-sm font-medium">اسم الخدمة</label>
             <input 
@@ -23,7 +34,18 @@ export default function NewServicePage() {
               name="name" 
               type="text" 
               required 
-              className="w-full px-3 py-2 border border-gray-200 dark:border-[#1F1F1F] bg-transparent text-sm focus:outline-none focus:border-black dark:focus:border-white transition-colors" 
+              className="w-full px-3 py-2 border border-gray-200 dark:border-[#1F1F1F] bg-transparent text-sm rounded-xl focus:outline-none focus:border-black dark:focus:border-white transition-colors" 
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label htmlFor="description" className="text-sm font-medium">الوصف المختصر</label>
+            <textarea 
+              id="description"
+              name="description" 
+              rows={3}
+              placeholder="وصف مختصر يظهر في قائمة الخدمات"
+              className="w-full px-3 py-2 border border-gray-200 dark:border-[#1F1F1F] bg-transparent text-sm rounded-xl focus:outline-none focus:border-black dark:focus:border-white transition-colors resize-none" 
             />
           </div>
 
@@ -36,7 +58,7 @@ export default function NewServicePage() {
                 type="number" 
                 step="0.01"
                 min="0"
-                className="w-full px-3 py-2 border border-gray-200 dark:border-[#1F1F1F] bg-transparent text-sm focus:outline-none focus:border-black dark:focus:border-white transition-colors" 
+                className="w-full px-3 py-2 border border-gray-200 dark:border-[#1F1F1F] bg-transparent text-sm rounded-xl focus:outline-none focus:border-black dark:focus:border-white transition-colors" 
               />
             </div>
             
@@ -47,14 +69,24 @@ export default function NewServicePage() {
                 name="duration" 
                 type="number" 
                 min="1"
-                className="w-full px-3 py-2 border border-gray-200 dark:border-[#1F1F1F] bg-transparent text-sm focus:outline-none focus:border-black dark:focus:border-white transition-colors" 
+                className="w-full px-3 py-2 border border-gray-200 dark:border-[#1F1F1F] bg-transparent text-sm rounded-xl focus:outline-none focus:border-black dark:focus:border-white transition-colors" 
               />
             </div>
           </div>
 
+          <div className="space-y-2">
+            <label className="text-sm font-medium">صورة الخدمة</label>
+            <ImageUpload value={imageUrl} onChange={setImageUrl} />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium">تفاصيل الخدمة (يظهر في صفحة الخدمة المستقلة)</label>
+            <RichTextEditor value={content} onChange={setContent} />
+          </div>
+
           <button 
             type="submit" 
-            className="w-full mt-6 bg-black dark:bg-white text-white dark:text-black font-medium py-2 px-4 hover:opacity-90 transition-opacity"
+            className="w-full mt-6 bg-black dark:bg-white text-white dark:text-black font-medium py-2 px-4 rounded-xl hover:opacity-90 transition-opacity"
           >
             حفظ الخدمة
           </button>

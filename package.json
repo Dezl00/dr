@@ -52,6 +52,7 @@
     "react-day-picker": "^10.0.1",
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.88.0",
+    "react-quill-new": "^3.8.3",
     "recharts": "^2.15.0",
     "server-only": "^0.0.1",
     "tailwind-merge": "^2.6.0",
