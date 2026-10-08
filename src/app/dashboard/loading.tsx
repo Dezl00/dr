@@ -1,12 +1,15 @@
 export default function Loading() {
   return (
-    <div className="flex h-[80vh] w-full items-center justify-center">
-      <div className="flex flex-col items-center gap-4 text-muted-foreground">
-        <svg className="h-8 w-8 animate-spin text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+    <div className="flex min-h-[60vh] w-full items-center justify-center">
+      <div className="relative flex h-14 w-14 items-center justify-center text-blue-600">
+        {/* Outer circle */}
+        <svg className="absolute inset-0 h-full w-full animate-[spin_1.5s_linear_infinite]" viewBox="0 0 50 50">
+          <circle cx="25" cy="25" r="20" fill="none" strokeWidth="4" stroke="currentColor" strokeDasharray="35 90" strokeLinecap="round" />
         </svg>
-        <span className="text-sm font-medium">جاري التحميل...</span>
+        {/* Inner circle (opposite rotation, smaller radius, same stroke width) */}
+        <svg className="absolute inset-0 h-full w-full animate-[spin_1s_linear_infinite_reverse]" viewBox="0 0 50 50">
+          <circle cx="25" cy="25" r="13" fill="none" strokeWidth="4" stroke="currentColor" strokeDasharray="25 60" strokeLinecap="round" opacity="0.6" />
+        </svg>
       </div>
     </div>
   )
