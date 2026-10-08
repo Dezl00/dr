@@ -5,7 +5,6 @@ import { ExternalLink, Globe, LayoutTemplate, Link as LinkIcon } from 'lucide-re
 import { updateWebsiteSettings } from '@/actions/dashboard'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
-import { Switch } from '@/components/ui/switch'
 import { Input } from '@/components/ui/input'
 import { SubmitButton } from '@/components/ui/submit-button'
 import type { Metadata } from 'next'
@@ -111,12 +110,16 @@ export default async function WebsitePage() {
                   <Label htmlFor="isPublished" className="text-sm font-medium text-slate-700">نشر الموقع</Label>
                   <p className="text-xs text-slate-500">جعل الموقع متاحاً للعامة</p>
                 </div>
-                <Switch 
-                  id="isPublished" 
-                  name="isPublished" 
-                  defaultChecked={website?.isPublished} 
-                  dir="ltr"
-                />
+                <label className="relative inline-flex h-6 w-11 items-center rounded-full bg-slate-200 transition-colors has-[:checked]:bg-blue-600 cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    id="isPublished" 
+                    name="isPublished" 
+                    className="peer sr-only" 
+                    defaultChecked={website?.isPublished} 
+                  />
+                  <span className="inline-block h-4 w-4 transform rounded-full bg-white transition-transform rtl:-translate-x-1 rtl:peer-checked:-translate-x-6" />
+                </label>
               </div>
 
               <div className="pt-2">

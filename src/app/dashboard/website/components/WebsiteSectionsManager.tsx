@@ -20,7 +20,6 @@ import {
 } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
 import { GripVertical, Edit2, Plus, Trash2 } from "lucide-react"
-import { Switch } from "@/components/ui/switch"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Textarea } from "@/components/ui/textarea"
@@ -85,11 +84,15 @@ function SortableSectionItem({
           </Button>
         )}
         
-        <Switch 
-          checked={section.isEnabled}
-          onCheckedChange={(checked) => onToggle(section.id, checked)}
-          dir="ltr"
-        />
+        <label className="relative inline-flex h-6 w-11 items-center rounded-full bg-slate-200 transition-colors has-[:checked]:bg-blue-600 cursor-pointer">
+          <input 
+            type="checkbox" 
+            className="peer sr-only" 
+            checked={section.isEnabled}
+            onChange={(e) => onToggle(section.id, e.target.checked)}
+          />
+          <span className="inline-block h-4 w-4 transform rounded-full bg-white transition-transform rtl:-translate-x-1 rtl:peer-checked:-translate-x-6" />
+        </label>
       </div>
     </div>
   )
