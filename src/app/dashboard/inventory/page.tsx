@@ -2,6 +2,7 @@ import { requireAuth, getCurrentSession } from '@/lib/auth/dal'
 import { prisma } from '@/lib/db/prisma'
 import Link from 'next/link'
 import { Plus, Search, AlertTriangle, PackageOpen, Package } from 'lucide-react'
+import { ActionLink } from '@/components/ui/action-link'
 
 export const metadata = {
   title: 'المخازن | DRS',
@@ -52,13 +53,13 @@ export default async function InventoryPage({
           <h1 className="text-xl font-semibold">إدارة المخازن</h1>
           <p className="mt-1 text-sm text-muted-foreground">{items.length} صنف في المخزن</p>
         </div>
-        <Link
+        <ActionLink
           href="/dashboard/inventory/new"
-          className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+          icon={Plus}
+          className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
         >
-          <Plus className="h-4 w-4" strokeWidth={1.5} />
           إضافة صنف جديد
-        </Link>
+        </ActionLink>
       </div>
 
       {/* Stats */}

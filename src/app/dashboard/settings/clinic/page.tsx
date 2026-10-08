@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { SubmitButton } from '@/components/ui/submit-button'
 
 export default async function ClinicSettingsPage() {
   const user = await requireAuth()
@@ -73,7 +74,10 @@ export default async function ClinicSettingsPage() {
           />
         </div>
         
-        <Button type="submit">حفظ الإعدادات</Button>
+        <SubmitButton 
+          label="حفظ الإعدادات"
+          loadingLabel="جاري الحفظ..."
+        />
       </form>
     </div>
   )

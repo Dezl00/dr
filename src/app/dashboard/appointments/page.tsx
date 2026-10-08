@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { Plus } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { Metadata } from 'next'
+import { ActionLink } from '@/components/ui/action-link'
 
 export const metadata: Metadata = {
   title: 'المواعيد | DRS',
@@ -68,18 +69,18 @@ export default async function AppointmentsPage({
           <h1 className="text-xl font-semibold">المواعيد</h1>
           <p className="mt-1 text-sm text-muted-foreground">{total} موعد</p>
         </div>
-        <Link
+        <ActionLink
           href="/dashboard/appointments/new"
-          className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors duration-150 hover:bg-primary/90"
+          icon={Plus}
+          className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors duration-150 hover:bg-primary/90 disabled:opacity-50"
         >
-          <Plus className="h-4 w-4" strokeWidth={1.5} />
           موعد جديد
-        </Link>
+        </ActionLink>
       </div>
 
       {/* Status filters */}
       <div className="mb-6 flex flex-wrap gap-2">
-        <Link
+        <ActionLink
           href="/dashboard/appointments"
           className={cn(
             'rounded-md border px-4 py-2 text-sm font-medium transition-colors duration-150',
@@ -89,9 +90,9 @@ export default async function AppointmentsPage({
           )}
         >
           الكل
-        </Link>
+        </ActionLink>
         {Object.entries(STATUS_MAP).map(([key, { label }]) => (
-          <Link
+          <ActionLink
             key={key}
             href={`/dashboard/appointments?status=${key}`}
             className={cn(
@@ -102,7 +103,7 @@ export default async function AppointmentsPage({
             )}
           >
             {label}
-          </Link>
+          </ActionLink>
         ))}
       </div>
 

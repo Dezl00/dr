@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { Plus, Search, DollarSign, ArrowUpRight, ArrowDownRight, CreditCard } from 'lucide-react'
 import { format } from 'date-fns'
 import { ar } from 'date-fns/locale'
+import { ActionLink } from '@/components/ui/action-link'
 
 export const metadata = {
   title: 'المالية | DRS',
@@ -49,20 +50,20 @@ export default async function FinancialsPage() {
           <p className="mt-1 text-sm text-muted-foreground">نظرة عامة على الإيرادات والفواتير والمصروفات</p>
         </div>
         <div className="flex gap-2">
-          <Link
+          <ActionLink
             href="/dashboard/financials/expenses/new"
-            className="inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium transition-colors hover:bg-accent"
+            icon={ArrowDownRight}
+            className="inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium transition-colors hover:bg-accent disabled:opacity-50"
           >
-            <ArrowDownRight className="h-4 w-4 text-red-500" strokeWidth={1.5} />
             إضافة مصروف
-          </Link>
-          <Link
+          </ActionLink>
+          <ActionLink
             href="/dashboard/financials/invoices/new"
-            className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            icon={Plus}
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
           >
-            <Plus className="h-4 w-4" strokeWidth={1.5} />
             إنشاء فاتورة
-          </Link>
+          </ActionLink>
         </div>
       </div>
 

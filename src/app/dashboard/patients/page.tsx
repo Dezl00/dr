@@ -1,8 +1,9 @@
-import { prisma } from '@/lib/db/prisma'
+﻿import { prisma } from '@/lib/db/prisma'
 import { requireAuth, getCurrentSession } from '@/lib/auth/dal'
 import Link from 'next/link'
 import { Plus, Search } from 'lucide-react'
 import type { Metadata } from 'next'
+import { ActionLink } from '@/components/ui/action-link'
 
 export const metadata: Metadata = {
   title: 'المرضى | DRS',
@@ -61,13 +62,13 @@ export default async function PatientsPage({
           <h1 className="text-xl font-semibold">المرضى</h1>
           <p className="mt-1 text-sm text-muted-foreground">{total} مريض</p>
         </div>
-        <Link
+        <ActionLink
           href="/dashboard/patients/new"
-          className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors duration-150 hover:bg-primary/90"
+          icon={Plus}
+          className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors duration-150 hover:bg-primary/90 disabled:opacity-50"
         >
-          <Plus className="h-4 w-4" strokeWidth={1.5} />
           إضافة مريض
-        </Link>
+        </ActionLink>
       </div>
 
       {/* Search */}
@@ -107,7 +108,7 @@ export default async function PatientsPage({
                 {patients.map((patient) => (
                   <tr key={patient.id} className="transition-colors duration-150 hover:bg-accent/50">
                     <td className="px-5 py-3.5">
-                      <Link href={`/dashboard/patients/${patient.id}`} className="font-medium transition-colors hover:text-primary">
+                      <Link prefetch={true} href={`/dashboard/patients/${patient.id}`} className="font-medium transition-colors hover:text-primary">
                         {patient.fullName}
                       </Link>
                     </td>
