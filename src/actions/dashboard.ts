@@ -263,22 +263,27 @@ export async function updateWebsiteSettings(formData: FormData) {
 }
 
 export async function updatePatient(id: string, prevState: any, formData: FormData) {
-  const user = await requireAuth()
-  const clinicId = await getActiveClinicId(user.id)
-  
-  const fullName = formData.get('fullName') as string
-  const phone = formData.get('phone') as string
-  const email = formData.get('email') as string
-  
-  if (!fullName) throw new Error('الاسم مطلوب')
-  
-  await prisma.patient.update({
-    where: { id, clinicId },
-    data: { fullName, phone, email }
-  })
-  
-  revalidatePath(`/dashboard/patients/${id}`)
-  redirect('/dashboard/patients')
+  try {
+    const user = await requireAuth()
+    const clinicId = await getActiveClinicId(user.id)
+    
+    const fullName = formData.get('fullName') as string
+    const phone = formData.get('phone') as string
+    const email = formData.get('email') as string
+    const address = formData.get('address') as string
+    
+    if (!fullName) return { error: 'الاسم مطلوب' }
+    
+    await prisma.patient.update({
+      where: { id, clinicId },
+      data: { fullName, phone, email, address }
+    })
+    
+    revalidatePath(`/dashboard/patients/${id}`)
+    return { success: true }
+  } catch (error) {
+    return { error: 'حدث خطأ أثناء حفظ البيانات' }
+  }
 }
 
 export async function updateAppointment(id: string, formData: FormData) {
