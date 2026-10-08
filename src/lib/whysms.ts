@@ -25,17 +25,18 @@ export async function sendOtpSms(phone: string, code: string) {
   const message = `رمز التحقق الخاص بك لمنصة DRS هو: ${code}`
 
   try {
-    // Standard format for Bulk SMS APIs
-    const response = await fetch('https://bulk.whysms.com/api/v3/sms/send', {
+    // Official WhySMS HTTP API Endpoint
+    const response = await fetch('https://bulk.whysms.com/api/http/sms/send', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        sender_id: senderId,
+        api_token: apiKey,
         recipient: formattedPhone,
+        sender_id: senderId,
+        type: 'otp',
         message: message,
       }),
     })
