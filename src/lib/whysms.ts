@@ -25,18 +25,18 @@ export async function sendOtpSms(phone: string, code: string) {
   const message = `رمز التحقق الخاص بك لمنصة DRS هو: ${code}`
 
   try {
-    // Official WhySMS HTTP API Endpoint
-    const response = await fetch('https://bulk.whysms.com/api/http/sms/send', {
+    // Official WhySMS v3 HTTP API Endpoint
+    const response = await fetch('https://bulk.whysms.com/api/v3/sms/send', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        api_token: apiKey,
         recipient: formattedPhone,
         sender_id: senderId,
-        type: 'otp',
+        type: 'plain',
         message: message,
       }),
     })
@@ -75,14 +75,14 @@ export async function sendSms(phone: string, message: string) {
   }
 
   try {
-    const response = await fetch('https://bulk.whysms.com/api/http/sms/send', {
+    const response = await fetch('https://bulk.whysms.com/api/v3/sms/send', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        api_token: apiKey,
         recipient: formattedPhone,
         sender_id: senderId,
         type: 'plain',

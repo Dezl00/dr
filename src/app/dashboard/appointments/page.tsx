@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils'
 import type { Metadata } from 'next'
 import { ActionLink } from '@/components/ui/action-link'
 import { AppointmentStatusSelect } from '@/components/dashboard/appointment-status-select'
+import { AppointmentDetailsModal } from '@/components/dashboard/appointment-details-modal'
 
 
 export const metadata: Metadata = {
@@ -51,7 +52,7 @@ export default async function AppointmentsPage({
     prisma.appointment.findMany({
       where,
       include: {
-        patient: { select: { fullName: true } },
+        patient: { select: { fullName: true, phone: true } },
         doctor: { select: { fullName: true } },
         service: { select: { name: true } },
       },
@@ -126,6 +127,7 @@ export default async function AppointmentsPage({
                   <th className="px-5 py-3.5 text-start font-medium text-muted-foreground">الطبيب</th>
                   <th className="px-5 py-3.5 text-start font-medium text-muted-foreground">الخدمة</th>
                   <th className="px-5 py-3.5 text-start font-medium text-muted-foreground">الحالة</th>
+                  <th className="px-5 py-3.5 text-start font-medium text-muted-foreground"></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -146,6 +148,19 @@ export default async function AppointmentsPage({
                       </td>
                       <td className="px-5 py-3.5">
                         <AppointmentStatusSelect appointmentId={apt.id} currentStatus={apt.status} />
+                      </td>
+                      <td className="px-5 py-3.5 text-end">
+                        <AppointmentDetailsModal 
+                          appointmentId={apt.id}
+                          patientName={apt.patient.fullName}
+                          patientPhone={apt.patient.phone}
+                          doctorName={apt.doctor.fullName}
+                          serviceName={apt.service?.name || 'استشارة'}
+                          dateStr={apt.date.toLocaleDateString('ar-EG')}
+                          timeStr={apt.startTime}
+                          notes={apt.notes}
+                          statusLabel={status.label}
+                        />
                       </td>
                     </tr>
                   )
@@ -170,12 +185,21 @@ export default async function AppointmentsPage({
                     <AppointmentStatusSelect appointmentId={apt.id} currentStatus={apt.status} />
                   </div>
                   <div className="mt-4 flex items-center justify-between border-t border-border pt-3">
-                    <p className="text-sm text-muted-foreground">
-                      {apt.date.toLocaleDateString('ar-EG')}
+                    <p className="text-sm text-muted-foreground flex items-center gap-2">
+                      <span>{apt.date.toLocaleDateString('ar-EG')}</span>
+                      <span className="font-medium text-foreground" dir="ltr">{apt.startTime}</span>
                     </p>
-                    <p className="text-sm font-medium text-foreground" dir="ltr">
-                      {apt.startTime}
-                    </p>
+                    <AppointmentDetailsModal 
+                      appointmentId={apt.id}
+                      patientName={apt.patient.fullName}
+                      patientPhone={apt.patient.phone}
+                      doctorName={apt.doctor.fullName}
+                      serviceName={apt.service?.name || 'استشارة'}
+                      dateStr={apt.date.toLocaleDateString('ar-EG')}
+                      timeStr={apt.startTime}
+                      notes={apt.notes}
+                      statusLabel={status.label}
+                    />
                   </div>
                 </div>
               )

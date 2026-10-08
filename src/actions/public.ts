@@ -53,9 +53,24 @@ export async function bookAppointment(data: z.infer<typeof bookingSchema>) {
         serviceId: validated.serviceId || null,
         date: new Date(validated.date),
         startTime: validated.startTime,
-        status: 'SCHEDULED',
+        status: 'CONFIRMED',
       },
     })
+
+    // Trigger SMS synchronously
+    try {
+      const { sendAppointmentSMS } = await import('@/lib/sms')
+      await sendAppointmentSMS({
+        clinicId,
+        patientId: patient.id,
+        serviceId: validated.serviceId || undefined,
+        date: new Date(validated.date),
+        startTime: validated.startTime,
+        type: 'CONFIRMATION'
+      })
+    } catch (error) {
+      console.error('SMS Error:', error)
+    }
 
     return { success: true, appointment }
   } catch (error: any) {

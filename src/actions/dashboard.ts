@@ -172,6 +172,33 @@ export async function updateAppointmentStatus(appointmentId: string, newStatus: 
   revalidatePath('/dashboard/appointments')
 }
 
+export async function sendManualReminder(appointmentId: string) {
+  const user = await requireAuth()
+  const clinicId = await getActiveClinicId(user.id)
+  
+  const apt = await prisma.appointment.findUnique({
+    where: { id: appointmentId, clinicId }
+  })
+  
+  if (!apt) return { success: false, error: 'Appointment not found' }
+  
+  try {
+    const { sendAppointmentSMS } = await import('@/lib/sms')
+    await sendAppointmentSMS({ 
+      clinicId, 
+      patientId: apt.patientId, 
+      serviceId: apt.serviceId || undefined, 
+      date: apt.date, 
+      startTime: apt.startTime, 
+      type: 'REMINDER' 
+    })
+    return { success: true }
+  } catch (error: any) {
+    console.error('Manual Reminder SMS Error:', error)
+    return { success: false, error: error.message || 'حدث خطأ غير معروف' }
+  }
+}
+
 export async function updateProfile(formData: FormData) {
   const user = await requireAuth()
   
