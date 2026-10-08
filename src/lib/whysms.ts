@@ -1,10 +1,14 @@
 export async function sendOtpSms(phone: string, code: string) {
-  // Format phone number for Egypt (default) if it starts with 01
+  // Format phone number for Egypt (default)
   let formattedPhone = phone.trim();
+  
   if (formattedPhone.startsWith('01') && formattedPhone.length === 11) {
-    formattedPhone = `2${formattedPhone}`; // e.g. 2010xxxxxxxx
-  } else if (formattedPhone.startsWith('+20')) {
-    formattedPhone = formattedPhone.substring(1); // remove +
+    formattedPhone = `+20${formattedPhone.substring(1)}`; // e.g. +2010xxxxxxxx
+  } else if (formattedPhone.startsWith('20') && formattedPhone.length === 12) {
+    formattedPhone = `+${formattedPhone}`; // add + if missing
+  } else if (!formattedPhone.startsWith('+')) {
+    // If it doesn't have a country code, we can assume Egypt or just add +
+    formattedPhone = `+${formattedPhone}`;
   }
 
   // WhySMS API configuration
