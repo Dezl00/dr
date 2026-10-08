@@ -50,7 +50,7 @@ export default async function AdminOverviewPage() {
                     )}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {log.createdAt.toLocaleString('ar-EG')}
+                    {log.createdAt.toLocaleString('en-GB')}
                   </p>
                 </div>
               </div>

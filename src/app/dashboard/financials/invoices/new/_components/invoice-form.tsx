@@ -131,15 +131,15 @@ export function InvoiceForm({ patients }: { patients: {id: string, fullName: str
         <div className="space-y-4 p-4 flex flex-col justify-center">
           <div className="flex justify-between items-center text-lg">
             <span className="font-medium">الإجمالي</span>
-            <span className="font-bold" dir="ltr">{total.toLocaleString()} EGP</span>
+            <span className="font-bold" dir="ltr">{total.toLocaleString('en-US')} EGP</span>
           </div>
           <div className="flex justify-between items-center text-lg text-green-600 border-t border-border pt-2">
             <span className="font-medium">المدفوع</span>
-            <span className="font-bold" dir="ltr">- {initialPayment.toLocaleString()} EGP</span>
+            <span className="font-bold" dir="ltr">- {initialPayment.toLocaleString('en-US')} EGP</span>
           </div>
           <div className="flex justify-between items-center text-xl text-red-500 border-t border-border pt-2">
             <span className="font-bold">المتبقي (المديونية)</span>
-            <span className="font-bold" dir="ltr">{remaining.toLocaleString()} EGP</span>
+            <span className="font-bold" dir="ltr">{remaining.toLocaleString('en-US')} EGP</span>
           </div>
         </div>
       </div>

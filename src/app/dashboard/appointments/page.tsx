@@ -135,7 +135,7 @@ export default async function AppointmentsPage({
                   const status = STATUS_MAP[apt.status] || STATUS_MAP.SCHEDULED
                   return (
                     <tr key={apt.id} className="transition-colors duration-150 hover:bg-accent/50">
-                      <td className="px-5 py-3.5 text-foreground">{apt.date.toLocaleDateString('ar-EG')}</td>
+                      <td className="px-5 py-3.5 text-foreground">{apt.date.toLocaleDateString('en-GB')}</td>
                       <td className="px-5 py-3.5 text-foreground font-medium" dir="ltr">{apt.startTime}</td>
                       <td className="px-5 py-3.5 font-medium text-foreground">{apt.patient.fullName}</td>
                       <td className="px-5 py-3.5 text-muted-foreground">{apt.doctor.fullName}</td>
@@ -156,7 +156,7 @@ export default async function AppointmentsPage({
                           patientPhone={apt.patient.phone}
                           doctorName={apt.doctor.fullName}
                           serviceName={apt.service?.name || 'استشارة'}
-                          dateStr={apt.date.toLocaleDateString('ar-EG')}
+                          dateStr={apt.date.toLocaleDateString('en-GB')}
                           timeStr={apt.startTime}
                           notes={apt.notes}
                           statusLabel={status.label}
@@ -186,7 +186,7 @@ export default async function AppointmentsPage({
                   </div>
                   <div className="mt-4 flex items-center justify-between border-t border-border pt-3">
                     <p className="text-sm text-muted-foreground flex items-center gap-2">
-                      <span>{apt.date.toLocaleDateString('ar-EG')}</span>
+                      <span>{apt.date.toLocaleDateString('en-GB')}</span>
                       <span className="font-medium text-foreground" dir="ltr">{apt.startTime}</span>
                     </p>
                     <AppointmentDetailsModal 
@@ -195,7 +195,7 @@ export default async function AppointmentsPage({
                       patientPhone={apt.patient.phone}
                       doctorName={apt.doctor.fullName}
                       serviceName={apt.service?.name || 'استشارة'}
-                      dateStr={apt.date.toLocaleDateString('ar-EG')}
+                      dateStr={apt.date.toLocaleDateString('en-GB')}
                       timeStr={apt.startTime}
                       notes={apt.notes}
                       statusLabel={status.label}

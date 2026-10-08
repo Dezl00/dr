@@ -108,8 +108,8 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
                     <tr key={item.id}>
                       <td className="py-4 text-slate-800 print:text-black font-medium">{item.description}</td>
                       <td className="py-4 text-center text-slate-600 print:text-black">{item.quantity}</td>
-                      <td className="py-4 text-center text-slate-600 print:text-black" dir="ltr">{Number(item.unitPrice).toLocaleString()} EGP</td>
-                      <td className="py-4 text-left font-bold text-slate-800 print:text-black" dir="ltr">{Number(item.total).toLocaleString()} EGP</td>
+                      <td className="py-4 text-center text-slate-600 print:text-black" dir="ltr">{Number(item.unitPrice).toLocaleString('en-US')} EGP</td>
+                      <td className="py-4 text-left font-bold text-slate-800 print:text-black" dir="ltr">{Number(item.total).toLocaleString('en-US')} EGP</td>
                     </tr>
                   ))}
                   {invoice.items.length === 0 && (
@@ -126,15 +126,15 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
               <div className="w-full max-w-sm space-y-3 text-sm print:text-black">
                 <div className="flex justify-between items-center text-slate-600 print:text-black">
                   <span>الإجمالي (Subtotal)</span>
-                  <span className="font-medium" dir="ltr">{Number(invoice.total).toLocaleString()} EGP</span>
+                  <span className="font-medium" dir="ltr">{Number(invoice.total).toLocaleString('en-US')} EGP</span>
                 </div>
                 <div className="flex justify-between items-center text-green-600 print:text-black border-b border-slate-200 print:border-black pb-3">
                   <span>إجمالي المدفوع (Paid)</span>
-                  <span className="font-medium" dir="ltr">- {totalPaid.toLocaleString()} EGP</span>
+                  <span className="font-medium" dir="ltr">- {totalPaid.toLocaleString('en-US')} EGP</span>
                 </div>
                 <div className="flex justify-between items-center text-lg font-bold text-slate-800 print:text-black pt-1">
                   <span>المتبقي (Balance Due)</span>
-                  <span dir="ltr">{remaining.toLocaleString()} EGP</span>
+                  <span dir="ltr">{remaining.toLocaleString('en-US')} EGP</span>
                 </div>
               </div>
             </div>
@@ -192,7 +192,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
                 {invoice.payments.map(payment => (
                   <div key={payment.id} className="flex justify-between items-center text-sm">
                     <div>
-                      <p className="font-medium text-foreground" dir="ltr">{Number(payment.amount).toLocaleString()} EGP</p>
+                      <p className="font-medium text-foreground" dir="ltr">{Number(payment.amount).toLocaleString('en-US')} EGP</p>
                       <p className="text-xs text-muted-foreground mt-1">{format(new Date(payment.paymentDate), 'dd MMM yyyy')}</p>
                     </div>
                     <span className="px-2 py-1 rounded-md bg-muted text-xs font-medium border border-border">

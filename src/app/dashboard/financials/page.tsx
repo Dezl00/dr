@@ -77,7 +77,7 @@ export default async function FinancialsPage() {
             <div>
               <p className="text-sm font-medium text-muted-foreground">إجمالي الإيرادات المحصلة</p>
               <h3 className="text-2xl font-bold mt-1 text-foreground" dir="ltr">
-                {Number(totalRevenue._sum.amount || 0).toLocaleString()} EGP
+                {Number(totalRevenue._sum.amount || 0).toLocaleString('en-US')} EGP
               </h3>
             </div>
           </div>
@@ -91,7 +91,7 @@ export default async function FinancialsPage() {
             <div>
               <p className="text-sm font-medium text-muted-foreground">مستحقات غير محصلة</p>
               <h3 className="text-2xl font-bold mt-1 text-foreground" dir="ltr">
-                {Number(unpaidInvoices._sum.total || 0).toLocaleString()} EGP
+                {Number(unpaidInvoices._sum.total || 0).toLocaleString('en-US')} EGP
               </h3>
             </div>
           </div>
@@ -143,7 +143,7 @@ export default async function FinancialsPage() {
                     <td className="px-5 py-3.5 text-muted-foreground">
                       {format(new Date(invoice.createdAt), 'dd MMMM yyyy', { locale: ar })}
                     </td>
-                    <td className="px-5 py-3.5 font-medium" dir="ltr">{Number(invoice.total).toLocaleString()}</td>
+                    <td className="px-5 py-3.5 font-medium" dir="ltr">{Number(invoice.total).toLocaleString('en-US')}</td>
                     <td className="px-5 py-3.5">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                         invoice.status === 'PAID' ? 'bg-green-100 text-green-700' :

@@ -130,7 +130,7 @@ async function UpcomingList({ clinicId }: { clinicId: string }) {
     } else if (isTomorrow) {
       relativeTime = `غدًا ${apt.startTime}`
     } else {
-      relativeTime = aptDate.toLocaleDateString('ar-EG', { weekday: 'long', day: 'numeric', month: 'short' }) + ` ${apt.startTime}`
+      relativeTime = aptDate.toLocaleDateString('ar-EG-u-nu-latn', { weekday: 'long', day: 'numeric', month: 'short' }) + ` ${apt.startTime}`
     }
 
     return {

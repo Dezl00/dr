@@ -56,7 +56,7 @@ export function PatientBilling({ invoices }: { invoices: any[] }) {
                 <td className="px-5 py-3.5">
                   {format(new Date(invoice.createdAt), 'dd MMMM yyyy', { locale: ar })}
                 </td>
-                <td className="px-5 py-3.5 font-medium" dir="ltr">{Number(invoice.total).toLocaleString()} EGP</td>
+                <td className="px-5 py-3.5 font-medium" dir="ltr">{Number(invoice.total).toLocaleString('en-US')} EGP</td>
                 <td className="px-5 py-3.5">
                   <Badge variant={
                     invoice.status === 'PAID' ? 'default' : 

@@ -115,7 +115,7 @@ export default async function PatientsPage({
                     <td className="px-5 py-3.5 text-muted-foreground" dir="ltr">{patient.phone || '—'}</td>
                     <td className="px-5 py-3.5 text-muted-foreground" dir="ltr">{patient.email || '—'}</td>
                     <td className="px-5 py-3.5 text-muted-foreground">{patient.gender === 'MALE' ? 'ذكر' : patient.gender === 'FEMALE' ? 'أنثى' : '—'}</td>
-                    <td className="px-5 py-3.5 text-muted-foreground">{patient.createdAt.toLocaleDateString('ar-EG')}</td>
+                    <td className="px-5 py-3.5 text-muted-foreground">{patient.createdAt.toLocaleDateString('en-GB')}</td>
                   </tr>
                 ))}
               </tbody>
