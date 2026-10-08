@@ -121,15 +121,11 @@ async function UpcomingList({ clinicId }: { clinicId: string }) {
 
     let relativeTime = ''
     if (isToday) {
-      const [h, m] = apt.startTime.split(':').map(Number)
-      const diff = (h * 60 + m) - (now.getHours() * 60 + now.getMinutes())
-      if (diff <= 0) relativeTime = 'الآن'
-      else if (diff < 60) relativeTime = `بعد ${diff} دقيقة`
-      else relativeTime = `بعد ${Math.floor(diff / 60)} ساعة`
+      relativeTime = 'اليوم'
     } else if (isTomorrow) {
-      relativeTime = `غدًا ${apt.startTime}`
+      relativeTime = 'غدًا'
     } else {
-      relativeTime = aptDate.toLocaleDateString('ar-EG-u-nu-latn', { weekday: 'long', day: 'numeric', month: 'short' }) + ` ${apt.startTime}`
+      relativeTime = aptDate.toLocaleDateString('ar-EG-u-nu-latn', { weekday: 'long', day: 'numeric', month: 'short' })
     }
 
     return {

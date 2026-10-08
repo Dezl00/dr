@@ -18,9 +18,13 @@ import {
   ChevronLeft,
   Bell,
   Shield,
+  ChevronDown,
+  ExternalLink,
 } from 'lucide-react'
 import { logoutAction } from '@/actions/auth'
 import { ClinicCtx, type ClinicContext } from '@/lib/tenant/context'
+import { GlobalSearch } from './global-search'
+import { NotificationsMenu } from './notifications-menu'
 
 interface DashboardShellProps {
   children: React.ReactNode
@@ -138,27 +142,6 @@ export function DashboardShell({
             </ul>
           </nav>
 
-          {/* User section */}
-          <div className="border-t border-blue-600/50 p-4">
-            <div className="mb-3 flex items-center gap-3 rounded-lg p-2 transition-colors duration-200 hover:bg-blue-600/40">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-600 text-sm font-semibold text-white shadow-inner">
-                {user.fullName.charAt(0)}
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-semibold text-white">{user.fullName}</p>
-                <p className="truncate text-xs text-blue-200">{roleName}</p>
-              </div>
-            </div>
-            <form action={logoutAction}>
-              <button
-                type="submit"
-                className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-blue-100 transition-all duration-200 hover:bg-red-500/20 hover:text-red-100"
-              >
-                <LogOut className="h-4.5 w-4.5" strokeWidth={1.5} />
-                تسجيل الخروج
-              </button>
-            </form>
-          </div>
         </aside>
 
         {/* Main content */}
@@ -182,8 +165,8 @@ export function DashboardShell({
           )}
 
           {/* Header */}
-          <header className="flex h-14 items-center justify-between border-b border-slate-100 bg-white px-4 lg:px-6">
-            <div className="flex items-center gap-3">
+          <header className="flex h-14 items-center justify-between border-b border-border bg-white px-4 lg:px-6">
+            <div className="flex items-center gap-4 flex-1">
               <button
                 onClick={() => setSidebarOpen(true)}
                 className="rounded p-1.5 text-muted-foreground transition-colors duration-150 hover:bg-accent hover:text-foreground lg:hidden"
@@ -191,26 +174,63 @@ export function DashboardShell({
               >
                 <Menu className="h-5 w-5" strokeWidth={1.5} />
               </button>
-              <h1 className="text-sm font-semibold lg:text-base">{clinic.name}</h1>
+              
+              <div className="hidden lg:block w-96">
+                <GlobalSearch clinicId={clinic.id} />
+              </div>
             </div>
 
-            <div className="flex items-center gap-2">
-              <button
-                className="relative rounded-lg p-2 text-muted-foreground transition-colors duration-150 hover:bg-accent hover:text-foreground"
-                aria-label="الإشعارات"
-              >
-                <Bell className="h-4.5 w-4.5" strokeWidth={1.5} />
-              </button>
+            <div className="flex items-center gap-3">
+              <div className="block lg:hidden">
+                <GlobalSearch clinicId={clinic.id} />
+              </div>
+
+              <NotificationsMenu clinicId={clinic.id} />
 
               {user.isAdmin && (
                 <Link prefetch={true}
                   href="/admin"
-                  className="hidden rounded-lg p-2 text-muted-foreground transition-colors duration-150 hover:bg-accent hover:text-foreground sm:block"
+                  className="hidden rounded-full p-2 text-muted-foreground transition-colors duration-150 hover:bg-accent hover:text-foreground sm:block"
                   aria-label="لوحة الإدارة"
                 >
-                  <Shield className="h-4.5 w-4.5" strokeWidth={1.5} />
+                  <Shield className="h-5 w-5" strokeWidth={1.5} />
                 </Link>
               )}
+
+              {/* User Dropdown */}
+              <div className="relative border-r border-border pr-3">
+                <button 
+                  className="flex items-center gap-2 rounded-full hover:bg-accent/50 p-1 pr-2 transition-colors group"
+                  onClick={() => document.getElementById('user-dropdown-menu')?.classList.toggle('hidden')}
+                >
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-sm font-semibold text-blue-700">
+                    {user.fullName.charAt(0)}
+                  </div>
+                  <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-hover:text-foreground" />
+                </button>
+                
+                <div id="user-dropdown-menu" className="absolute left-0 top-full mt-2 hidden w-48 rounded-xl border border-border bg-white p-1 z-50">
+                  <div className="px-3 py-2 border-b border-border mb-1">
+                    <p className="text-sm font-medium">{user.fullName}</p>
+                    <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                  </div>
+                  <Link href="/dashboard/settings/profile" className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm hover:bg-slate-50 transition-colors" onClick={() => document.getElementById('user-dropdown-menu')?.classList.add('hidden')}>
+                    <Settings className="h-4 w-4 text-muted-foreground" />
+                    إعدادات الحساب
+                  </Link>
+                  <Link href={`/sites/${clinic.slug}`} target="_blank" className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm hover:bg-slate-50 transition-colors" onClick={() => document.getElementById('user-dropdown-menu')?.classList.add('hidden')}>
+                    <ExternalLink className="h-4 w-4 text-muted-foreground" />
+                    زيارة الموقع
+                  </Link>
+                  <div className="h-px bg-border my-1"></div>
+                  <form action={logoutAction}>
+                    <button type="submit" className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">
+                      <LogOut className="h-4 w-4" />
+                      تسجيل الخروج
+                    </button>
+                  </form>
+                </div>
+              </div>
             </div>
           </header>
 
