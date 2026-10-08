@@ -42,7 +42,7 @@ export function GlobalSearch({ clinicId }: { clinicId: string }) {
   const hasResults = results.patients.length > 0 || results.doctors.length > 0 || results.services.length > 0
 
   return (
-    <div ref={wrapperRef} className="relative w-full max-w-md">
+    <div ref={wrapperRef} className="relative w-full">
       <div className="relative flex items-center">
         <Search className="absolute right-3 h-4 w-4 text-muted-foreground" />
         <input

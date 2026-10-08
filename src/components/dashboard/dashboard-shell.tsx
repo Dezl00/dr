@@ -90,7 +90,7 @@ export function DashboardShell({
         {/* Mobile backdrop */}
         {sidebarOpen && (
           <div
-            className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm lg:hidden transition-all"
+            className="fixed inset-0 z-40 bg-slate-900/40 backdrop-blur-sm lg:hidden animate-in fade-in duration-300"
             onClick={() => setSidebarOpen(false)}
           />
         )}
@@ -98,8 +98,8 @@ export function DashboardShell({
         {/* Sidebar */}
         <aside
           className={`${
-            sidebarOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'
-          } fixed inset-y-0 end-0 z-50 flex w-64 flex-col bg-blue-700 text-white transition-transform duration-300 ease-out lg:static lg:z-auto shadow-2xl lg:shadow-none`}
+            sidebarOpen ? 'translate-x-0 shadow-2xl' : 'translate-x-full lg:translate-x-0'
+          } fixed inset-y-0 end-0 z-50 flex w-[280px] lg:w-64 flex-col bg-blue-700 text-white transition-transform duration-300 ease-out lg:static lg:z-auto lg:shadow-none`}
         >
           {/* Sidebar header */}
           <div className="flex h-14 items-center justify-between px-5 border-b border-blue-600/50">
@@ -165,32 +165,28 @@ export function DashboardShell({
           )}
 
           {/* Header */}
-          <header className="flex h-14 items-center justify-between border-b border-border bg-white px-4 lg:px-6">
-            <div className="flex items-center gap-4 flex-1">
+          <header className="flex h-16 items-center justify-between border-b border-slate-100 bg-white px-3 lg:px-6 gap-2 relative z-30">
+            <div className="flex items-center flex-1 lg:flex-none lg:w-[220px]">
               <button
                 onClick={() => setSidebarOpen(true)}
-                className="rounded p-1.5 text-muted-foreground transition-colors duration-150 hover:bg-accent hover:text-foreground lg:hidden"
+                className="rounded-full p-2 text-slate-500 transition-colors duration-200 hover:bg-slate-100 hover:text-slate-900 lg:hidden"
                 aria-label="فتح القائمة"
               >
-                <Menu className="h-5 w-5" strokeWidth={1.5} />
+                <Menu className="h-6 w-6" strokeWidth={1.5} />
               </button>
-              
-              <div className="hidden lg:block w-96">
-                <GlobalSearch clinicId={clinic.id} />
-              </div>
             </div>
 
-            <div className="flex items-center gap-3">
-              <div className="block lg:hidden">
-                <GlobalSearch clinicId={clinic.id} />
-              </div>
+            <div className="flex-[2] lg:flex-1 flex justify-center w-full max-w-xl px-1">
+              <GlobalSearch clinicId={clinic.id} />
+            </div>
 
+            <div className="flex items-center justify-end gap-1 sm:gap-2 flex-1 lg:flex-none lg:w-[220px]">
               <NotificationsMenu clinicId={clinic.id} />
 
               {user.isAdmin && (
                 <Link prefetch={true}
                   href="/admin"
-                  className="hidden rounded-full p-2 text-muted-foreground transition-colors duration-150 hover:bg-accent hover:text-foreground sm:block"
+                  className="hidden rounded-full p-2 text-slate-500 transition-colors duration-200 hover:bg-slate-100 hover:text-slate-900 sm:block"
                   aria-label="لوحة الإدارة"
                 >
                   <Shield className="h-5 w-5" strokeWidth={1.5} />
@@ -198,33 +194,33 @@ export function DashboardShell({
               )}
 
               {/* User Dropdown */}
-              <div className="relative border-r border-border pr-3">
+              <div className="relative border-r border-slate-200 pr-2 ml-1">
                 <button 
-                  className="flex items-center gap-2 rounded-full hover:bg-accent/50 p-1 pr-2 transition-colors group"
+                  className="flex items-center gap-1.5 rounded-full hover:bg-slate-50 p-1 pr-2 transition-colors duration-200 group"
                   onClick={() => document.getElementById('user-dropdown-menu')?.classList.toggle('hidden')}
                 >
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-sm font-semibold text-blue-700">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-100 text-sm font-semibold text-blue-700">
                     {user.fullName.charAt(0)}
                   </div>
-                  <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-hover:text-foreground" />
+                  <ChevronDown className="h-4 w-4 text-slate-400 transition-transform group-hover:text-slate-600 hidden sm:block" />
                 </button>
                 
-                <div id="user-dropdown-menu" className="absolute left-0 top-full mt-2 hidden w-48 rounded-xl border border-border bg-white p-1 z-50">
-                  <div className="px-3 py-2 border-b border-border mb-1">
-                    <p className="text-sm font-medium">{user.fullName}</p>
-                    <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                <div id="user-dropdown-menu" className="absolute left-0 top-full mt-2 hidden w-56 rounded-2xl border border-slate-100 bg-white p-2 shadow-lg z-50">
+                  <div className="px-3 py-3 border-b border-slate-100 mb-2">
+                    <p className="text-sm font-semibold text-slate-900">{user.fullName}</p>
+                    <p className="text-xs text-slate-500 truncate mt-0.5">{user.email}</p>
                   </div>
-                  <Link href={`/dashboard/settings/profile`} className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm hover:bg-slate-50 transition-colors" onClick={() => document.getElementById('user-dropdown-menu')?.classList.add('hidden')}>
-                    <Settings className="h-4 w-4 text-muted-foreground" />
+                  <Link href={`/dashboard/settings/profile`} className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors" onClick={() => document.getElementById('user-dropdown-menu')?.classList.add('hidden')}>
+                    <Settings className="h-4 w-4" />
                     إعدادات الحساب
                   </Link>
-                  <a href={`${process.env.NEXT_PUBLIC_ROOT_DOMAIN?.includes('localhost') ? 'http' : 'https'}://${clinic.slug}.${process.env.NEXT_PUBLIC_ROOT_DOMAIN}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm hover:bg-slate-50 transition-colors" onClick={() => document.getElementById('user-dropdown-menu')?.classList.add('hidden')}>
-                    <ExternalLink className="h-4 w-4 text-muted-foreground" />
+                  <a href={`${process.env.NEXT_PUBLIC_ROOT_DOMAIN?.includes('localhost') ? 'http' : 'https'}://${clinic.slug}.${process.env.NEXT_PUBLIC_ROOT_DOMAIN}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors" onClick={() => document.getElementById('user-dropdown-menu')?.classList.add('hidden')}>
+                    <ExternalLink className="h-4 w-4" />
                     زيارة الموقع
                   </a>
-                  <div className="h-px bg-border my-1"></div>
+                  <div className="h-px bg-slate-100 my-2"></div>
                   <form action={logoutAction}>
-                    <button type="submit" className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">
+                    <button type="submit" className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors">
                       <LogOut className="h-4 w-4" />
                       تسجيل الخروج
                     </button>

@@ -8,6 +8,7 @@ export const metadata: Metadata = {
 }
 
 import { IBM_Plex_Sans_Arabic } from 'next/font/google'
+import NextTopLoader from 'nextjs-toploader'
 
 const ibmPlex = IBM_Plex_Sans_Arabic({
   subsets: ['arabic'],
@@ -24,6 +25,7 @@ export default function RootLayout({
   return (
     <html lang="ar" dir="rtl">
       <body className={`${ibmPlex.variable} font-sans bg-background text-foreground antialiased`}>
+        <NextTopLoader color="#2563EB" showSpinner={false} shadow="none" />
         {children}
       </body>
     </html>
