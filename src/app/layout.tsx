@@ -10,8 +10,8 @@ import { Cairo } from 'next/font/google'
 
 const cairo = Cairo({
   subsets: ['arabic'],
-  weight: ['400', '500', '600', '700'],
   variable: '--font-cairo',
+  display: 'swap',
 })
 
 export default function RootLayout({
