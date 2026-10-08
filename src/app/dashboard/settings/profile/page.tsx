@@ -16,9 +16,7 @@ export default async function ProfileSettingsPage() {
 
   return (
     <div className="max-w-2xl">
-      <h1 className="text-2xl font-semibold mb-6">الملف الشخصي</h1>
-      
-      <form action={updateProfile} className="space-y-6 bg-card border border-border p-6 rounded-xl">
+      <form action={updateProfile} className="space-y-6">
         <div className="space-y-2">
           <Label htmlFor="fullName">الاسم بالكامل</Label>
           <Input 

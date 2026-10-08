@@ -27,7 +27,7 @@ export function AppointmentStatusSelect({ appointmentId, currentStatus }: { appo
         })
       }}
       className={cn(
-        'appearance-none text-xs font-medium px-2 py-1 rounded-md border outline-none cursor-pointer disabled:opacity-50 transition-colors',
+        'appearance-none text-xs font-semibold px-2 py-1.5 rounded-md outline-none cursor-pointer disabled:opacity-50 transition-colors w-24 text-center text-center-last',
         statusObj.class
       )}
     >

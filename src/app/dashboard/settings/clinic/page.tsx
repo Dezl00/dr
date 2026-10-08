@@ -28,9 +28,7 @@ export default async function ClinicSettingsPage() {
 
   return (
     <div className="max-w-2xl">
-      <h1 className="text-2xl font-semibold mb-6">إعدادات العيادة</h1>
-      
-      <form action={updateClinicSettings} className="space-y-6 bg-card border border-border p-6 rounded-xl">
+      <form action={updateClinicSettings} className="space-y-6">
         <div className="space-y-2">
           <Label htmlFor="name">اسم العيادة</Label>
           <Input 

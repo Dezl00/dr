@@ -103,21 +103,21 @@
 }
 
 @layer utilities {
-  /* Status colors for appointments - Solid and modern */
+  /* Status colors for appointments - Soft, modern, flat */
   .status-scheduled {
-    @apply bg-blue-500 text-white dark:bg-blue-600;
+    @apply bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 border-0 flex items-center justify-center;
   }
   .status-confirmed {
-    @apply bg-emerald-500 text-white dark:bg-emerald-600;
+    @apply bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400 border-0 flex items-center justify-center;
   }
   .status-completed {
-    @apply bg-slate-500 text-white dark:bg-slate-600;
+    @apply bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 border-0 flex items-center justify-center;
   }
   .status-cancelled {
-    @apply bg-red-500 text-white dark:bg-red-600;
+    @apply bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-400 border-0 flex items-center justify-center;
   }
   .status-noshow {
-    @apply bg-amber-500 text-white dark:bg-amber-600;
+    @apply bg-amber-50 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400 border-0 flex items-center justify-center;
   }
 }
 

@@ -1,4 +1,4 @@
-﻿import { requireAuth } from '@/lib/auth/dal'
+import { requireAuth } from '@/lib/auth/dal'
 import { prisma } from '@/lib/db/prisma'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
@@ -45,10 +45,7 @@ export default async function NotificationSettingsPage() {
 
   return (
     <div className="max-w-2xl">
-      <BackButton label="العودة للإعدادات" />
-      <h1 className="text-2xl font-semibold mb-6">إعدادات الإشعارات (SMS)</h1>
-      
-      <form action={updateNotificationSettings} className="space-y-6 bg-card border border-border p-6 rounded-xl">
+      <form action={updateNotificationSettings} className="space-y-6">
         <input type="hidden" name="clinicId" value={membership.clinicId} />
         
         <div className="space-y-4">

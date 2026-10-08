@@ -9,9 +9,7 @@ export default async function SecuritySettingsPage() {
 
   return (
     <div className="max-w-2xl">
-      <h1 className="text-2xl font-semibold mb-6">إعدادات الأمان</h1>
-      
-      <form action={changePassword} className="space-y-6 bg-card border border-border p-6 rounded-xl">
+      <form action={changePassword} className="space-y-6">
         <div>
           <h2 className="text-lg font-medium mb-4">تغيير كلمة المرور</h2>
         </div>

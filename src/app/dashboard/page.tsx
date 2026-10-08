@@ -6,6 +6,7 @@ import { TodaysAppointments } from '@/components/dashboard/todays-appointments'
 import { UpcomingAppointments } from '@/components/dashboard/upcoming-appointments'
 import { RecentActivity } from '@/components/dashboard/recent-activity'
 import { StatsSkeleton, AppointmentsSkeleton, ChartSkeleton } from '@/components/dashboard/dashboard-skeleton'
+import { DashboardAnalytics } from '@/components/dashboard/dashboard-analytics'
 
 async function getClinicId(): Promise<string> {
   const user = await requireAuth()
@@ -168,24 +169,9 @@ export default async function DashboardPage() {
       </div>
 
       {/* Analytics placeholder - will be lazy loaded */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <Suspense fallback={<ChartSkeleton />}>
-          <div className="rounded-xl border border-border bg-card p-4">
-            <h2 className="text-section-title mb-4">المواعيد خلال آخر 7 أيام</h2>
-            <p className="text-body text-muted-foreground py-12 text-center">
-              سيتم تحميل الرسم البياني...
-            </p>
-          </div>
-        </Suspense>
-        <Suspense fallback={<ChartSkeleton />}>
-          <div className="rounded-xl border border-border bg-card p-4">
-            <h2 className="text-section-title mb-4">حالة المواعيد</h2>
-            <p className="text-body text-muted-foreground py-12 text-center">
-              سيتم تحميل الرسم البياني...
-            </p>
-          </div>
-        </Suspense>
-      </div>
+      <Suspense fallback={<ChartSkeleton />}>
+        <DashboardAnalytics clinicId={clinicId} />
+      </Suspense>
 
       {/* Recent activity */}
       <RecentActivity activities={[]} />
