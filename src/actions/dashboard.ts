@@ -325,6 +325,20 @@ export async function updateWebsiteSettings(formData: FormData) {
   const clinicId = await getActiveClinicId(user.id)
   
   const isPublished = formData.get('isPublished') === 'on'
+  const slug = formData.get('slug') as string
+
+  if (slug) {
+    const validSlug = /^[a-z0-9-]+$/.test(slug)
+    if (validSlug) {
+      const existing = await prisma.clinic.findUnique({ where: { slug } })
+      if (!existing || existing.id === clinicId) {
+        await prisma.clinic.update({
+          where: { id: clinicId },
+          data: { slug }
+        })
+      }
+    }
+  }
   
   await prisma.website.upsert({
     where: { clinicId },

@@ -65,7 +65,7 @@ function SortableSectionItem({
     <div 
       ref={setNodeRef} 
       style={style} 
-      className={`flex items-center justify-between p-4 mb-3 bg-card border border-border rounded-xl transition-colors duration-150 ${isDragging ? 'opacity-80' : ''}`}
+      className={`flex items-center justify-between p-4 mb-3 bg-white border border-slate-100 rounded-xl transition-all duration-200 hover:border-blue-100 ${isDragging ? 'opacity-80 scale-[0.98]' : ''}`}
     >
       <div className="flex items-center gap-3">
         <div {...attributes} {...listeners} className="cursor-grab text-muted-foreground hover:text-foreground touch-none">

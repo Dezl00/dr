@@ -1,11 +1,13 @@
 import { prisma } from '@/lib/db/prisma'
 import { requireAuth, getCurrentSession } from '@/lib/auth/dal'
 import Link from 'next/link'
-import { ExternalLink, Palette, LayoutList } from 'lucide-react'
+import { ExternalLink, Globe, LayoutTemplate, Link as LinkIcon } from 'lucide-react'
 import { updateWebsiteSettings } from '@/actions/dashboard'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
+import { Input } from '@/components/ui/input'
+import { SubmitButton } from '@/components/ui/submit-button'
 import type { Metadata } from 'next'
 import { WebsiteSectionsManager } from './components/WebsiteSectionsManager'
 
@@ -45,15 +47,19 @@ export default async function WebsitePage() {
   ])
 
   const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'localhost:3000'
+  const protocol = rootDomain.includes('localhost') ? 'http' : 'https'
   const siteUrl = `${clinic?.slug}.${rootDomain.replace(/:\d+$/, '')}`
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">الموقع الإلكتروني</h1>
-        <Button variant="outline" asChild className="rounded-xl border border-border">
+    <div className="space-y-8 max-w-5xl">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold text-slate-900">الموقع الإلكتروني</h1>
+          <p className="text-sm text-slate-500 mt-1">إدارة محتوى وإعدادات موقع العيادة الخاص بك</p>
+        </div>
+        <Button variant="default" asChild className="rounded-xl px-6 bg-blue-600 hover:bg-blue-700 text-white">
           <a
-            href={`http://${siteUrl}`}
+            href={`${protocol}://${siteUrl}`}
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -63,48 +69,88 @@ export default async function WebsitePage() {
         </Button>
       </div>
 
-      {/* Site URL */}
-      <div className="rounded-xl border border-border bg-card p-4">
-        <p className="text-sm text-muted-foreground mb-1">عنوان الموقع</p>
-        <div className="flex items-center gap-2">
-          <p className="text-base font-medium" dir="ltr">{siteUrl}</p>
-        </div>
-        {domains.filter(d => d.type === 'CUSTOM_DOMAIN').map(d => (
-          <p key={d.id} className="mt-1 text-sm text-muted-foreground" dir="ltr">{d.domain}</p>
-        ))}
-      </div>
-
-      <div className="max-w-xl">
-        <form action={updateWebsiteSettings} className="space-y-6 bg-card border border-border p-6 rounded-xl">
-          <h2 className="text-lg font-semibold">إعدادات النشر</h2>
-          
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <Label htmlFor="isPublished" className="text-base font-medium">نشر الموقع الإلكتروني</Label>
-              <p className="text-sm text-muted-foreground">عند التفعيل، سيكون الموقع متاحاً للعامة</p>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        {/* Settings Sidebar (Left/Right depending on RTL) */}
+        <div className="space-y-6 lg:col-span-1">
+          {/* Domain Settings */}
+          <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="bg-blue-50 text-blue-600 p-2 rounded-xl">
+                <Globe className="h-5 w-5" />
+              </div>
+              <h2 className="text-base font-semibold">إعدادات النشر والدومين</h2>
             </div>
-            {/* The Switch needs to submit a form, we can use a hidden input for the actual value or handle it if Switch has name prop. Switch typically supports name prop in Radix/shadcn */}
-            <Switch 
-              id="isPublished" 
-              name="isPublished" 
-              defaultChecked={website?.isPublished} 
-              dir="ltr"
-            />
-          </div>
-          
-          <Button type="submit" className="rounded-xl">حفظ التغييرات</Button>
-        </form>
-      </div>
+            
+            <form action={updateWebsiteSettings} className="space-y-5">
+              <div className="space-y-3">
+                <Label htmlFor="slug" className="text-sm font-medium text-slate-700">النطاق الفرعي (الصب دومين)</Label>
+                <div className="flex items-center" dir="ltr">
+                  <Input 
+                    type="text" 
+                    id="slug"
+                    name="slug"
+                    defaultValue={clinic?.slug || ''}
+                    className="rounded-r-none border-r-0 focus-visible:ring-0 text-right bg-slate-50 h-10"
+                    pattern="^[a-z0-9-]+$"
+                    title="حروف إنجليزية صغيرة وأرقام وعلامة الناقص فقط"
+                  />
+                  <div className="px-3 h-10 flex items-center bg-slate-100 border border-slate-200 rounded-r-lg text-sm text-slate-500 whitespace-nowrap">
+                    .{rootDomain.replace(/:\d+$/, '')}
+                  </div>
+                </div>
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  هذا هو الرابط الذي سيصل من خلاله المرضى لموقعك. يجب أن يحتوي على حروف إنجليزية صغيرة وأرقام فقط.
+                </p>
+              </div>
 
-      <div>
-        <h2 className="text-xl font-semibold mb-4 mt-8">أقسام الموقع</h2>
-        <div className="max-w-3xl">
-          {website?.sections ? (
-            <WebsiteSectionsManager initialSections={website.sections} />
-          ) : (
-            <p className="text-muted-foreground text-sm">لا توجد أقسام مضافة بعد.</p>
-          )}
+              <div className="h-px bg-slate-100 my-4" />
+
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <Label htmlFor="isPublished" className="text-sm font-medium text-slate-700">نشر الموقع</Label>
+                  <p className="text-xs text-slate-500">جعل الموقع متاحاً للعامة</p>
+                </div>
+                <Switch 
+                  id="isPublished" 
+                  name="isPublished" 
+                  defaultChecked={website?.isPublished} 
+                  dir="ltr"
+                />
+              </div>
+
+              <div className="pt-2">
+                <SubmitButton className="w-full rounded-xl bg-slate-900 text-white hover:bg-slate-800">حفظ الإعدادات</SubmitButton>
+              </div>
+            </form>
+          </div>
         </div>
+
+        {/* Sections Content */}
+        <div className="lg:col-span-2 space-y-6">
+          <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="bg-indigo-50 text-indigo-600 p-2 rounded-xl">
+                <LayoutTemplate className="h-5 w-5" />
+              </div>
+              <div>
+                <h2 className="text-base font-semibold">أقسام الموقع</h2>
+                <p className="text-sm text-slate-500 mt-1">قم بترتيب أقسام الموقع بالسحب والإفلات، أو فعل/عطل ما تريد.</p>
+              </div>
+            </div>
+
+            <div className="bg-slate-50/50 rounded-xl p-4 border border-slate-100">
+              {website?.sections ? (
+                <WebsiteSectionsManager initialSections={website.sections} />
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-slate-500 text-sm">لا توجد أقسام مضافة بعد.</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+        
       </div>
     </div>
   )

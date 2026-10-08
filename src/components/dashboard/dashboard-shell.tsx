@@ -214,14 +214,14 @@ export function DashboardShell({
                     <p className="text-sm font-medium">{user.fullName}</p>
                     <p className="text-xs text-muted-foreground truncate">{user.email}</p>
                   </div>
-                  <Link href="/dashboard/settings/profile" className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm hover:bg-slate-50 transition-colors" onClick={() => document.getElementById('user-dropdown-menu')?.classList.add('hidden')}>
+                  <Link href={`/dashboard/settings/profile`} className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm hover:bg-slate-50 transition-colors" onClick={() => document.getElementById('user-dropdown-menu')?.classList.add('hidden')}>
                     <Settings className="h-4 w-4 text-muted-foreground" />
                     إعدادات الحساب
                   </Link>
-                  <Link href={`/sites/${clinic.slug}`} target="_blank" className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm hover:bg-slate-50 transition-colors" onClick={() => document.getElementById('user-dropdown-menu')?.classList.add('hidden')}>
+                  <a href={`${process.env.NEXT_PUBLIC_ROOT_DOMAIN?.includes('localhost') ? 'http' : 'https'}://${clinic.slug}.${process.env.NEXT_PUBLIC_ROOT_DOMAIN}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm hover:bg-slate-50 transition-colors" onClick={() => document.getElementById('user-dropdown-menu')?.classList.add('hidden')}>
                     <ExternalLink className="h-4 w-4 text-muted-foreground" />
                     زيارة الموقع
-                  </Link>
+                  </a>
                   <div className="h-px bg-border my-1"></div>
                   <form action={logoutAction}>
                     <button type="submit" className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">
