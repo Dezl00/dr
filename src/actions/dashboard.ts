@@ -137,6 +137,36 @@ export async function createAppointment(formData: FormData) {
   redirect('/dashboard/appointments')
 }
 
+export async function updateAppointmentStatus(appointmentId: string, newStatus: any) {
+  const user = await requireAuth()
+  const clinicId = await getActiveClinicId(user.id)
+  
+  const apt = await prisma.appointment.findUnique({
+    where: { id: appointmentId, clinicId }
+  })
+  
+  if (!apt) throw new Error('Appointment not found')
+  if (apt.status === newStatus) return
+
+  await prisma.appointment.update({
+    where: { id: appointmentId },
+    data: { status: newStatus }
+  })
+
+  // Trigger SMS
+  import('@/lib/sms').then(({ sendAppointmentSMS }) => {
+    if (newStatus === 'CONFIRMED' || newStatus === 'SCHEDULED') {
+      sendAppointmentSMS({ clinicId, patientId: apt.patientId, serviceId: apt.serviceId || undefined, date: apt.date, startTime: apt.startTime, type: 'CONFIRMATION' })
+    } else if (newStatus === 'COMPLETED') {
+      sendAppointmentSMS({ clinicId, patientId: apt.patientId, serviceId: apt.serviceId || undefined, date: apt.date, startTime: apt.startTime, type: 'COMPLETED' })
+    } else if (newStatus === 'CANCELLED') {
+      sendAppointmentSMS({ clinicId, patientId: apt.patientId, serviceId: apt.serviceId || undefined, date: apt.date, startTime: apt.startTime, type: 'CANCELLATION' })
+    }
+  }).catch(console.error)
+
+  revalidatePath('/dashboard/appointments')
+}
+
 export async function updateProfile(formData: FormData) {
   const user = await requireAuth()
   

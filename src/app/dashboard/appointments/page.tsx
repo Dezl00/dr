@@ -5,6 +5,8 @@ import { Plus } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { Metadata } from 'next'
 import { ActionLink } from '@/components/ui/action-link'
+import { AppointmentStatusSelect } from '@/components/dashboard/appointment-status-select'
+
 
 export const metadata: Metadata = {
   title: 'المواعيد | DRS',
@@ -143,9 +145,7 @@ export default async function AppointmentsPage({
                         ) : '—'}
                       </td>
                       <td className="px-5 py-3.5">
-                        <span className={cn('inline-flex items-center rounded-md border px-2 py-1 text-xs font-medium', status.class)}>
-                          {status.label}
-                        </span>
+                        <AppointmentStatusSelect appointmentId={apt.id} currentStatus={apt.status} />
                       </td>
                     </tr>
                   )
@@ -167,9 +167,7 @@ export default async function AppointmentsPage({
                         {apt.doctor.fullName} {apt.service && <span className="mx-1">•</span>} {apt.service?.name}
                       </p>
                     </div>
-                    <span className={cn('inline-flex items-center rounded-md border px-2 py-1 text-xs font-medium', status.class)}>
-                      {status.label}
-                    </span>
+                    <AppointmentStatusSelect appointmentId={apt.id} currentStatus={apt.status} />
                   </div>
                   <div className="mt-4 flex items-center justify-between border-t border-border pt-3">
                     <p className="text-sm text-muted-foreground">
