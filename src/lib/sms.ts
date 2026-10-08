@@ -50,8 +50,13 @@ export async function sendAppointmentSMS({ clinicId, patientId, doctorId, servic
         break
     }
 
-    // Call actual SMS Gateway here (e.g. Twilio, WhySMS)
-    console.log(`[SMS Gateway Mock] Sending to ${patient.phone}: ${message}`)
+    // Call WhySMS API
+    const { sendSms } = await import('./whysms')
+    const result = await sendSms(patient.phone, message)
+    
+    if (result.success) {
+      console.log(`[SMS Gateway] Sent to ${patient.phone}: ${message}`)
+    }
 
   } catch (error) {
     console.error('Failed to send SMS:', error)
