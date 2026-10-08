@@ -29,21 +29,29 @@ export function StatsGrid({
             : undefined
         }
         icon={Calendar}
+        iconColorClass="text-blue-600"
+        iconBgClass="bg-blue-50"
       />
       <StatsCard
         title="الحالات النشطة"
         value={activeCases}
         icon={Activity}
+        iconColorClass="text-emerald-600"
+        iconBgClass="bg-emerald-50"
       />
       <StatsCard
         title="المواعيد المكتملة"
         value={completedAppointments}
         icon={CheckCircle2}
+        iconColorClass="text-slate-600"
+        iconBgClass="bg-slate-100"
       />
       <StatsCard
         title="المواعيد القادمة"
         value={upcomingAppointments}
         icon={Clock}
+        iconColorClass="text-amber-600"
+        iconBgClass="bg-amber-50"
       />
     </div>
   )

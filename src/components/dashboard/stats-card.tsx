@@ -10,9 +10,11 @@ interface StatsCardProps {
   }
   icon: LucideIcon
   className?: string
+  iconColorClass?: string
+  iconBgClass?: string
 }
 
-export function StatsCard({ title, value, change, icon: Icon, className }: StatsCardProps) {
+export function StatsCard({ title, value, change, icon: Icon, className, iconColorClass = "text-primary", iconBgClass = "bg-primary/5" }: StatsCardProps) {
   return (
     <div
       className={cn(
@@ -37,8 +39,8 @@ export function StatsCard({ title, value, change, icon: Icon, className }: Stats
             </p>
           )}
         </div>
-        <div className="rounded-lg bg-primary/5 p-2">
-          <Icon className="h-4 w-4 text-primary" strokeWidth={1.5} />
+        <div className={cn("rounded-lg p-3 shrink-0", iconBgClass)}>
+          <Icon className={cn("h-5 w-5", iconColorClass)} strokeWidth={1.5} />
         </div>
       </div>
     </div>
