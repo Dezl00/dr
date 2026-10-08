@@ -99,7 +99,7 @@ export function DashboardShell({
         <aside
           className={`${
             sidebarOpen ? 'translate-x-0 shadow-2xl' : 'translate-x-full lg:translate-x-0'
-          } fixed inset-y-0 end-0 z-50 flex w-[280px] lg:w-64 flex-col bg-blue-700 text-white transition-transform duration-300 ease-out lg:static lg:z-auto lg:shadow-none`}
+          } fixed inset-y-0 right-0 z-50 flex w-[280px] lg:w-64 flex-col bg-blue-700 text-white transition-transform duration-300 ease-out lg:static lg:z-auto lg:shadow-none`}
         >
           {/* Sidebar header */}
           <div className="flex h-14 items-center justify-between px-5 border-b border-blue-600/50">
