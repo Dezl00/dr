@@ -99,17 +99,21 @@ export function BookingForm({
         </div>
         <div className="space-y-2">
           <Label htmlFor="phone" className="font-medium text-[#050505]">رقم الهاتف</Label>
-          <Input 
-            id="phone" 
-            type="tel"
-            required 
-            value={formData.phone}
-            onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-            placeholder="05xxxxxxxx"
-            dir="ltr"
-            className="text-right rounded-none border-[#E5E7EB] font-normal"
-            style={{ '--tw-ring-color': 'var(--clinic-primary)' } as any}
-          />
+          <div className="relative flex w-full" dir="ltr">
+            <span className="inline-flex items-center rounded-l-md rounded-r-none border border-r-0 border-[#E5E7EB] bg-muted px-3 text-sm text-muted-foreground">
+              +20
+            </span>
+            <Input 
+              id="phone" 
+              type="tel"
+              required 
+              value={formData.phone}
+              onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+              placeholder="10xxxxxxxx"
+              className="rounded-l-none rounded-r-md border-[#E5E7EB] font-normal"
+              style={{ '--tw-ring-color': 'var(--clinic-primary)' } as any}
+            />
+          </div>
         </div>
         
         <div className="space-y-2">

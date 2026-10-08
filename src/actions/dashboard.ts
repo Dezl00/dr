@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { hashPassword, verifyPassword } from '@/lib/auth/password'
 import { AppointmentStatus, Gender } from '@prisma/client'
+import { sendAppointmentSMS } from '@/lib/sms'
 
 async function getActiveClinicId(userId: string): Promise<string> {
   const { session } = await getCurrentSession()
@@ -124,14 +125,16 @@ export async function createAppointment(formData: FormData) {
     },
   })
 
-  // Trigger SMS asynchronously based on status
-  import('@/lib/sms').then(({ sendAppointmentSMS }) => {
+  // Trigger SMS synchronously
+  try {
     if (status === 'CONFIRMED' || status === 'SCHEDULED') {
-      sendAppointmentSMS({ clinicId, patientId, serviceId, date: new Date(date), startTime, type: 'CONFIRMATION' })
+      await sendAppointmentSMS({ clinicId, patientId, serviceId: serviceId || undefined, date: new Date(date), startTime, type: 'CONFIRMATION' })
     } else if (status === 'COMPLETED') {
-      sendAppointmentSMS({ clinicId, patientId, serviceId, date: new Date(date), startTime, type: 'COMPLETED' })
+      await sendAppointmentSMS({ clinicId, patientId, serviceId: serviceId || undefined, date: new Date(date), startTime, type: 'COMPLETED' })
     }
-  }).catch(console.error)
+  } catch (error) {
+    console.error('SMS Error:', error)
+  }
 
   revalidatePath('/dashboard/appointments')
   redirect('/dashboard/appointments')
@@ -153,16 +156,18 @@ export async function updateAppointmentStatus(appointmentId: string, newStatus: 
     data: { status: newStatus }
   })
 
-  // Trigger SMS
-  import('@/lib/sms').then(({ sendAppointmentSMS }) => {
+  // Trigger SMS synchronously
+  try {
     if (newStatus === 'CONFIRMED' || newStatus === 'SCHEDULED') {
-      sendAppointmentSMS({ clinicId, patientId: apt.patientId, serviceId: apt.serviceId || undefined, date: apt.date, startTime: apt.startTime, type: 'CONFIRMATION' })
+      await sendAppointmentSMS({ clinicId, patientId: apt.patientId, serviceId: apt.serviceId || undefined, date: apt.date, startTime: apt.startTime, type: 'CONFIRMATION' })
     } else if (newStatus === 'COMPLETED') {
-      sendAppointmentSMS({ clinicId, patientId: apt.patientId, serviceId: apt.serviceId || undefined, date: apt.date, startTime: apt.startTime, type: 'COMPLETED' })
+      await sendAppointmentSMS({ clinicId, patientId: apt.patientId, serviceId: apt.serviceId || undefined, date: apt.date, startTime: apt.startTime, type: 'COMPLETED' })
     } else if (newStatus === 'CANCELLED') {
-      sendAppointmentSMS({ clinicId, patientId: apt.patientId, serviceId: apt.serviceId || undefined, date: apt.date, startTime: apt.startTime, type: 'CANCELLATION' })
+      await sendAppointmentSMS({ clinicId, patientId: apt.patientId, serviceId: apt.serviceId || undefined, date: apt.date, startTime: apt.startTime, type: 'CANCELLATION' })
     }
-  }).catch(console.error)
+  } catch (error) {
+    console.error('SMS Error:', error)
+  }
 
   revalidatePath('/dashboard/appointments')
 }
