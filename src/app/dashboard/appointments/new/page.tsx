@@ -120,6 +120,23 @@ export default async function NewAppointmentPage() {
           </div>
           
           <div className="space-y-2">
+            <label htmlFor="status" className="text-sm font-medium">حالة الموعد</label>
+            <select 
+              id="status"
+              name="status" 
+              defaultValue="SCHEDULED"
+              required 
+              className="w-full px-3 py-2 border border-gray-200 dark:border-[#1F1F1F] bg-transparent text-sm focus:outline-none focus:border-black dark:focus:border-white transition-colors appearance-none"
+            >
+              <option value="SCHEDULED">مجدول</option>
+              <option value="CONFIRMED">مؤكد</option>
+              <option value="COMPLETED">مكتمل</option>
+              <option value="CANCELLED">ملغي</option>
+              <option value="NO_SHOW">لم يحضر</option>
+            </select>
+          </div>
+
+          <div className="space-y-2">
             <label htmlFor="notes" className="text-sm font-medium">ملاحظات (اختياري)</label>
             <textarea 
               id="notes"

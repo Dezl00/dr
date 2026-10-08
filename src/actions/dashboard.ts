@@ -105,6 +105,7 @@ export async function createAppointment(formData: FormData) {
   const date = formData.get('date') as string
   const startTime = formData.get('startTime') as string
   const notes = formData.get('notes') as string
+  const status = formData.get('status') as any || 'SCHEDULED'
   
   if (!patientId || !doctorId || !date || !startTime) {
     throw new Error('البيانات المطلوبة مفقودة')
@@ -119,8 +120,18 @@ export async function createAppointment(formData: FormData) {
       date: new Date(date),
       startTime,
       notes,
+      status,
     },
   })
+
+  // Trigger SMS asynchronously based on status
+  import('@/lib/sms').then(({ sendAppointmentSMS }) => {
+    if (status === 'CONFIRMED' || status === 'SCHEDULED') {
+      sendAppointmentSMS({ clinicId, patientId, serviceId, date: new Date(date), startTime, type: 'CONFIRMATION' })
+    } else if (status === 'COMPLETED') {
+      sendAppointmentSMS({ clinicId, patientId, serviceId, date: new Date(date), startTime, type: 'COMPLETED' })
+    }
+  }).catch(console.error)
 
   revalidatePath('/dashboard/appointments')
   redirect('/dashboard/appointments')

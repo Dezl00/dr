@@ -251,6 +251,14 @@ model ClinicSettings {
   socialInstagram String?
   socialTwitter   String?
   socialWhatsapp  String?
+  
+  // Notification Settings
+  notifyBookingConfirmation Boolean @default(true)
+  notifyBookingCancellation Boolean @default(true)
+  notifyVisitCompletion     Boolean @default(true)
+  notifyAppointmentReminder Boolean @default(true)
+  reminderHoursBefore       Int     @default(24)
+
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
