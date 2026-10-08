@@ -58,60 +58,60 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
         {/* Invoice Printable Area */}
         <div className="lg:col-span-2 relative">
           
-          <div id="printable-invoice" className="bg-white text-black border border-border rounded-xl p-8 shadow-sm print:absolute print:left-0 print:top-0 print:w-screen print:border-none print:shadow-none print:z-[9999] print:bg-white print:m-0 print:p-8">
+          <div id="printable-invoice" className="bg-card text-foreground border border-border rounded-xl p-8 shadow-sm print:absolute print:left-0 print:top-0 print:w-full print:border-none print:shadow-none print:z-[9999] print:bg-white print:text-black print:m-0 print:p-0">
             {/* Invoice Header */}
-            <div className="flex justify-between items-start border-b pb-6 mb-6 border-slate-200">
+            <div className="flex justify-between items-start border-b pb-6 mb-6 border-slate-200 print:border-black">
               <div>
-                <h2 className="text-3xl font-bold text-slate-800">{invoice.clinic.name}</h2>
-                <div className="text-slate-500 mt-2 space-y-1 text-sm">
+                <h2 className="text-3xl font-bold text-slate-800 print:text-black">{invoice.clinic.name}</h2>
+                <div className="text-slate-500 print:text-black mt-2 space-y-1 text-sm">
                   {invoice.clinic.settings?.address && (
-                    <p className="flex items-center gap-2"><Building2 className="w-4 h-4" /> {invoice.clinic.settings.address}</p>
+                    <p className="flex items-center gap-2"><Building2 className="w-4 h-4 print:hidden" /> {invoice.clinic.settings.address}</p>
                   )}
                   {invoice.clinic.settings?.phone && (
-                    <p className="flex items-center gap-2"><Phone className="w-4 h-4" /> {invoice.clinic.settings.phone}</p>
+                    <p className="flex items-center gap-2"><Phone className="w-4 h-4 print:hidden" /> {invoice.clinic.settings.phone}</p>
                   )}
                   {invoice.clinic.settings?.email && (
-                    <p className="flex items-center gap-2"><Mail className="w-4 h-4" /> {invoice.clinic.settings.email}</p>
+                    <p className="flex items-center gap-2"><Mail className="w-4 h-4 print:hidden" /> {invoice.clinic.settings.email}</p>
                   )}
                 </div>
               </div>
-              <div className="text-left rtl:text-right bg-slate-50 p-4 rounded-lg">
-                <h1 className="text-2xl font-bold text-slate-400 mb-2 uppercase tracking-widest">INVOICE</h1>
-                <p className="text-slate-600 font-medium">رقم الفاتورة: <span className="text-slate-900">{invoice.invoiceNumber}</span></p>
-                <p className="text-slate-600 font-medium">التاريخ: <span className="text-slate-900">{format(new Date(invoice.createdAt), 'dd/MM/yyyy')}</span></p>
+              <div className="text-left rtl:text-right bg-slate-50 print:bg-transparent p-4 rounded-lg print:p-0">
+                <h1 className="text-2xl font-bold text-slate-400 print:text-black mb-2 uppercase tracking-widest">INVOICE</h1>
+                <p className="text-slate-600 print:text-black font-medium">رقم الفاتورة: <span className="text-slate-900 print:text-black">{invoice.invoiceNumber}</span></p>
+                <p className="text-slate-600 print:text-black font-medium">التاريخ: <span className="text-slate-900 print:text-black">{format(new Date(invoice.createdAt), 'dd/MM/yyyy')}</span></p>
               </div>
             </div>
 
             {/* Patient Info */}
-            <div className="mb-8 p-4 rounded-lg bg-slate-50 border border-slate-100">
-              <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">فاتورة إلى / Billed To:</h3>
-              <p className="text-lg font-bold text-slate-800">{invoice.patient.fullName}</p>
-              <p className="text-slate-600" dir="ltr">{invoice.patient.phone}</p>
+            <div className="mb-8 p-4 rounded-lg bg-slate-50 print:bg-transparent border border-slate-100 print:border-none print:p-0">
+              <h3 className="text-sm font-bold text-slate-400 print:text-black uppercase tracking-wider mb-2">فاتورة إلى / Billed To:</h3>
+              <p className="text-lg font-bold text-slate-800 print:text-black">{invoice.patient.fullName}</p>
+              <p className="text-slate-600 print:text-black" dir="ltr">{invoice.patient.phone}</p>
             </div>
 
             {/* Invoice Items Table */}
             <div className="mb-8">
-              <table className="w-full text-sm text-right">
+              <table className="w-full text-sm text-right print:text-black">
                 <thead>
-                  <tr className="border-b-2 border-slate-200 text-slate-600">
+                  <tr className="border-b-2 border-slate-200 print:border-black text-slate-600 print:text-black">
                     <th className="pb-3 font-bold">البيان / الوصف</th>
                     <th className="pb-3 font-bold text-center">الكمية</th>
                     <th className="pb-3 font-bold text-center">سعر الوحدة</th>
                     <th className="pb-3 font-bold text-left rtl:text-left">الإجمالي</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-slate-100 print:divide-black">
                   {invoice.items.map(item => (
                     <tr key={item.id}>
-                      <td className="py-4 text-slate-800 font-medium">{item.description}</td>
-                      <td className="py-4 text-center text-slate-600">{item.quantity}</td>
-                      <td className="py-4 text-center text-slate-600" dir="ltr">{Number(item.unitPrice).toLocaleString()} EGP</td>
-                      <td className="py-4 text-left font-bold text-slate-800" dir="ltr">{Number(item.total).toLocaleString()} EGP</td>
+                      <td className="py-4 text-slate-800 print:text-black font-medium">{item.description}</td>
+                      <td className="py-4 text-center text-slate-600 print:text-black">{item.quantity}</td>
+                      <td className="py-4 text-center text-slate-600 print:text-black" dir="ltr">{Number(item.unitPrice).toLocaleString()} EGP</td>
+                      <td className="py-4 text-left font-bold text-slate-800 print:text-black" dir="ltr">{Number(item.total).toLocaleString()} EGP</td>
                     </tr>
                   ))}
                   {invoice.items.length === 0 && (
                     <tr>
-                      <td colSpan={4} className="py-4 text-center text-slate-500">لا توجد بنود مفصلة (فاتورة مبدئية)</td>
+                      <td colSpan={4} className="py-4 text-center text-slate-500 print:text-black">لا توجد بنود مفصلة (فاتورة مبدئية)</td>
                     </tr>
                   )}
                 </tbody>
@@ -119,17 +119,17 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
             </div>
 
             {/* Totals */}
-            <div className="flex justify-end border-t-2 border-slate-200 pt-6">
-              <div className="w-full max-w-sm space-y-3 text-sm">
-                <div className="flex justify-between items-center text-slate-600">
+            <div className="flex justify-end border-t-2 border-slate-200 print:border-black pt-6">
+              <div className="w-full max-w-sm space-y-3 text-sm print:text-black">
+                <div className="flex justify-between items-center text-slate-600 print:text-black">
                   <span>الإجمالي (Subtotal)</span>
                   <span className="font-medium" dir="ltr">{Number(invoice.total).toLocaleString()} EGP</span>
                 </div>
-                <div className="flex justify-between items-center text-green-600 border-b border-slate-200 pb-3">
+                <div className="flex justify-between items-center text-green-600 print:text-black border-b border-slate-200 print:border-black pb-3">
                   <span>إجمالي المدفوع (Paid)</span>
                   <span className="font-medium" dir="ltr">- {totalPaid.toLocaleString()} EGP</span>
                 </div>
-                <div className="flex justify-between items-center text-lg font-bold text-slate-800 pt-1">
+                <div className="flex justify-between items-center text-lg font-bold text-slate-800 print:text-black pt-1">
                   <span>المتبقي (Balance Due)</span>
                   <span dir="ltr">{remaining.toLocaleString()} EGP</span>
                 </div>
@@ -137,7 +137,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
             </div>
 
             {/* Footer / Notes */}
-            <div className="mt-16 pt-8 border-t border-slate-200 text-slate-500 text-sm">
+            <div className="mt-16 pt-8 border-t border-slate-200 print:border-black text-slate-500 print:text-black text-sm">
               {invoice.notes && (
                 <div className="mb-4">
                   <span className="font-bold">ملاحظات: </span>
@@ -147,12 +147,24 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
               <p className="text-center">نتمنى لكم دوام الصحة والعافية.</p>
             </div>
             
-            {/* Print only style overrides */}
             <style dangerouslySetInnerHTML={{__html: `
               @media print {
-                body > *:not(.max-w-5xl) { display: none !important; }
-                header, nav, aside { display: none !important; }
-                .max-w-5xl { max-width: 100% !important; margin: 0 !important; padding: 0 !important; }
+                body * {
+                  visibility: hidden;
+                }
+                #printable-invoice, #printable-invoice * {
+                  visibility: visible;
+                }
+                #printable-invoice {
+                  position: absolute;
+                  left: 0;
+                  top: 0;
+                  width: 100%;
+                  margin: 0;
+                  padding: 20px;
+                  background-color: white !important;
+                  color: black !important;
+                }
               }
             `}} />
           </div>

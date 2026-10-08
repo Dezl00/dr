@@ -121,7 +121,7 @@ export function InvoiceForm({ patients }: { patients: {id: string, fullName: str
               <SelectContent>
                 <SelectItem value="CASH">كاش (نقداً)</SelectItem>
                 <SelectItem value="CARD">فيزا / ماستركارد</SelectItem>
-                <SelectItem value="TRANSFER">تحويل بنكي / محافظ</SelectItem>
+                <SelectItem value="BANK_TRANSFER">تحويل بنكي / محافظ</SelectItem>
               </SelectContent>
             </Select>
           </div>
