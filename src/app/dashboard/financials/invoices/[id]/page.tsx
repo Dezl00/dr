@@ -3,8 +3,9 @@ import { prisma } from '@/lib/db/prisma'
 import { notFound } from 'next/navigation'
 import { format } from 'date-fns'
 import { ar } from 'date-fns/locale'
-import { Printer, CreditCard } from 'lucide-react'
+import { CreditCard, Building2, Phone, Mail } from 'lucide-react'
 import { PaymentForm } from './_components/payment-form'
+import { PrintButton } from './_components/print-button'
 
 async function getClinicId(userId: string) {
   const { session } = await getCurrentSession()
@@ -25,6 +26,8 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
     where: { id, clinicId },
     include: {
       patient: true,
+      items: true,
+      clinic: true,
       payments: {
         orderBy: { paymentDate: 'desc' }
       }
@@ -37,45 +40,116 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
   const remaining = Number(invoice.total) - totalPaid
 
   return (
-    <div className="max-w-4xl space-y-6">
-      <div className="flex items-center justify-between border-b border-border pb-6">
+    <div className="max-w-5xl mx-auto space-y-6 pb-20">
+      
+      {/* Header Controls - Hidden in print */}
+      <div className="flex items-center justify-between border-b border-border pb-6 print:hidden">
         <div>
-          <h1 className="text-2xl font-bold">فاتورة رقم {invoice.invoiceNumber}</h1>
+          <h1 className="text-2xl font-bold">فاتورة {invoice.invoiceNumber}</h1>
           <p className="text-muted-foreground mt-1">تاريخ الإصدار: {format(new Date(invoice.createdAt), 'dd MMMM yyyy', { locale: ar })}</p>
         </div>
-        <button className="inline-flex items-center gap-2 rounded-lg border bg-card px-4 py-2 text-sm font-medium hover:bg-accent transition-colors">
-          <Printer className="h-4 w-4" /> طباعة
-        </button>
+        <PrintButton />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="md:col-span-2 space-y-6">
-          <div className="bg-card border border-border rounded-xl p-6">
-            <h3 className="font-semibold mb-4 text-muted-foreground border-b border-border pb-2">بيانات المريض</h3>
-            <p className="font-medium text-lg">{invoice.patient.fullName}</p>
-            <p className="text-muted-foreground" dir="ltr">{invoice.patient.phone}</p>
-          </div>
-
-          <div className="bg-card border border-border rounded-xl overflow-hidden">
-            <h3 className="font-semibold p-4 text-muted-foreground bg-muted/30 border-b border-border">تفاصيل الحساب</h3>
-            <div className="p-4 space-y-4">
-              <div className="flex justify-between items-center py-2">
-                <span className="font-medium">المبلغ الإجمالي للفاتورة</span>
-                <span className="font-bold text-lg" dir="ltr">{Number(invoice.total).toLocaleString()} EGP</span>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        {/* Invoice Printable Area */}
+        <div className="lg:col-span-2 relative">
+          
+          <div id="printable-invoice" className="bg-white text-black border border-border rounded-xl p-8 shadow-sm print:absolute print:left-0 print:top-0 print:w-screen print:border-none print:shadow-none print:z-[9999] print:bg-white print:m-0 print:p-8">
+            {/* Invoice Header */}
+            <div className="flex justify-between items-start border-b pb-6 mb-6 border-slate-200">
+              <div>
+                <h2 className="text-3xl font-bold text-slate-800">{invoice.clinic.name}</h2>
+                <div className="text-slate-500 mt-2 space-y-1 text-sm">
+                  {/* Clinic settings could go here */}
+                </div>
               </div>
-              <div className="flex justify-between items-center py-2 text-green-600">
-                <span className="font-medium">إجمالي المدفوع</span>
-                <span className="font-bold text-lg" dir="ltr">- {totalPaid.toLocaleString()} EGP</span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-t border-border pt-4">
-                <span className="font-bold text-lg">المتبقي (المديونية)</span>
-                <span className="font-bold text-xl text-red-500" dir="ltr">{remaining.toLocaleString()} EGP</span>
+              <div className="text-left rtl:text-right bg-slate-50 p-4 rounded-lg">
+                <h1 className="text-2xl font-bold text-slate-400 mb-2 uppercase tracking-widest">INVOICE</h1>
+                <p className="text-slate-600 font-medium">رقم الفاتورة: <span className="text-slate-900">{invoice.invoiceNumber}</span></p>
+                <p className="text-slate-600 font-medium">التاريخ: <span className="text-slate-900">{format(new Date(invoice.createdAt), 'dd/MM/yyyy')}</span></p>
               </div>
             </div>
+
+            {/* Patient Info */}
+            <div className="mb-8 p-4 rounded-lg bg-slate-50 border border-slate-100">
+              <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">فاتورة إلى / Billed To:</h3>
+              <p className="text-lg font-bold text-slate-800">{invoice.patient.fullName}</p>
+              <p className="text-slate-600" dir="ltr">{invoice.patient.phone}</p>
+            </div>
+
+            {/* Invoice Items Table */}
+            <div className="mb-8">
+              <table className="w-full text-sm text-right">
+                <thead>
+                  <tr className="border-b-2 border-slate-200 text-slate-600">
+                    <th className="pb-3 font-bold">البيان / الوصف</th>
+                    <th className="pb-3 font-bold text-center">الكمية</th>
+                    <th className="pb-3 font-bold text-center">سعر الوحدة</th>
+                    <th className="pb-3 font-bold text-left rtl:text-left">الإجمالي</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {invoice.items.map(item => (
+                    <tr key={item.id}>
+                      <td className="py-4 text-slate-800 font-medium">{item.description}</td>
+                      <td className="py-4 text-center text-slate-600">{item.quantity}</td>
+                      <td className="py-4 text-center text-slate-600" dir="ltr">{Number(item.unitPrice).toLocaleString()} EGP</td>
+                      <td className="py-4 text-left font-bold text-slate-800" dir="ltr">{Number(item.total).toLocaleString()} EGP</td>
+                    </tr>
+                  ))}
+                  {invoice.items.length === 0 && (
+                    <tr>
+                      <td colSpan={4} className="py-4 text-center text-slate-500">لا توجد بنود مفصلة (فاتورة مبدئية)</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Totals */}
+            <div className="flex justify-end border-t-2 border-slate-200 pt-6">
+              <div className="w-full max-w-sm space-y-3 text-sm">
+                <div className="flex justify-between items-center text-slate-600">
+                  <span>الإجمالي (Subtotal)</span>
+                  <span className="font-medium" dir="ltr">{Number(invoice.total).toLocaleString()} EGP</span>
+                </div>
+                <div className="flex justify-between items-center text-green-600 border-b border-slate-200 pb-3">
+                  <span>إجمالي المدفوع (Paid)</span>
+                  <span className="font-medium" dir="ltr">- {totalPaid.toLocaleString()} EGP</span>
+                </div>
+                <div className="flex justify-between items-center text-lg font-bold text-slate-800 pt-1">
+                  <span>المتبقي (Balance Due)</span>
+                  <span dir="ltr">{remaining.toLocaleString()} EGP</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer / Notes */}
+            <div className="mt-16 pt-8 border-t border-slate-200 text-slate-500 text-sm">
+              {invoice.notes && (
+                <div className="mb-4">
+                  <span className="font-bold">ملاحظات: </span>
+                  {invoice.notes}
+                </div>
+              )}
+              <p className="text-center">نتمنى لكم دوام الصحة والعافية.</p>
+            </div>
+            
+            {/* Print only style overrides */}
+            <style dangerouslySetInnerHTML={{__html: `
+              @media print {
+                body > *:not(.max-w-5xl) { display: none !important; }
+                header, nav, aside { display: none !important; }
+                .max-w-5xl { max-width: 100% !important; margin: 0 !important; padding: 0 !important; }
+              }
+            `}} />
           </div>
         </div>
 
-        <div className="md:col-span-1 space-y-6">
+        {/* Sidebar Actions - Hidden in print */}
+        <div className="lg:col-span-1 space-y-6 print:hidden">
           {remaining > 0 && (
             <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
               <div className="flex items-center gap-2 mb-4 text-primary">
@@ -93,10 +167,10 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
                 {invoice.payments.map(payment => (
                   <div key={payment.id} className="flex justify-between items-center text-sm">
                     <div>
-                      <p className="font-medium" dir="ltr">{Number(payment.amount).toLocaleString()} EGP</p>
-                      <p className="text-xs text-muted-foreground">{format(new Date(payment.paymentDate), 'dd MMM yyyy')}</p>
+                      <p className="font-medium text-foreground" dir="ltr">{Number(payment.amount).toLocaleString()} EGP</p>
+                      <p className="text-xs text-muted-foreground mt-1">{format(new Date(payment.paymentDate), 'dd MMM yyyy')}</p>
                     </div>
-                    <span className="px-2 py-1 rounded-md bg-muted text-xs">
+                    <span className="px-2 py-1 rounded-md bg-muted text-xs font-medium border border-border">
                       {payment.method === 'CASH' ? 'كاش' : payment.method === 'CARD' ? 'بطاقة' : 'تحويل'}
                     </span>
                   </div>
@@ -105,6 +179,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
             </div>
           )}
         </div>
+
       </div>
     </div>
   )
