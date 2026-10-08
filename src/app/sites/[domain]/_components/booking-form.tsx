@@ -37,6 +37,7 @@ export function BookingForm({
     fullName: '',
     phone: '',
   })
+  const [isSuccess, setIsSuccess] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -59,19 +60,7 @@ export function BookingForm({
     })
 
     if (result.success) {
-      toast({
-        title: "تم الحجز بنجاح",
-        description: "تم استلام طلب الحجز الخاص بك. سنتواصل معك قريباً لتأكيد الموعد.",
-      })
-      setFormData({
-        serviceId: '',
-        doctorId: '',
-        startTime: '',
-        fullName: '',
-        phone: '',
-      })
-      setDateObj(undefined)
-      router.refresh()
+      setIsSuccess(true)
     } else {
       toast({
         variant: "destructive",
@@ -80,6 +69,35 @@ export function BookingForm({
       })
     }
     setLoading(false)
+  }
+
+  if (isSuccess) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12 text-center animate-in fade-in zoom-in duration-300">
+        <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mb-6">
+          <div className="w-14 h-14 bg-green-500 rounded-full flex items-center justify-center shadow-lg shadow-green-500/20">
+            <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+        </div>
+        <h3 className="text-2xl font-bold text-[#050505] mb-2">تم تأكيد حجزك بنجاح!</h3>
+        <p className="text-[#050505]/70 max-w-sm font-normal">
+          لقد قمنا بتسجيل موعدك وسنقوم بإرسال رسالة نصية (SMS) لتأكيد الحجز فوراً. نتمنى لك دوام الصحة والعافية.
+        </p>
+        <Button 
+          variant="outline" 
+          onClick={() => {
+            setIsSuccess(false)
+            setFormData({ serviceId: '', doctorId: '', startTime: '', fullName: '', phone: '' })
+            setDateObj(undefined)
+          }} 
+          className="mt-8 rounded-none border-[#E5E7EB] font-medium text-[#050505] hover:bg-gray-50"
+        >
+          حجز موعد جديد
+        </Button>
+      </div>
+    )
   }
 
   return (
@@ -203,8 +221,14 @@ export function BookingForm({
         </div>
       </div>
 
-      <Button type="submit" className="w-full rounded-none font-medium hover:opacity-90 transition-opacity text-[#FFFFFF]" disabled={loading} style={{ backgroundColor: 'var(--clinic-primary)' }}>
-        {loading ? 'جاري الإرسال...' : 'تأكيد الحجز'}
+      <Button type="submit" className="w-full rounded-none font-medium hover:opacity-90 transition-opacity text-[#FFFFFF] flex items-center justify-center gap-2" disabled={loading} style={{ backgroundColor: 'var(--clinic-primary)' }}>
+        {loading && (
+          <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+        )}
+        {loading ? 'جاري تأكيد الحجز...' : 'تأكيد الحجز'}
       </Button>
     </form>
   )
