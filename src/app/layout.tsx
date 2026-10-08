@@ -7,11 +7,12 @@ export const metadata: Metadata = {
   manifest: '/manifest.json',
 }
 
-import { Cairo } from 'next/font/google'
+import { IBM_Plex_Sans_Arabic } from 'next/font/google'
 
-const cairo = Cairo({
+const ibmPlex = IBM_Plex_Sans_Arabic({
   subsets: ['arabic'],
-  variable: '--font-cairo',
+  weight: ['100', '200', '300', '400', '500', '600', '700'],
+  variable: '--font-ibm-plex',
   display: 'swap',
 })
 
@@ -22,7 +23,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ar" dir="rtl">
-      <body className={`${cairo.variable} font-sans bg-background text-foreground antialiased`}>
+      <body className={`${ibmPlex.variable} font-sans bg-background text-foreground antialiased`}>
         {children}
       </body>
     </html>

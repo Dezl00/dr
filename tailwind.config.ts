@@ -57,6 +57,9 @@ const config: Config = {
         'body': ['0.875rem', { lineHeight: '1.375rem', fontWeight: '400' }],
         'small': ['0.75rem', { lineHeight: '1.125rem', fontWeight: '400' }],
       },
+      fontFamily: {
+        sans: ['var(--font-ibm-plex)', 'system-ui', '-apple-system', 'sans-serif'],
+      },
     },
   },
   plugins: [require('tailwindcss-animate')],
