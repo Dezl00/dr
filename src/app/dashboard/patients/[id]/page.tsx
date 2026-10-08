@@ -66,8 +66,8 @@ export default async function PatientEMRPage({ params }: { params: Promise<{ id:
         </div>
       </div>
 
-      <Tabs defaultValue="basic-info" className="w-full">
-        <TabsList className="w-full justify-start overflow-x-auto overflow-y-hidden border-b rounded-none bg-transparent h-auto p-0 space-x-0 rtl:space-x-reverse space-x-reverse">
+      <Tabs defaultValue="basic-info" className="w-full" dir="rtl">
+        <TabsList className="w-full justify-start overflow-x-auto overflow-y-hidden border-b rounded-none bg-transparent h-auto p-0 flex rtl:flex-row-reverse">
           <TabsTrigger value="basic-info" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-6 py-3">
             البيانات الأساسية
           </TabsTrigger>

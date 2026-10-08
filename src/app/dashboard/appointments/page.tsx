@@ -80,7 +80,7 @@ export default async function AppointmentsPage({
 
       {/* Status filters */}
       <div className="mb-6 flex flex-wrap gap-2">
-        <ActionLink
+        <Link prefetch={true}
           href="/dashboard/appointments"
           className={cn(
             'rounded-md border px-4 py-2 text-sm font-medium transition-colors duration-150',
@@ -90,9 +90,9 @@ export default async function AppointmentsPage({
           )}
         >
           الكل
-        </ActionLink>
+        </Link>
         {Object.entries(STATUS_MAP).map(([key, { label }]) => (
-          <ActionLink
+          <Link prefetch={true}
             key={key}
             href={`/dashboard/appointments?status=${key}`}
             className={cn(
@@ -103,7 +103,7 @@ export default async function AppointmentsPage({
             )}
           >
             {label}
-          </ActionLink>
+          </Link>
         ))}
       </div>
 
