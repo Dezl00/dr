@@ -12,38 +12,47 @@ export async function DashboardAnalytics({ clinicId }: { clinicId: string }) {
     return d
   })
 
-  const [appointmentsByDay, statuses, newPatients] = await Promise.all([
-    // Appointments over the last 7 days
-    Promise.all(days.map(async (day) => {
-      const nextDay = new Date(day)
-      nextDay.setDate(nextDay.getDate() + 1)
-      const count = await prisma.appointment.count({
-        where: {
-          clinicId,
-          date: { gte: day, lt: nextDay }
-        }
-      })
-      return { day: day.toLocaleDateString('ar-EG-u-nu-latn', { weekday: 'short' }), count }
-    })),
+  const sevenDaysAgo = new Date(today)
+  sevenDaysAgo.setDate(today.getDate() - 6)
+
+  const [appointments, statuses, patients] = await Promise.all([
+    // Fetch all appointments in the last 7 days
+    prisma.appointment.findMany({
+      where: {
+        clinicId,
+        date: { gte: sevenDaysAgo }
+      },
+      select: { date: true }
+    }),
     // Status breakdown for upcoming/today
     prisma.appointment.groupBy({
       by: ['status'],
       where: { clinicId, date: { gte: today } },
       _count: { status: true }
     }),
-    // New patients over the last 7 days
-    Promise.all(days.map(async (day) => {
-      const nextDay = new Date(day)
-      nextDay.setDate(nextDay.getDate() + 1)
-      const count = await prisma.patient.count({
-        where: {
-          clinicId,
-          createdAt: { gte: day, lt: nextDay }
-        }
-      })
-      return { day: day.toLocaleDateString('ar-EG-u-nu-latn', { weekday: 'short' }), count }
-    }))
+    // Fetch all new patients in the last 7 days
+    prisma.patient.findMany({
+      where: {
+        clinicId,
+        createdAt: { gte: sevenDaysAgo }
+      },
+      select: { createdAt: true }
+    })
   ])
+
+  const appointmentsByDay = days.map((day) => {
+    const nextDay = new Date(day)
+    nextDay.setDate(nextDay.getDate() + 1)
+    const count = appointments.filter(a => a.date >= day && a.date < nextDay).length
+    return { day: day.toLocaleDateString('ar-EG-u-nu-latn', { weekday: 'short' }), count }
+  })
+
+  const newPatients = days.map((day) => {
+    const nextDay = new Date(day)
+    nextDay.setDate(nextDay.getDate() + 1)
+    const count = patients.filter(p => p.createdAt >= day && p.createdAt < nextDay).length
+    return { day: day.toLocaleDateString('ar-EG-u-nu-latn', { weekday: 'short' }), count }
+  })
 
   // Mapping statuses
   const STATUS_MAP_AR: Record<string, string> = {
