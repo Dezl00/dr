@@ -12,9 +12,9 @@ export async function sendOtpSms(phone: string, code: string) {
   }
 
   // WhySMS API configuration
-  // Fallback to standard environment variables
   const apiKey = process.env.WHYSMS_API_KEY
-  const senderId = process.env.WHYSMS_SENDER_ID || 'OTP'
+  let senderId = process.env.WHYSMS_SENDER_ID || 'VERIFYX'
+  if (senderId === 'WhySMS Test') senderId = 'VERIFYX'
 
   if (!apiKey) {
     console.warn('WHYSMS_API_KEY is not set. SMS sending skipped. OTP is:', code)
@@ -67,7 +67,8 @@ export async function sendSms(phone: string, message: string) {
   }
 
   const apiKey = process.env.WHYSMS_API_KEY
-  const senderId = process.env.WHYSMS_SENDER_ID || 'OTP'
+  let senderId = process.env.WHYSMS_SENDER_ID || 'VERIFYX'
+  if (senderId === 'WhySMS Test') senderId = 'VERIFYX'
 
   if (!apiKey) {
     console.warn('WHYSMS_API_KEY is not set. SMS sending skipped. Message:', message)
