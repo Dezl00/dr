@@ -4,16 +4,17 @@ import { format } from 'date-fns'
 import { ar } from 'date-fns/locale'
 import { Button } from '@/components/ui/button'
 import { Plus, Printer } from 'lucide-react'
+import Link from 'next/link'
 
-export function PatientPrescriptions({ prescriptions }: { prescriptions: any[] }) {
+export function PatientPrescriptions({ prescriptions, patientId }: { prescriptions: any[], patientId: string }) {
   if (!prescriptions || prescriptions.length === 0) {
     return (
       <div className="p-12 text-center text-muted-foreground border rounded-xl bg-card">
         <p className="mb-4">لا توجد روشتات طبية مسجلة لهذا المريض.</p>
-        <Button className="gap-2">
+        <Link href={`/dashboard/patients/${patientId}/prescriptions/new`} className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90">
           <Plus className="h-4 w-4" />
           كتابة روشتة جديدة
-        </Button>
+        </Link>
       </div>
     )
   }
@@ -22,10 +23,10 @@ export function PatientPrescriptions({ prescriptions }: { prescriptions: any[] }
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-semibold">الروشتات الطبية</h3>
-        <Button className="gap-2">
+        <Link href={`/dashboard/patients/${patientId}/prescriptions/new`} className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90">
           <Plus className="h-4 w-4" />
           روشتة جديدة
-        </Button>
+        </Link>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">

@@ -134,7 +134,11 @@ export default async function InventoryPage({
                 return (
                   <tr key={item.id} className="transition-colors duration-150 hover:bg-accent/50">
                     <td className="px-5 py-3.5 text-muted-foreground" dir="ltr">{item.sku || '—'}</td>
-                    <td className="px-5 py-3.5 font-medium">{item.name}</td>
+                    <td className="px-5 py-3.5 font-medium">
+                      <Link href={`/dashboard/inventory/${item.id}`} className="hover:underline text-primary">
+                        {item.name}
+                      </Link>
+                    </td>
                     <td className="px-5 py-3.5 text-muted-foreground">{item.category || '—'}</td>
                     <td className={`px-5 py-3.5 font-bold ${isLow ? 'text-red-500' : 'text-foreground'}`}>
                       {item.quantity}

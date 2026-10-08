@@ -48,7 +48,11 @@ export function PatientBilling({ invoices }: { invoices: any[] }) {
           <tbody className="divide-y divide-border">
             {invoices.map((invoice) => (
               <tr key={invoice.id} className="transition-colors hover:bg-accent/50">
-                <td className="px-5 py-3.5 font-medium">{invoice.invoiceNumber}</td>
+                <td className="px-5 py-3.5 font-medium">
+                  <Link href={`/dashboard/financials/invoices/${invoice.id}`} className="hover:underline text-primary">
+                    {invoice.invoiceNumber}
+                  </Link>
+                </td>
                 <td className="px-5 py-3.5">
                   {format(new Date(invoice.createdAt), 'dd MMMM yyyy', { locale: ar })}
                 </td>

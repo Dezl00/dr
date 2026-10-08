@@ -78,6 +78,9 @@ export default async function PatientEMRPage({ params }: { params: Promise<{ id:
           <TabsTrigger value="appointments" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-6 py-3">
             المواعيد
           </TabsTrigger>
+          <TabsTrigger value="attachments" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-6 py-3">
+            الأشعة والملفات
+          </TabsTrigger>
           <TabsTrigger value="prescriptions" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-6 py-3">
             الروشتات
           </TabsTrigger>
@@ -103,8 +106,17 @@ export default async function PatientEMRPage({ params }: { params: Promise<{ id:
             <PatientAppointments appointments={patient.appointments} />
           </TabsContent>
 
+          <TabsContent value="attachments" className="mt-0 outline-none">
+            <div className="p-12 text-center text-muted-foreground border rounded-xl bg-card">
+              <p className="mb-4">معرض صور الأشعة والتحاليل الطبية.</p>
+              <button className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90">
+                رفع ملف جديد
+              </button>
+            </div>
+          </TabsContent>
+
           <TabsContent value="prescriptions" className="mt-0 outline-none">
-            <PatientPrescriptions prescriptions={patient.prescriptions} />
+            <PatientPrescriptions prescriptions={patient.prescriptions} patientId={patient.id} />
           </TabsContent>
 
           <TabsContent value="billing" className="mt-0 outline-none">

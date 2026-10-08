@@ -133,7 +133,11 @@ export default async function FinancialsPage() {
               <tbody className="divide-y divide-border">
                 {invoices.map((invoice) => (
                   <tr key={invoice.id} className="transition-colors duration-150 hover:bg-accent/50">
-                    <td className="px-5 py-3.5 font-medium">{invoice.invoiceNumber}</td>
+                    <td className="px-5 py-3.5 font-medium">
+                      <Link href={`/dashboard/financials/invoices/${invoice.id}`} className="hover:underline text-primary">
+                        {invoice.invoiceNumber}
+                      </Link>
+                    </td>
                     <td className="px-5 py-3.5 text-muted-foreground">{invoice.patient?.fullName}</td>
                     <td className="px-5 py-3.5 text-muted-foreground">
                       {format(new Date(invoice.createdAt), 'dd MMMM yyyy', { locale: ar })}
