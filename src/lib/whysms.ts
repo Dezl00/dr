@@ -1,4 +1,12 @@
 export async function sendOtpSms(phone: string, code: string) {
+  // Format phone number for Egypt (default) if it starts with 01
+  let formattedPhone = phone.trim();
+  if (formattedPhone.startsWith('01') && formattedPhone.length === 11) {
+    formattedPhone = `2${formattedPhone}`; // e.g. 2010xxxxxxxx
+  } else if (formattedPhone.startsWith('+20')) {
+    formattedPhone = formattedPhone.substring(1); // remove +
+  }
+
   // WhySMS API configuration
   // Fallback to standard environment variables
   const apiKey = process.env.WHYSMS_API_KEY
@@ -23,7 +31,7 @@ export async function sendOtpSms(phone: string, code: string) {
       },
       body: JSON.stringify({
         sender_id: senderId,
-        recipient: phone,
+        recipient: formattedPhone,
         message: message,
       }),
     })

@@ -1,19 +1,34 @@
 'use client'
 
-import { useActionState, useTransition } from 'react'
+import { useActionState, useTransition, useState, useEffect } from 'react'
 import { verifyOtpAction, resendOtpAction } from '@/actions/auth'
 
 export function VerifyOtpForm() {
   const [state, formAction, isPending] = useActionState(verifyOtpAction, null)
   const [isResending, startResending] = useTransition()
+  
+  // Countdown state
+  const [timeLeft, setTimeLeft] = useState(60)
+
+  // Timer effect
+  useEffect(() => {
+    if (timeLeft <= 0) return
+    const timer = setInterval(() => {
+      setTimeLeft(prev => prev - 1)
+    }, 1000)
+    return () => clearInterval(timer)
+  }, [timeLeft])
 
   const handleResend = () => {
+    if (timeLeft > 0) return
+
     startResending(async () => {
       const result = await resendOtpAction()
       if (result?.error) {
         alert(result.error)
       } else {
         alert('تم إرسال الرمز بنجاح')
+        setTimeLeft(60) // Reset timer
       }
     })
   }
@@ -55,12 +70,13 @@ export function VerifyOtpForm() {
         <button
           type="button"
           onClick={handleResend}
-          disabled={isResending}
-          className="text-sm text-primary hover:underline disabled:opacity-50"
+          disabled={isResending || timeLeft > 0}
+          className="text-sm text-primary hover:underline disabled:opacity-50 disabled:no-underline"
         >
-          {isResending ? 'جاري الإرسال...' : 'إعادة إرسال الرمز'}
+          {isResending ? 'جاري الإرسال...' : timeLeft > 0 ? `يمكنك إعادة الإرسال بعد ${timeLeft} ثانية` : 'إعادة إرسال الرمز'}
         </button>
       </div>
     </form>
   )
 }
+
