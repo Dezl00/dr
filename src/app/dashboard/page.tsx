@@ -1,11 +1,9 @@
-import { Suspense } from 'react'
 import { prisma } from '@/lib/db/prisma'
 import { requireAuth, getCurrentSession } from '@/lib/auth/dal'
 import { StatsGrid } from '@/components/dashboard/stats-grid'
 import { TodaysAppointments } from '@/components/dashboard/todays-appointments'
 import { UpcomingAppointments } from '@/components/dashboard/upcoming-appointments'
 import { RecentActivity } from '@/components/dashboard/recent-activity'
-import { StatsSkeleton, AppointmentsSkeleton, ChartSkeleton } from '@/components/dashboard/dashboard-skeleton'
 import { DashboardAnalytics } from '@/components/dashboard/dashboard-analytics'
 
 async function getClinicId(): Promise<string> {
@@ -150,28 +148,20 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-6">
       {/* Statistics */}
-      <Suspense fallback={<StatsSkeleton />}>
-        <DashboardStats clinicId={clinicId} />
-      </Suspense>
+      <DashboardStats clinicId={clinicId} />
 
       {/* Today's operations */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <div className="lg:col-span-2">
-          <Suspense fallback={<AppointmentsSkeleton />}>
-            <TodaysAppointmentsList clinicId={clinicId} />
-          </Suspense>
+          <TodaysAppointmentsList clinicId={clinicId} />
         </div>
         <div>
-          <Suspense fallback={<AppointmentsSkeleton />}>
-            <UpcomingList clinicId={clinicId} />
-          </Suspense>
+          <UpcomingList clinicId={clinicId} />
         </div>
       </div>
 
-      {/* Analytics placeholder - will be lazy loaded */}
-      <Suspense fallback={<ChartSkeleton />}>
-        <DashboardAnalytics clinicId={clinicId} />
-      </Suspense>
+      {/* Analytics */}
+      <DashboardAnalytics clinicId={clinicId} />
 
       {/* Recent activity */}
       <RecentActivity activities={[]} />
