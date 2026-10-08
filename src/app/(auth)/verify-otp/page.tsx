@@ -28,6 +28,18 @@ export default async function VerifyOtpPage() {
         </p>
       </div>
       <VerifyOtpForm />
+      
+      <div className="mt-6 text-center">
+        <form action={async () => {
+          'use server'
+          const { logoutAction } = await import('@/actions/auth')
+          await logoutAction()
+        }}>
+          <button type="submit" className="text-sm text-muted-foreground hover:text-foreground underline">
+            تسجيل الخروج أو استخدام حساب مختلف
+          </button>
+        </form>
+      </div>
     </div>
   )
 }
