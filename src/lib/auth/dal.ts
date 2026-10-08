@@ -42,6 +42,11 @@ export const requireAuth = cache(async (): Promise<SessionUser> => {
   if (!user) {
     redirect('/login')
   }
+  
+  if (!user.phoneVerified) {
+    redirect('/verify-otp')
+  }
+
   return user
 })
 

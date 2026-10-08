@@ -15,6 +15,7 @@ import { createVerificationToken } from '@/lib/auth/tokens'
 import { writeAuditLog } from '@/lib/security/audit'
 import { loginSchema, signupSchema } from '@/lib/validators/auth'
 import { validateSlug, isReservedSlug } from '@/lib/slug/arabic'
+import { sendOtpSms } from '@/lib/whysms'
 
 // ─── HELPERS ───
 
@@ -264,8 +265,23 @@ export async function signupAction(_prev: unknown, formData: FormData) {
   const session = await createSession(token, user.id, ip, userAgent)
   await setSessionCookie(token, session.expiresAt)
 
-  // Create verification token (async, non-blocking)
+  // Create email verification token
   createVerificationToken(user.id, user.email).catch(console.error)
+
+  // Generate OTP and save to DB
+  const otpCode = Math.floor(100000 + Math.random() * 900000).toString()
+  const expiresAt = new Date(Date.now() + 10 * 60 * 1000) // 10 minutes from now
+  await prisma.phoneOtp.create({
+    data: {
+      userId: user.id,
+      phone,
+      code: otpCode,
+      expiresAt,
+    }
+  })
+
+  // Send OTP SMS (async, non-blocking)
+  sendOtpSms(phone, otpCode).catch(console.error)
 
   // Audit
   await writeAuditLog({
@@ -279,7 +295,7 @@ export async function signupAction(_prev: unknown, formData: FormData) {
     userAgent,
   })
 
-  redirect('/dashboard')
+  redirect('/verify-otp')
 }
 
 // ─── LOGOUT ───
@@ -338,4 +354,79 @@ export async function checkSlugAvailability(slug: string) {
   }
 
   return { available: true }
+}
+
+// ─── VERIFY OTP ───
+
+export async function verifyOtpAction(_prev: unknown, formData: FormData) {
+  const code = (formData.get('code') as string) || ''
+  
+  if (!code || code.length !== 6) {
+    return { error: 'الرمز غير صحيح، يجب أن يتكون من 6 أرقام.' }
+  }
+
+  // Get current user session
+  const { getCurrentUser } = await import('@/lib/auth/dal')
+  const user = await getCurrentUser()
+
+  if (!user) {
+    redirect('/login')
+  }
+
+  // Find OTP record
+  const otpRecord = await prisma.phoneOtp.findFirst({
+    where: {
+      userId: user.id,
+      code,
+      usedAt: null,
+      expiresAt: {
+        gt: new Date()
+      }
+    },
+    orderBy: { createdAt: 'desc' }
+  })
+
+  if (!otpRecord) {
+    return { error: 'الرمز غير صحيح أو منتهي الصلاحية.' }
+  }
+
+  // Mark as used and update user
+  await prisma.$transaction([
+    prisma.phoneOtp.update({
+      where: { id: otpRecord.id },
+      data: { usedAt: new Date() }
+    }),
+    prisma.user.update({
+      where: { id: user.id },
+      data: { phoneVerified: true }
+    })
+  ])
+
+  redirect('/dashboard')
+}
+
+export async function resendOtpAction() {
+  const { getCurrentUser } = await import('@/lib/auth/dal')
+  const user = await getCurrentUser()
+
+  if (!user || !user.phone) {
+    return { error: 'حدث خطأ غير متوقع' }
+  }
+
+  // Generate OTP and save to DB
+  const otpCode = Math.floor(100000 + Math.random() * 900000).toString()
+  const expiresAt = new Date(Date.now() + 10 * 60 * 1000) // 10 minutes from now
+  await prisma.phoneOtp.create({
+    data: {
+      userId: user.id,
+      phone: user.phone,
+      code: otpCode,
+      expiresAt,
+    }
+  })
+
+  // Send OTP SMS
+  await sendOtpSms(user.phone, otpCode)
+
+  return { success: 'تم إرسال رمز جديد بنجاح' }
 }

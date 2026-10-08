@@ -17,6 +17,8 @@ export interface SessionUser {
   isSuperAdmin: boolean
   status: string
   avatarUrl: string | null
+  phone: string | null
+  phoneVerified: boolean
 }
 
 export interface SessionValidationResult {
@@ -92,6 +94,8 @@ export async function validateSessionToken(
           isSuperAdmin: true,
           status: true,
           avatarUrl: true,
+          phone: true,
+          phoneVerified: true,
         },
       },
     },
