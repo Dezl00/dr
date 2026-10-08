@@ -27,7 +27,9 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
     include: {
       patient: true,
       items: true,
-      clinic: true,
+      clinic: {
+        include: { settings: true }
+      },
       payments: {
         orderBy: { paymentDate: 'desc' }
       }
@@ -62,7 +64,15 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
               <div>
                 <h2 className="text-3xl font-bold text-slate-800">{invoice.clinic.name}</h2>
                 <div className="text-slate-500 mt-2 space-y-1 text-sm">
-                  {/* Clinic settings could go here */}
+                  {invoice.clinic.settings?.address && (
+                    <p className="flex items-center gap-2"><Building2 className="w-4 h-4" /> {invoice.clinic.settings.address}</p>
+                  )}
+                  {invoice.clinic.settings?.phone && (
+                    <p className="flex items-center gap-2"><Phone className="w-4 h-4" /> {invoice.clinic.settings.phone}</p>
+                  )}
+                  {invoice.clinic.settings?.email && (
+                    <p className="flex items-center gap-2"><Mail className="w-4 h-4" /> {invoice.clinic.settings.email}</p>
+                  )}
                 </div>
               </div>
               <div className="text-left rtl:text-right bg-slate-50 p-4 rounded-lg">

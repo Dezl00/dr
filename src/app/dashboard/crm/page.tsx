@@ -3,6 +3,7 @@ import { prisma } from '@/lib/db/prisma'
 import { MessageCircle, Search, Users, UserPlus, Send, Mail } from 'lucide-react'
 import { format } from 'date-fns'
 import { ar } from 'date-fns/locale'
+import Link from 'next/link'
 
 export const metadata = {
   title: 'علاقات المرضى (CRM) | DRS',
@@ -35,20 +36,19 @@ export default async function CRMPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-xl font-semibold">إدارة علاقات المرضى (CRM)</h1>
           <p className="mt-1 text-sm text-muted-foreground">العملاء المحتملين والتواصل المباشر (SMS / WhatsApp)</p>
         </div>
         <div className="flex gap-2">
+          <Link href="/dashboard/crm/new" className="inline-flex items-center justify-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium transition-colors hover:bg-accent">
+            <UserPlus className="h-4 w-4" strokeWidth={1.5} />
+            إضافة عميل محتمل
+          </Link>
           <button className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#25D366] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[#25D366]/90">
             <MessageCircle className="h-4 w-4" strokeWidth={1.5} />
             حملة واتساب
-          </button>
-          <button className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90">
-            <Send className="h-4 w-4" strokeWidth={1.5} />
-            رسالة SMS
           </button>
         </div>
       </div>
