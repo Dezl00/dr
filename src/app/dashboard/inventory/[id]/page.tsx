@@ -43,13 +43,13 @@ export default async function InventoryItemPage({ params }: { params: Promise<{ 
             <Package className="h-7 w-7" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold">{item.name}</h1>
+            <h1 className="text-2xl font-semibold">{item.name}</h1>
             <p className="text-muted-foreground mt-1">كود (SKU): {item.sku || 'لا يوجد'} • تصنيف: {item.category}</p>
           </div>
         </div>
         <div className="text-center bg-card border border-border px-6 py-3 rounded-xl">
           <p className="text-sm text-muted-foreground">الرصيد الحالي</p>
-          <p className="text-2xl font-bold mt-1" dir="ltr">{item.quantity} <span className="text-sm font-normal text-muted-foreground">{item.unit}</span></p>
+          <p className="text-2xl font-semibold mt-1" dir="ltr">{item.quantity} <span className="text-sm font-normal text-muted-foreground">{item.unit}</span></p>
         </div>
       </div>
 
@@ -94,7 +94,7 @@ export default async function InventoryItemPage({ params }: { params: Promise<{ 
                           {tx.type === 'IN' ? 'إضافة (وارد)' : 'صرف (منصرف)'}
                         </span>
                       </td>
-                      <td className="px-4 py-3 font-bold" dir="ltr">{tx.quantity}</td>
+                      <td className="px-4 py-3 font-semibold" dir="ltr">{tx.quantity}</td>
                       <td className="px-4 py-3 text-muted-foreground">{tx.notes || '—'}</td>
                     </tr>
                   ))}

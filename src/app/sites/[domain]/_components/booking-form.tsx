@@ -81,7 +81,7 @@ export function BookingForm({
             </svg>
           </div>
         </div>
-        <h3 className="text-2xl font-bold text-[#050505] mb-2">تم تأكيد حجزك بنجاح!</h3>
+        <h3 className="text-2xl font-semibold text-[#050505] mb-2">تم تأكيد حجزك بنجاح!</h3>
         <p className="text-[#050505]/70 max-w-sm font-normal">
           لقد قمنا بتسجيل موعدك وسنقوم بإرسال رسالة نصية (SMS) لتأكيد الحجز فوراً. نتمنى لك دوام الصحة والعافية.
         </p>

@@ -56,7 +56,7 @@ export default async function PatientEMRPage({ params }: { params: Promise<{ id:
       {/* Patient Header */}
       <div className="flex items-center justify-between border-b border-border pb-6">
         <div>
-          <h1 className="text-3xl font-bold">{patient.fullName}</h1>
+          <h1 className="text-3xl font-semibold">{patient.fullName}</h1>
           <p className="text-muted-foreground mt-1">
             {patient.phone} {patient.email ? `• ${patient.email}` : ''}
           </p>

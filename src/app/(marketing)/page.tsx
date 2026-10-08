@@ -9,7 +9,7 @@ export default function HomePage() {
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
           <div className="flex items-center gap-2">
-            <span className="text-xl font-bold text-primary">DRS</span>
+            <span className="text-xl font-semibold text-primary">DRS</span>
           </div>
           <nav className="flex items-center gap-4">
             <Link href="/login" className="text-sm font-medium hover:text-primary transition-colors">
@@ -63,7 +63,7 @@ export default function HomePage() {
                 <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 mb-6">
                   <svg className="h-8 w-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
                 </div>
-                <h3 className="text-xl font-bold mb-3">إدارة المواعيد</h3>
+                <h3 className="text-xl font-semibold mb-3">إدارة المواعيد</h3>
                 <p className="text-muted-foreground leading-relaxed">جدول مواعيد ذكي يمنع التعارض وينظم وقت الأطباء بكل سهولة مع تنبيهات تلقائية.</p>
               </div>
               
@@ -72,7 +72,7 @@ export default function HomePage() {
                 <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 mb-6">
                   <svg className="h-8 w-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path></svg>
                 </div>
-                <h3 className="text-xl font-bold mb-3">موقع خاص بعيادتك</h3>
+                <h3 className="text-xl font-semibold mb-3">موقع خاص بعيادتك</h3>
                 <p className="text-muted-foreground leading-relaxed">احصل على موقع إلكتروني احترافي لعيادتك تلقائياً وبدومين خاص (Subdomain).</p>
               </div>
 
@@ -81,7 +81,7 @@ export default function HomePage() {
                 <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 mb-6">
                   <svg className="h-8 w-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                 </div>
-                <h3 className="text-xl font-bold mb-3">ملفات المرضى</h3>
+                <h3 className="text-xl font-semibold mb-3">ملفات المرضى</h3>
                 <p className="text-muted-foreground leading-relaxed">سجل طبي إلكتروني كامل لكل مريض شامل الأشعة والخطط العلاجية والتاريخ الطبي.</p>
               </div>
             </div>

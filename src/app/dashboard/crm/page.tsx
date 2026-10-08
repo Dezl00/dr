@@ -61,7 +61,7 @@ export default async function CRMPage() {
           </div>
           <div>
             <p className="text-sm font-medium text-muted-foreground">إجمالي المرضى الفعليين</p>
-            <h3 className="text-2xl font-bold mt-1 text-foreground">{patientsCount}</h3>
+            <h3 className="text-2xl font-semibold mt-1 text-foreground">{patientsCount}</h3>
           </div>
         </div>
 
@@ -71,7 +71,7 @@ export default async function CRMPage() {
           </div>
           <div>
             <p className="text-sm font-medium text-muted-foreground">العملاء المحتملين (Leads)</p>
-            <h3 className="text-2xl font-bold mt-1 text-foreground">{leads.length}</h3>
+            <h3 className="text-2xl font-semibold mt-1 text-foreground">{leads.length}</h3>
           </div>
         </div>
 
@@ -81,7 +81,7 @@ export default async function CRMPage() {
           </div>
           <div>
             <p className="text-sm font-medium text-muted-foreground">الرسائل التلقائية</p>
-            <h3 className="text-lg font-bold mt-1 text-foreground">نشط (تذكير المواعيد)</h3>
+            <h3 className="text-lg font-semibold mt-1 text-foreground">نشط (تذكير المواعيد)</h3>
           </div>
         </div>
       </div>

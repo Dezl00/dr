@@ -26,7 +26,7 @@ function Tooth({ number, status, onClick, isSelected }: { number: number, status
       onClick={onClick}
       className={`w-10 h-12 flex flex-col items-center justify-center border-2 rounded-t-lg cursor-pointer transition-transform hover:scale-110 ${bg} ${isSelected ? 'ring-2 ring-primary ring-offset-2' : ''}`}
     >
-      <span className="text-xs font-bold text-foreground">{number}</span>
+      <span className="text-xs font-semibold text-foreground">{number}</span>
     </div>
   )
 }
@@ -94,7 +94,7 @@ export function PatientDentalChart({ patientId, records }: { patientId: string, 
       <div className="bg-card border border-border p-6 rounded-xl min-h-[400px]">
         {selectedTooth ? (
           <div>
-            <h3 className="text-lg font-bold mb-4">تفاصيل السن رقم {selectedTooth}</h3>
+            <h3 className="text-lg font-semibold mb-4">تفاصيل السن رقم {selectedTooth}</h3>
             
             <form onSubmit={handleUpdate} className="space-y-4">
               <div className="space-y-2">

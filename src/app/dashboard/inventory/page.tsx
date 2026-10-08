@@ -70,7 +70,7 @@ export default async function InventoryPage({
           </div>
           <div>
             <p className="text-sm font-medium text-muted-foreground">إجمالي الأصناف</p>
-            <h3 className="text-2xl font-bold mt-1 text-foreground">{items.length}</h3>
+            <h3 className="text-2xl font-semibold mt-1 text-foreground">{items.length}</h3>
           </div>
         </div>
 
@@ -80,7 +80,7 @@ export default async function InventoryPage({
           </div>
           <div>
             <p className="text-sm font-medium text-muted-foreground">نواقص (أقل من الحد الأدنى)</p>
-            <h3 className="text-2xl font-bold mt-1 text-foreground text-red-500">{lowStockItems.length}</h3>
+            <h3 className="text-2xl font-semibold mt-1 text-foreground text-red-500">{lowStockItems.length}</h3>
           </div>
         </div>
 
@@ -90,7 +90,7 @@ export default async function InventoryPage({
           </div>
           <div>
             <p className="text-sm font-medium text-muted-foreground">الرصيد الإجمالي ككميات</p>
-            <h3 className="text-2xl font-bold mt-1 text-foreground">
+            <h3 className="text-2xl font-semibold mt-1 text-foreground">
               {items.reduce((acc, curr) => acc + curr.quantity, 0)}
             </h3>
           </div>
@@ -141,7 +141,7 @@ export default async function InventoryPage({
                       </Link>
                     </td>
                     <td className="px-5 py-3.5 text-muted-foreground">{item.category || '—'}</td>
-                    <td className={`px-5 py-3.5 font-bold ${isLow ? 'text-red-500' : 'text-foreground'}`}>
+                    <td className={`px-5 py-3.5 font-semibold ${isLow ? 'text-red-500' : 'text-foreground'}`}>
                       {item.quantity}
                     </td>
                     <td className="px-5 py-3.5 text-muted-foreground">{item.unit}</td>

@@ -10,7 +10,7 @@ export function SiteHeader({ clinicName, sections, primaryColor }: SiteHeaderPro
   return (
     <header className="sticky top-0 z-50 border-b border-[#E5E7EB] bg-[#FFFFFF]/80 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
-        <Link href="/" className="text-xl font-bold" style={{ color: primaryColor || 'var(--clinic-primary)' }}>
+        <Link href="/" className="text-xl font-semibold" style={{ color: primaryColor || 'var(--clinic-primary)' }}>
           {clinicName}
         </Link>
         {sections && sections.length > 0 && (

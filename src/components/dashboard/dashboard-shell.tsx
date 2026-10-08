@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState } from 'react'
 import Link from 'next/link'
@@ -82,11 +82,11 @@ export function DashboardShell({
 
   return (
     <ClinicCtx.Provider value={clinicContext}>
-      <div className="flex h-screen overflow-hidden bg-background">
+      <div className="flex h-screen overflow-hidden bg-white">
         {/* Mobile backdrop */}
         {sidebarOpen && (
           <div
-            className="fixed inset-0 z-40 bg-black/50 lg:hidden transition-opacity"
+            className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm lg:hidden transition-all"
             onClick={() => setSidebarOpen(false)}
           />
         )}
@@ -95,43 +95,41 @@ export function DashboardShell({
         <aside
           className={`${
             sidebarOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'
-          } fixed inset-y-0 end-0 z-50 flex w-64 flex-col border-s border-border bg-background transition-transform duration-200 lg:static lg:z-auto`}
+          } fixed inset-y-0 end-0 z-50 flex w-64 flex-col bg-blue-700 text-white transition-transform duration-300 ease-out lg:static lg:z-auto shadow-2xl lg:shadow-none`}
         >
           {/* Sidebar header */}
-          <div className="flex h-14 items-center justify-between border-b border-border px-4">
-            <span className="text-sm font-semibold truncate">{clinic.name}</span>
+          <div className="flex h-14 items-center justify-between px-5 border-b border-blue-600/50">
+            <span className="text-base font-semibold truncate text-white">{clinic.name}</span>
             <button
               onClick={() => setSidebarOpen(false)}
-              className="rounded p-1 text-muted-foreground transition-colors duration-150 hover:bg-accent lg:hidden"
+              className="rounded-full p-1.5 text-blue-100 transition-colors duration-150 hover:bg-blue-600 lg:hidden"
               aria-label="إغلاق القائمة"
             >
-              <X className="h-5 w-5" strokeWidth={1.5} />
+              <X className="h-5 w-5" strokeWidth={2} />
             </button>
           </div>
 
           {/* Nav */}
-          <nav className="flex-1 overflow-y-auto py-3">
-            <ul className="space-y-1 px-2">
+          <nav className="flex-1 overflow-y-auto py-4">
+            <ul className="space-y-1.5 px-3">
               {filteredNav.map((item) => {
                 const isActive =
                   item.href === '/dashboard'
                     ? pathname === '/dashboard'
                     : pathname.startsWith(item.href)
+
                 return (
                   <li key={item.href}>
                     <Link prefetch={true}
                       href={item.href}
                       onClick={() => setSidebarOpen(false)}
-                      className={`relative flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors duration-150 ${
+                      className={`group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
                         isActive
-                          ? 'bg-accent/50 text-primary'
-                          : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+                          ? 'bg-blue-600 text-white shadow-sm'
+                          : 'text-blue-100 hover:bg-blue-600/60 hover:text-white'
                       }`}
                     >
-                      {isActive && (
-                        <div className="absolute inset-y-1 end-0 w-[3px] rounded-s-md bg-primary" />
-                      )}
-                      <item.icon className="h-4.5 w-4.5 shrink-0" strokeWidth={1.5} />
+                      <item.icon className="h-4.5 w-4.5 shrink-0" strokeWidth={isActive ? 2 : 1.5} />
                       {item.label}
                     </Link>
                   </li>
@@ -141,22 +139,22 @@ export function DashboardShell({
           </nav>
 
           {/* User section */}
-          <div className="border-t border-border p-4">
-            <div className="mb-2 flex items-center gap-3 rounded-lg border border-border p-3 transition-colors duration-150 hover:border-primary/50">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-accent text-sm font-medium text-foreground">
+          <div className="border-t border-blue-600/50 p-4">
+            <div className="mb-3 flex items-center gap-3 rounded-lg p-2 transition-colors duration-200 hover:bg-blue-600/40">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-600 text-sm font-semibold text-white shadow-inner">
                 {user.fullName.charAt(0)}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium text-foreground">{user.fullName}</p>
-                <p className="truncate text-xs text-muted-foreground">{roleName}</p>
+                <p className="truncate text-sm font-semibold text-white">{user.fullName}</p>
+                <p className="truncate text-xs text-blue-200">{roleName}</p>
               </div>
             </div>
             <form action={logoutAction}>
               <button
                 type="submit"
-                className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors duration-150 hover:bg-accent hover:text-foreground"
+                className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-blue-100 transition-all duration-200 hover:bg-red-500/20 hover:text-red-100"
               >
-                <LogOut className="h-4 w-4" strokeWidth={1.5} />
+                <LogOut className="h-4.5 w-4.5" strokeWidth={1.5} />
                 تسجيل الخروج
               </button>
             </form>
@@ -184,7 +182,7 @@ export function DashboardShell({
           )}
 
           {/* Header */}
-          <header className="flex h-14 items-center justify-between border-b border-border bg-background px-4 lg:px-6">
+          <header className="flex h-14 items-center justify-between border-b border-slate-100 bg-white px-4 lg:px-6">
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setSidebarOpen(true)}

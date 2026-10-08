@@ -76,7 +76,7 @@ export default async function FinancialsPage() {
             </div>
             <div>
               <p className="text-sm font-medium text-muted-foreground">إجمالي الإيرادات المحصلة</p>
-              <h3 className="text-2xl font-bold mt-1 text-foreground" dir="ltr">
+              <h3 className="text-2xl font-semibold mt-1 text-foreground" dir="ltr">
                 {Number(totalRevenue._sum.amount || 0).toLocaleString('en-US')} EGP
               </h3>
             </div>
@@ -90,7 +90,7 @@ export default async function FinancialsPage() {
             </div>
             <div>
               <p className="text-sm font-medium text-muted-foreground">مستحقات غير محصلة</p>
-              <h3 className="text-2xl font-bold mt-1 text-foreground" dir="ltr">
+              <h3 className="text-2xl font-semibold mt-1 text-foreground" dir="ltr">
                 {Number(unpaidInvoices._sum.total || 0).toLocaleString('en-US')} EGP
               </h3>
             </div>
@@ -104,7 +104,7 @@ export default async function FinancialsPage() {
             </div>
             <div>
               <p className="text-sm font-medium text-muted-foreground">الفواتير المعلقة</p>
-              <h3 className="text-2xl font-bold mt-1 text-foreground">
+              <h3 className="text-2xl font-semibold mt-1 text-foreground">
                 {invoices.filter(i => i.status === 'UNPAID' || i.status === 'PARTIAL').length} فاتورة
               </h3>
             </div>

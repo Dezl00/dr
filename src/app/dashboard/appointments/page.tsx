@@ -86,10 +86,10 @@ export default async function AppointmentsPage({
         <Link prefetch={true}
           href="/dashboard/appointments"
           className={cn(
-            'rounded-md border px-4 py-2 text-sm font-medium transition-colors duration-150',
+            'rounded-lg border px-4 py-2 text-sm font-medium transition-all duration-200',
             !statusFilter
-              ? 'border-primary bg-primary/10 text-primary'
-              : 'border-border text-muted-foreground hover:bg-accent hover:text-foreground'
+              ? 'border-blue-600 bg-blue-600 text-white'
+              : 'border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900'
           )}
         >
           الكل
@@ -99,10 +99,10 @@ export default async function AppointmentsPage({
             key={key}
             href={`/dashboard/appointments?status=${key}`}
             className={cn(
-              'rounded-md border px-4 py-2 text-sm font-medium transition-colors duration-150',
+              'rounded-lg border px-4 py-2 text-sm font-medium transition-all duration-200',
               statusFilter === key
-                ? 'border-primary bg-primary/10 text-primary'
-                : 'border-border text-muted-foreground hover:bg-accent hover:text-foreground'
+                ? 'border-blue-600 bg-blue-600 text-white'
+                : 'border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900'
             )}
           >
             {label}
