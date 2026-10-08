@@ -44,9 +44,12 @@ interface DashboardShellProps {
 
 const NAV_ITEMS = [
   { href: '/dashboard', label: 'الرئيسية', icon: Home, permission: null },
-  { href: '/dashboard/patients', label: 'المرضى', icon: Users, permission: 'patients.view' },
+  { href: '/dashboard/patients', label: 'المرضى (EMR)', icon: Users, permission: 'patients.view' },
   { href: '/dashboard/appointments', label: 'المواعيد', icon: Calendar, permission: 'appointments.view' },
   { href: '/dashboard/doctors', label: 'الأطباء', icon: Stethoscope, permission: 'doctors.view' },
+  { href: '/dashboard/financials', label: 'المالية', icon: ListChecks, permission: 'patients.view' }, // Temp permission until financials.view is seeded
+  { href: '/dashboard/inventory', label: 'المخازن', icon: ListChecks, permission: 'patients.view' },
+  { href: '/dashboard/crm', label: 'علاقات المرضى', icon: UsersRound, permission: 'patients.view' },
   { href: '/dashboard/services', label: 'الخدمات', icon: ListChecks, permission: 'services.view' },
   { href: '/dashboard/team', label: 'الفريق والمستخدمون', icon: UsersRound, permission: 'users.view' },
   { href: '/dashboard/website', label: 'الموقع الإلكتروني', icon: Globe, permission: 'website.view' },

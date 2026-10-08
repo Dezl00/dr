@@ -1,10 +1,15 @@
 import { requireAuth, getCurrentSession } from '@/lib/auth/dal'
 import { prisma } from '@/lib/db/prisma'
-import { updatePatient } from '@/actions/dashboard'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { notFound } from 'next/navigation'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { PatientBasicInfo } from './_components/patient-basic-info'
+import { PatientMedicalHistory } from './_components/patient-medical-history'
+import { PatientDentalChart } from './_components/patient-dental-chart'
+import { PatientAppointments } from './_components/patient-appointments'
+
+export const metadata = {
+  title: 'ملف المريض | DRS',
+}
 
 async function getClinicId(userId: string) {
   const { session } = await getCurrentSession()
@@ -15,60 +20,100 @@ async function getClinicId(userId: string) {
   return membership?.clinicId || ''
 }
 
-export default async function EditPatientPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function PatientEMRPage({ params }: { params: Promise<{ id: string }> }) {
   const user = await requireAuth()
   const clinicId = await getClinicId(user.id)
   
   const { id } = await params
 
   const patient = await prisma.patient.findUnique({
-    where: { id, clinicId }
+    where: { id, clinicId },
+    include: {
+      medicalHistory: true,
+      dentalRecords: true,
+      appointments: {
+        orderBy: { date: 'desc' },
+        include: { doctor: true, service: true }
+      },
+      prescriptions: {
+        orderBy: { createdAt: 'desc' },
+        include: { doctor: true }
+      },
+      invoices: {
+        orderBy: { createdAt: 'desc' }
+      }
+    }
   })
   
   if (!patient) notFound()
 
-  const updatePatientWithId = updatePatient.bind(null, patient.id)
-
   return (
-    <div className="max-w-2xl">
-      <h1 className="text-2xl font-semibold mb-6">تعديل بيانات المريض</h1>
-      
-      <form action={updatePatientWithId} className="space-y-6 bg-card border border-border p-6 rounded-xl">
-        <div className="space-y-2">
-          <Label htmlFor="fullName">الاسم بالكامل</Label>
-          <Input 
-            id="fullName" 
-            name="fullName" 
-            defaultValue={patient.fullName} 
-            required 
-          />
+    <div className="space-y-6">
+      {/* Patient Header */}
+      <div className="flex items-center justify-between border-b border-border pb-6">
+        <div>
+          <h1 className="text-3xl font-bold">{patient.fullName}</h1>
+          <p className="text-muted-foreground mt-1">
+            {patient.phone} {patient.email ? `• ${patient.email}` : ''}
+          </p>
         </div>
-        
-        <div className="space-y-2">
-          <Label htmlFor="phone">رقم الهاتف</Label>
-          <Input 
-            id="phone" 
-            name="phone" 
-            defaultValue={patient.phone || ''} 
-            dir="ltr"
-            className="text-left"
-          />
+        <div className="text-sm px-4 py-2 bg-primary/10 text-primary rounded-lg font-medium">
+          {patient.gender === 'MALE' ? 'ذكر' : patient.gender === 'FEMALE' ? 'أنثى' : 'غير محدد'}
         </div>
-        
-        <div className="space-y-2">
-          <Label htmlFor="email">البريد الإلكتروني</Label>
-          <Input 
-            id="email" 
-            name="email"
-            type="email" 
-            defaultValue={patient.email || ''} 
-            dir="ltr"
-            className="text-left"
-          />
+      </div>
+
+      <Tabs defaultValue="basic-info" className="w-full">
+        <TabsList className="w-full justify-start overflow-x-auto overflow-y-hidden border-b rounded-none bg-transparent h-auto p-0 space-x-0 rtl:space-x-reverse space-x-reverse">
+          <TabsTrigger value="basic-info" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-6 py-3">
+            البيانات الأساسية
+          </TabsTrigger>
+          <TabsTrigger value="medical-history" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-6 py-3">
+            التاريخ الطبي
+          </TabsTrigger>
+          <TabsTrigger value="dental-chart" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-6 py-3">
+            مخطط الأسنان (Chart)
+          </TabsTrigger>
+          <TabsTrigger value="appointments" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-6 py-3">
+            المواعيد
+          </TabsTrigger>
+          <TabsTrigger value="prescriptions" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-6 py-3">
+            الروشتات
+          </TabsTrigger>
+          <TabsTrigger value="billing" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-6 py-3">
+            الفواتير والمدفوعات
+          </TabsTrigger>
+        </TabsList>
+
+        <div className="pt-6">
+          <TabsContent value="basic-info" className="mt-0 outline-none">
+            <PatientBasicInfo patient={patient} />
+          </TabsContent>
+
+          <TabsContent value="medical-history" className="mt-0 outline-none">
+            <PatientMedicalHistory patientId={patient.id} history={patient.medicalHistory} />
+          </TabsContent>
+
+          <TabsContent value="dental-chart" className="mt-0 outline-none">
+            <PatientDentalChart patientId={patient.id} records={patient.dentalRecords} />
+          </TabsContent>
+
+          <TabsContent value="appointments" className="mt-0 outline-none">
+            <PatientAppointments appointments={patient.appointments} />
+          </TabsContent>
+
+          <TabsContent value="prescriptions" className="mt-0 outline-none">
+            <div className="p-12 text-center text-muted-foreground border rounded-xl bg-card">
+              جاري برمجة نظام الروشتات الإلكترونية...
+            </div>
+          </TabsContent>
+
+          <TabsContent value="billing" className="mt-0 outline-none">
+            <div className="p-12 text-center text-muted-foreground border rounded-xl bg-card">
+              جاري برمجة نظام الفوترة المتقدم...
+            </div>
+          </TabsContent>
         </div>
-        
-        <Button type="submit">حفظ التغييرات</Button>
-      </form>
+      </Tabs>
     </div>
   )
 }

@@ -108,34 +108,35 @@ enum AuditAction {
 // ===== USER & AUTH MODELS =====
 
 model User {
-  id              String     @id @default(cuid())
-  email           String     @unique
-  emailVerified   Boolean    @default(false)
-  phoneVerified   Boolean    @default(false)
-  passwordHash    String
-  fullName        String
-  phone           String?
-  avatarUrl       String?
-  isAdmin         Boolean    @default(false)
-  isSuperAdmin    Boolean    @default(false)
-  status          UserStatus @default(ACTIVE)
-  createdAt       DateTime   @default(now())
-  updatedAt       DateTime   @updatedAt
+  id            String     @id @default(cuid())
+  email         String     @unique
+  emailVerified Boolean    @default(false)
+  phoneVerified Boolean    @default(false)
+  passwordHash  String
+  fullName      String
+  phone         String?
+  avatarUrl     String?
+  isAdmin       Boolean    @default(false)
+  isSuperAdmin  Boolean    @default(false)
+  status        UserStatus @default(ACTIVE)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
 
   sessions            Session[]
-  memberships          ClinicMembership[]
-  doctors              Doctor[]
-  auditLogs            AuditLog[]        @relation("AuditActor")
-  verificationTokens   VerificationToken[]
-  passwordResetTokens  PasswordResetToken[]
-  phoneOtps            PhoneOtp[]
+  memberships         ClinicMembership[]
+  doctors             Doctor[]
+  auditLogs           AuditLog[]           @relation("AuditActor")
+  verificationTokens  VerificationToken[]
+  passwordResetTokens PasswordResetToken[]
+  phoneOtps           PhoneOtp[]
+  stockTransactions   StockTransaction[]
 
   @@index([email])
   @@index([status])
 }
 
 model Session {
-  id        String   @id  // SHA-256 hash of session token
+  id        String   @id // SHA-256 hash of session token
   userId    String
   expiresAt DateTime
   ipAddress String?
@@ -154,13 +155,13 @@ model Session {
 }
 
 model VerificationToken {
-  id        String   @id @default(cuid())
-  tokenHash String   @unique  // SHA-256 hash
+  id        String    @id @default(cuid())
+  tokenHash String    @unique // SHA-256 hash
   userId    String
   email     String
   expiresAt DateTime
   usedAt    DateTime?
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -169,13 +170,13 @@ model VerificationToken {
 }
 
 model PasswordResetToken {
-  id        String   @id @default(cuid())
-  tokenHash String   @unique  // SHA-256 hash
+  id        String    @id @default(cuid())
+  tokenHash String    @unique // SHA-256 hash
   userId    String
   email     String
   expiresAt DateTime
   usedAt    DateTime?
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -184,13 +185,13 @@ model PasswordResetToken {
 }
 
 model PhoneOtp {
-  id        String   @id @default(cuid())
+  id        String    @id @default(cuid())
   userId    String
   phone     String
   code      String
   expiresAt DateTime
   usedAt    DateTime?
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -201,45 +202,51 @@ model PhoneOtp {
 // ===== CLINIC & MULTI-TENANCY =====
 
 model Clinic {
-  id          String       @id @default(cuid())
-  name        String       // Arabic name
-  slug        String       @unique  // English slug for subdomain
-  status      ClinicStatus @default(ACTIVE)
-  timezone    String       @default("Africa/Cairo")
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  id        String       @id @default(cuid())
+  name      String // Arabic name
+  slug      String       @unique // English slug for subdomain
+  status    ClinicStatus @default(ACTIVE)
+  timezone  String       @default("Africa/Cairo")
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
 
-  settings     ClinicSettings?
-  memberships  ClinicMembership[]
-  roles        Role[]         @relation("ClinicRoles")
-  doctors      Doctor[]
-  patients     Patient[]
-  appointments Appointment[]
-  services     Service[]
-  website      Website?
-  domains      Domain[]
-  subscription Subscription?
-  auditLogs    AuditLog[]
-  mediaAssets  MediaAsset[]
+  settings       ClinicSettings?
+  memberships    ClinicMembership[]
+  roles          Role[]             @relation("ClinicRoles")
+  doctors        Doctor[]
+  patients       Patient[]
+  appointments   Appointment[]
+  services       Service[]
+  website        Website?
+  domains        Domain[]
+  subscription   Subscription?
+  auditLogs      AuditLog[]
+  mediaAssets    MediaAsset[]
+  prescriptions  Prescription[]     @relation("ClinicPrescriptions")
+  invoices       Invoice[]          @relation("ClinicInvoices")
+  payments       Payment[]          @relation("ClinicPayments")
+  expenses       Expense[]          @relation("ClinicExpenses")
+  inventoryItems InventoryItem[]    @relation("ClinicInventory")
+  leads          Lead[]             @relation("ClinicLeads")
 
   @@index([slug])
   @@index([status])
 }
 
 model ClinicSettings {
-  id              String  @id @default(cuid())
-  clinicId        String  @unique
+  id              String   @id @default(cuid())
+  clinicId        String   @unique
   logoUrl         String?
   faviconUrl      String?
-  primaryColor    String  @default("#2563EB")
-  secondaryColor  String  @default("#1E40AF")
-  accentColor     String  @default("#3B82F6")
+  primaryColor    String   @default("#2563EB")
+  secondaryColor  String   @default("#1E40AF")
+  accentColor     String   @default("#3B82F6")
   fontId          String?
   phone           String?
   email           String?
   address         String?
   city            String?
-  country         String  @default("EG")
+  country         String   @default("EG")
   socialFacebook  String?
   socialInstagram String?
   socialTwitter   String?
@@ -275,12 +282,12 @@ model Role {
   id        String   @id @default(cuid())
   name      String
   nameAr    String
-  clinicId  String?  // null = system default role
+  clinicId  String? // null = system default role
   isSystem  Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  clinic      Clinic?          @relation("ClinicRoles", fields: [clinicId], references: [id], onDelete: Cascade)
+  clinic      Clinic?            @relation("ClinicRoles", fields: [clinicId], references: [id], onDelete: Cascade)
   permissions RolePermission[]
   memberships ClinicMembership[]
 
@@ -289,11 +296,11 @@ model Role {
 }
 
 model Permission {
-  id          String @id @default(cuid())
-  key         String @unique  // e.g. "patients.view"
-  description String?
+  id            String  @id @default(cuid())
+  key           String  @unique // e.g. "patients.view"
+  description   String?
   descriptionAr String?
-  category    String  // e.g. "patients"
+  category      String // e.g. "patients"
 
   roles RolePermission[]
 
@@ -313,46 +320,51 @@ model RolePermission {
 // ===== CLINIC BUSINESS MODELS =====
 
 model Doctor {
-  id           String   @id @default(cuid())
-  clinicId     String
-  userId       String?
-  fullName     String
-  specialty    String?
-  phone        String?
-  email        String?
-  imageUrl     String?
-  bio          String?  @db.Text
-  isActive     Boolean  @default(true)
-  showOnWebsite Boolean @default(true)
+  id            String   @id @default(cuid())
+  clinicId      String
+  userId        String?
+  fullName      String
+  specialty     String?
+  phone         String?
+  email         String?
+  imageUrl      String?
+  bio           String?  @db.Text
+  isActive      Boolean  @default(true)
+  showOnWebsite Boolean  @default(true)
   sortOrder     Int      @default(0)
   workingHours  Json?
   createdAt     DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt     DateTime @updatedAt
 
-  clinic       Clinic          @relation(fields: [clinicId], references: [id], onDelete: Cascade)
-  user         User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
-  appointments Appointment[]
-  services     DoctorService[]
+  clinic        Clinic          @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+  user          User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
+  appointments  Appointment[]
+  services      DoctorService[]
+  prescriptions Prescription[]  @relation("DoctorPrescriptions")
 
   @@index([clinicId])
   @@index([userId])
 }
 
 model Patient {
-  id           String    @id @default(cuid())
-  clinicId     String
-  fullName     String
-  phone        String
-  email        String?
-  dateOfBirth  DateTime?
-  gender       Gender?
-  address      String?
-  notes        String?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  id          String    @id @default(cuid())
+  clinicId    String
+  fullName    String
+  phone       String
+  email       String?
+  dateOfBirth DateTime?
+  gender      Gender?
+  address     String?
+  notes       String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
-  clinic       Clinic        @relation(fields: [clinicId], references: [id], onDelete: Cascade)
-  appointments Appointment[]
+  clinic         Clinic          @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+  appointments   Appointment[]
+  medicalHistory MedicalHistory?
+  dentalRecords  DentalRecord[]
+  prescriptions  Prescription[]  @relation("PatientPrescriptions")
+  invoices       Invoice[]       @relation("PatientInvoices")
 
   @@index([clinicId])
   @@index([clinicId, fullName])
@@ -362,13 +374,13 @@ model Patient {
 model Service {
   id            String   @id @default(cuid())
   clinicId      String
-  slug          String?  // Added for website (e.g. /services/teeth-whitening)
+  slug          String? // Added for website (e.g. /services/teeth-whitening)
   name          String
   nameEn        String?
   description   String?
   content       String?  @db.Text // Added for detailed service page
   price         Decimal? @db.Decimal(10, 2)
-  duration      Int?     // minutes
+  duration      Int? // minutes
   imageUrl      String?
   isActive      Boolean  @default(true)
   showOnWebsite Boolean  @default(true)
@@ -379,6 +391,7 @@ model Service {
   clinic       Clinic          @relation(fields: [clinicId], references: [id], onDelete: Cascade)
   appointments Appointment[]
   doctors      DoctorService[]
+  invoiceItems InvoiceItem[]
 
   @@index([clinicId])
   @@index([clinicId, slug])
@@ -402,17 +415,19 @@ model Appointment {
   doctorId  String
   serviceId String?
   date      DateTime          @db.Date
-  startTime String            // "09:00" format
-  endTime   String?           // "09:30" format
+  startTime String // "09:00" format
+  endTime   String? // "09:30" format
   status    AppointmentStatus @default(SCHEDULED)
   notes     String?
   createdAt DateTime          @default(now())
   updatedAt DateTime          @updatedAt
 
-  clinic  Clinic  @relation(fields: [clinicId], references: [id], onDelete: Cascade)
-  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  doctor  Doctor  @relation(fields: [doctorId], references: [id], onDelete: Cascade)
-  service Service? @relation(fields: [serviceId], references: [id])
+  clinic        Clinic         @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+  patient       Patient        @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  doctor        Doctor         @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  service       Service?       @relation(fields: [serviceId], references: [id])
+  prescriptions Prescription[]
+  invoices      Invoice[]
 
   @@index([clinicId, date])
   @@index([clinicId, status])
@@ -423,15 +438,15 @@ model Appointment {
 // ===== WEBSITE =====
 
 model Website {
-  id        String  @id @default(cuid())
-  clinicId  String  @unique
-  themeId   String?
-  isPublished Boolean @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String   @id @default(cuid())
+  clinicId    String   @unique
+  themeId     String?
+  isPublished Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  clinic   Clinic          @relation(fields: [clinicId], references: [id], onDelete: Cascade)
-  theme    WebsiteTheme?   @relation(fields: [themeId], references: [id])
+  clinic   Clinic           @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+  theme    WebsiteTheme?    @relation(fields: [themeId], references: [id])
   sections WebsiteSection[]
   settings WebsiteSettings?
 }
@@ -442,7 +457,7 @@ model WebsiteSection {
   type      WebsiteSectionType
   title     String?
   titleEn   String?
-  content   Json?              // Section-specific content
+  content   Json? // Section-specific content
   isEnabled Boolean            @default(true)
   sortOrder Int                @default(0)
   createdAt DateTime           @default(now())
@@ -468,8 +483,8 @@ model WebsiteTheme {
 }
 
 model WebsiteSettings {
-  id              String  @id @default(cuid())
-  websiteId       String  @unique
+  id              String   @id @default(cuid())
+  websiteId       String   @unique
   metaTitle       String?
   metaDescription String?
   ogImageUrl      String?
@@ -509,7 +524,7 @@ model MediaAsset {
   fileUrl   String
   fileSize  Int
   mimeType  String
-  category  String   // logo, doctor, service, gallery, website
+  category  String // logo, doctor, service, gallery, website
   createdAt DateTime @default(now())
 
   clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: Cascade)
@@ -538,10 +553,10 @@ model Plan {
 }
 
 model PlanFeature {
-  id      String  @id @default(cuid())
-  planId  String
-  key     String  // e.g. "website.custom_domain", "team.max_users"
-  value   String  // "true", "5", "unlimited"
+  id     String @id @default(cuid())
+  planId String
+  key    String // e.g. "website.custom_domain", "team.max_users"
+  value  String // "true", "5", "unlimited"
 
   plan Plan @relation(fields: [planId], references: [id], onDelete: Cascade)
 
@@ -572,7 +587,7 @@ model AuditLog {
   actorId    String?
   clinicId   String?
   action     AuditAction
-  resource   String?     // e.g. "patient", "appointment"
+  resource   String? // e.g. "patient", "appointment"
   resourceId String?
   metadata   Json?
   ipAddress  String?
@@ -591,15 +606,15 @@ model AuditLog {
 // ===== PLATFORM SETTINGS =====
 
 model PlatformSettings {
-  id             String  @id @default(cuid())
-  platformName   String  @default("DRS")
-  logoUrl        String?
-  faviconUrl     String?
-  primaryColor   String  @default("#2563EB")
-  accentColor    String  @default("#3B82F6")
-  defaultFontId  String?
-  defaultRadius  String  @default("0.75rem")
-  updatedAt      DateTime @updatedAt
+  id            String   @id @default(cuid())
+  platformName  String   @default("DRS")
+  logoUrl       String?
+  faviconUrl    String?
+  primaryColor  String   @default("#2563EB")
+  accentColor   String   @default("#3B82F6")
+  defaultFontId String?
+  defaultRadius String   @default("0.75rem")
+  updatedAt     DateTime @updatedAt
 
   defaultFont Font? @relation(fields: [defaultFontId], references: [id])
 }
@@ -607,25 +622,240 @@ model PlatformSettings {
 model Font {
   id        String   @id @default(cuid())
   name      String   @unique
-  family    String   // CSS font-family value
+  family    String // CSS font-family value
   isActive  Boolean  @default(true)
   isDefault Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  weights         FontWeight[]
-  clinicSettings  ClinicSettings[]
+  weights          FontWeight[]
+  clinicSettings   ClinicSettings[]
   platformSettings PlatformSettings[]
 }
 
 model FontWeight {
-  id       String @id @default(cuid())
-  fontId   String
-  weight   Int    // 400, 500, 600, 700
-  fileUrl  String // URL to WOFF2 file
-  format   String @default("woff2")
+  id      String @id @default(cuid())
+  fontId  String
+  weight  Int // 400, 500, 600, 700
+  fileUrl String // URL to WOFF2 file
+  format  String @default("woff2")
 
   font Font @relation(fields: [fontId], references: [id], onDelete: Cascade)
 
   @@unique([fontId, weight])
+}
+
+// ===== ERP & CRM ADVANCED MODELS (ADDED IN PHASE 2) =====
+
+enum InvoiceStatus {
+  DRAFT
+  UNPAID
+  PARTIAL
+  PAID
+  CANCELLED
+}
+
+enum PaymentMethod {
+  CASH
+  CARD
+  BANK_TRANSFER
+  INSURANCE
+  INSTALLMENT
+}
+
+enum ExpenseCategory {
+  SALARIES
+  RENT
+  SUPPLIES
+  UTILITIES
+  MARKETING
+  MAINTENANCE
+  OTHER
+}
+
+enum StockTransactionType {
+  IN
+  OUT
+  ADJUSTMENT
+}
+
+// 1. EMR & CLINICAL RECORDS
+
+model MedicalHistory {
+  id              String   @id @default(cuid())
+  patientId       String   @unique
+  allergies       String?  @db.Text
+  chronicDiseases String?  @db.Text
+  medications     String?  @db.Text
+  bloodType       String?
+  notes           String?  @db.Text
+  updatedAt       DateTime @updatedAt
+
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+}
+
+model DentalRecord {
+  id          String   @id @default(cuid())
+  patientId   String
+  toothNumber Int // FDI system: 11-18, 21-28, 31-38, 41-48
+  condition   String // e.g., "DECAYED", "FILLED", "MISSING", "CROWNED"
+  notes       String?  @db.Text
+  updatedAt   DateTime @updatedAt
+
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@unique([patientId, toothNumber])
+}
+
+model Prescription {
+  id            String   @id @default(cuid())
+  clinicId      String
+  patientId     String
+  doctorId      String
+  appointmentId String?
+  medications   Json // Array of { name, dosage, frequency, duration, notes }
+  notes         String?  @db.Text
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  clinic      Clinic       @relation("ClinicPrescriptions", fields: [clinicId], references: [id], onDelete: Cascade)
+  patient     Patient      @relation("PatientPrescriptions", fields: [patientId], references: [id], onDelete: Cascade)
+  doctor      Doctor       @relation("DoctorPrescriptions", fields: [doctorId], references: [id], onDelete: Cascade)
+  appointment Appointment? @relation(fields: [appointmentId], references: [id])
+
+  @@index([clinicId])
+  @@index([patientId])
+}
+
+// 2. FINANCIALS & BILLING (ERP)
+
+model Invoice {
+  id            String        @id @default(cuid())
+  clinicId      String
+  patientId     String
+  appointmentId String?
+  invoiceNumber String        @unique
+  subtotal      Decimal       @db.Decimal(10, 2)
+  discount      Decimal       @default(0) @db.Decimal(10, 2)
+  tax           Decimal       @default(0) @db.Decimal(10, 2)
+  total         Decimal       @db.Decimal(10, 2)
+  status        InvoiceStatus @default(UNPAID)
+  dueDate       DateTime?     @db.Date
+  notes         String?       @db.Text
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  clinic      Clinic        @relation("ClinicInvoices", fields: [clinicId], references: [id], onDelete: Cascade)
+  patient     Patient       @relation("PatientInvoices", fields: [patientId], references: [id], onDelete: Cascade)
+  appointment Appointment?  @relation(fields: [appointmentId], references: [id])
+  items       InvoiceItem[]
+  payments    Payment[]
+
+  @@index([clinicId])
+  @@index([patientId])
+  @@index([status])
+}
+
+model InvoiceItem {
+  id          String  @id @default(cuid())
+  invoiceId   String
+  serviceId   String?
+  description String
+  quantity    Int     @default(1)
+  unitPrice   Decimal @db.Decimal(10, 2)
+  total       Decimal @db.Decimal(10, 2)
+  toothNumber Int? // If linked to a specific tooth
+
+  invoice Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  service Service? @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+
+  @@index([invoiceId])
+}
+
+model Payment {
+  id            String        @id @default(cuid())
+  clinicId      String
+  invoiceId     String
+  amount        Decimal       @db.Decimal(10, 2)
+  method        PaymentMethod
+  referenceCode String?
+  paymentDate   DateTime      @default(now())
+  notes         String?       @db.Text
+
+  clinic  Clinic  @relation("ClinicPayments", fields: [clinicId], references: [id], onDelete: Cascade)
+  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([clinicId])
+  @@index([invoiceId])
+}
+
+model Expense {
+  id          String          @id @default(cuid())
+  clinicId    String
+  category    ExpenseCategory
+  amount      Decimal         @db.Decimal(10, 2)
+  description String
+  expenseDate DateTime        @db.Date
+  receiptUrl  String?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  clinic Clinic @relation("ClinicExpenses", fields: [clinicId], references: [id], onDelete: Cascade)
+
+  @@index([clinicId])
+  @@index([category])
+}
+
+// 3. INVENTORY & SUPPLY CHAIN
+
+model InventoryItem {
+  id          String   @id @default(cuid())
+  clinicId    String
+  name        String
+  sku         String?
+  category    String?
+  quantity    Int      @default(0)
+  unit        String // e.g., "Box", "Piece", "ml"
+  minQuantity Int      @default(5)
+  costPrice   Decimal? @db.Decimal(10, 2)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  clinic       Clinic             @relation("ClinicInventory", fields: [clinicId], references: [id], onDelete: Cascade)
+  transactions StockTransaction[]
+
+  @@index([clinicId])
+}
+
+model StockTransaction {
+  id              String               @id @default(cuid())
+  inventoryItemId String
+  type            StockTransactionType
+  quantity        Int
+  notes           String?
+  createdAt       DateTime             @default(now())
+  createdByUserId String?
+
+  inventoryItem InventoryItem @relation(fields: [inventoryItemId], references: [id], onDelete: Cascade)
+  user          User?         @relation(fields: [createdByUserId], references: [id], onDelete: SetNull)
+
+  @@index([inventoryItemId])
+}
+
+// 4. CRM & PATIENT ENGAGEMENT
+
+model Lead {
+  id        String   @id @default(cuid())
+  clinicId  String
+  fullName  String
+  phone     String
+  source    String? // e.g., "Facebook", "Website", "Referral"
+  status    String   @default("NEW") // NEW, CONTACTED, CONVERTED, LOST
+  notes     String?  @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  clinic Clinic @relation("ClinicLeads", fields: [clinicId], references: [id], onDelete: Cascade)
+
+  @@index([clinicId])
 }
