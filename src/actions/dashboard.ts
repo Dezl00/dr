@@ -262,7 +262,7 @@ export async function updateWebsiteSettings(formData: FormData) {
   revalidatePath('/dashboard/website')
 }
 
-export async function updatePatient(id: string, formData: FormData) {
+export async function updatePatient(id: string, prevState: any, formData: FormData) {
   const user = await requireAuth()
   const clinicId = await getActiveClinicId(user.id)
   

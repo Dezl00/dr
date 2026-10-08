@@ -13,7 +13,7 @@ async function getClinicId(userId: string) {
   return membership?.clinicId
 }
 
-export async function addInventoryItem(formData: FormData) {
+export async function addInventoryItem(prevState: any, formData: FormData) {
   try {
     const user = await requireAuth()
     const clinicId = await getClinicId(user.id)
