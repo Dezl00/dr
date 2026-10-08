@@ -1,4 +1,4 @@
-﻿import { prisma } from '@/lib/db/prisma'
+import { prisma } from '@/lib/db/prisma'
 import { requireAuth, getCurrentSession } from '@/lib/auth/dal'
 import Link from 'next/link'
 import { Plus, Search } from 'lucide-react'
@@ -64,7 +64,7 @@ export default async function PatientsPage({
         </div>
         <ActionLink
           href="/dashboard/patients/new"
-          icon={Plus}
+          icon={<Plus className="w-4 h-4" strokeWidth={1.5} />}
           className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors duration-150 hover:bg-primary/90 disabled:opacity-50"
         >
           إضافة مريض

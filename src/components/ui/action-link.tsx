@@ -7,10 +7,10 @@ import { Loader2 } from 'lucide-react'
 interface ActionLinkProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   href: string
   children: React.ReactNode
-  icon?: React.ElementType
+  icon?: React.ReactNode
 }
 
-export function ActionLink({ href, children, className, icon: Icon, onMouseEnter, ...props }: ActionLinkProps) {
+export function ActionLink({ href, children, className, icon, onMouseEnter, ...props }: ActionLinkProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
 
@@ -27,8 +27,8 @@ export function ActionLink({ href, children, className, icon: Icon, onMouseEnter
     >
       {isPending ? (
         <Loader2 className="h-4 w-4 animate-spin" strokeWidth={1.5} />
-      ) : Icon ? (
-        <Icon className="h-4 w-4" strokeWidth={1.5} />
+      ) : icon ? (
+        <span className="inline-flex">{icon}</span>
       ) : null}
       {children}
     </button>

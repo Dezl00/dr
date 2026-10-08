@@ -71,7 +71,7 @@ export default async function AppointmentsPage({
         </div>
         <ActionLink
           href="/dashboard/appointments/new"
-          icon={Plus}
+          icon={<Plus className="w-4 h-4" strokeWidth={1.5} />}
           className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors duration-150 hover:bg-primary/90 disabled:opacity-50"
         >
           موعد جديد

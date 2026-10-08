@@ -52,14 +52,14 @@ export default async function FinancialsPage() {
         <div className="flex gap-2">
           <ActionLink
             href="/dashboard/financials/expenses/new"
-            icon={ArrowDownRight}
+            icon={<ArrowDownRight className="h-4 w-4 text-red-500" strokeWidth={1.5} />}
             className="inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium transition-colors hover:bg-accent disabled:opacity-50"
           >
             إضافة مصروف
           </ActionLink>
           <ActionLink
             href="/dashboard/financials/invoices/new"
-            icon={Plus}
+            icon={<Plus className="h-4 w-4" strokeWidth={1.5} />}
             className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
           >
             إنشاء فاتورة
