@@ -1,12 +1,14 @@
 export async function sendOtpSms(phone: string, code: string) {
-  // Format phone number for Egypt (default) without +
-  let formattedPhone = phone.trim()
-  formattedPhone = formattedPhone.replace('+', '')
+  // Format phone number for Egypt (default)
+  let formattedPhone = phone.trim();
   
   if (formattedPhone.startsWith('01') && formattedPhone.length === 11) {
-    formattedPhone = `20${formattedPhone.substring(1)}` // e.g. 2010xxxxxxxx
-  } else if (!formattedPhone.startsWith('20') && formattedPhone.length === 10) {
-    formattedPhone = `20${formattedPhone}`
+    formattedPhone = `+20${formattedPhone.substring(1)}`; // e.g. +2010xxxxxxxx
+  } else if (formattedPhone.startsWith('20') && formattedPhone.length === 12) {
+    formattedPhone = `+${formattedPhone}`; // add + if missing
+  } else if (!formattedPhone.startsWith('+')) {
+    // If it doesn't have a country code, we can assume Egypt or just add +
+    formattedPhone = `+${formattedPhone}`;
   }
 
   // WhySMS API configuration
@@ -23,18 +25,18 @@ export async function sendOtpSms(phone: string, code: string) {
   const message = `رمز التحقق الخاص بك لمنصة DRS هو: ${code}`
 
   try {
-    // Official WhySMS v3 HTTP API Endpoint
-    const response = await fetch('https://bulk.whysms.com/api/v3/sms/send', {
+    // Official WhySMS HTTP API Endpoint
+    const response = await fetch('https://bulk.whysms.com/api/http/sms/send', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
+        api_token: apiKey,
         recipient: formattedPhone,
         sender_id: senderId,
-        type: 'plain',
+        type: 'otp',
         message: message,
       }),
     })
@@ -56,18 +58,16 @@ export async function sendOtpSms(phone: string, code: string) {
 export async function sendSms(phone: string, message: string) {
   let formattedPhone = phone.trim()
   
-  // Remove any existing +
-  formattedPhone = formattedPhone.replace('+', '')
-  
-  // Standardize Egyptian numbers if it starts with 01
   if (formattedPhone.startsWith('01') && formattedPhone.length === 11) {
-    formattedPhone = `20${formattedPhone.substring(1)}`
-  } else if (!formattedPhone.startsWith('20') && formattedPhone.length === 10) {
-    formattedPhone = `20${formattedPhone}`
+    formattedPhone = `+20${formattedPhone.substring(1)}`
+  } else if (formattedPhone.startsWith('20') && formattedPhone.length === 12) {
+    formattedPhone = `+${formattedPhone}`
+  } else if (!formattedPhone.startsWith('+')) {
+    formattedPhone = `+${formattedPhone}`
   }
 
   const apiKey = process.env.WHYSMS_API_KEY
-  const senderId = process.env.WHYSMS_SENDER_ID || 'OTP' // Use OTP as fallback if it's the approved one
+  const senderId = process.env.WHYSMS_SENDER_ID || 'OTP'
 
   if (!apiKey) {
     console.warn('WHYSMS_API_KEY is not set. SMS sending skipped. Message:', message)
@@ -75,14 +75,14 @@ export async function sendSms(phone: string, message: string) {
   }
 
   try {
-    const response = await fetch('https://bulk.whysms.com/api/v3/sms/send', {
+    const response = await fetch('https://bulk.whysms.com/api/http/sms/send', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
+        api_token: apiKey,
         recipient: formattedPhone,
         sender_id: senderId,
         type: 'plain',
