@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { BackButton } from '@/components/ui/back-button'
+import { SubmitButton } from '@/components/ui/submit-button'
 
 export default function NewLeadPage() {
   const router = useRouter()
@@ -17,6 +19,7 @@ export default function NewLeadPage() {
 
   return (
     <div className="max-w-2xl">
+      <BackButton label="العودة لإدارة العلاقات (CRM)" />
       <div className="mb-6">
         <h1 className="text-xl font-semibold">إضافة عميل محتمل (Lead)</h1>
         <p className="text-sm text-muted-foreground mt-1">تسجيل مريض محتمل للتواصل معه لاحقاً</p>
@@ -78,9 +81,10 @@ export default function NewLeadPage() {
         </div>
 
         <div className="flex gap-3 pt-4 border-t border-border">
-          <Button type="submit" disabled={isPending}>
-            {isPending ? 'جاري الحفظ...' : 'حفظ البيانات'}
-          </Button>
+          <SubmitButton 
+            label="حفظ البيانات"
+            loadingLabel="جاري الحفظ..."
+          />
           <Link href="/dashboard/crm" className="inline-flex items-center justify-center rounded-lg border px-6 py-2 text-sm font-medium transition hover:bg-accent">
             إلغاء
           </Link>

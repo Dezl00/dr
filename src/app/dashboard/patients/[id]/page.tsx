@@ -8,6 +8,7 @@ import { PatientDentalChart } from './_components/patient-dental-chart'
 import { PatientAppointments } from './_components/patient-appointments'
 import { PatientBilling } from './_components/patient-billing'
 import { PatientPrescriptions } from './_components/patient-prescriptions'
+import { BackButton } from '@/components/ui/back-button'
 
 export const metadata = {
   title: 'ملف المريض | DRS',
@@ -51,6 +52,7 @@ export default async function PatientEMRPage({ params }: { params: Promise<{ id:
 
   return (
     <div className="space-y-6">
+      <BackButton label="العودة لقائمة المرضى" />
       {/* Patient Header */}
       <div className="flex items-center justify-between border-b border-border pb-6">
         <div>

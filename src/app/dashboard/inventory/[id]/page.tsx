@@ -5,6 +5,7 @@ import { ArrowUp, ArrowDown, Package, History } from 'lucide-react'
 import { StockAdjustmentForm } from './_components/stock-form'
 import { format } from 'date-fns'
 import { ar } from 'date-fns/locale'
+import { BackButton } from '@/components/ui/back-button'
 
 async function getClinicId(userId: string) {
   const { session } = await getCurrentSession()
@@ -35,6 +36,7 @@ export default async function InventoryItemPage({ params }: { params: Promise<{ 
 
   return (
     <div className="space-y-6">
+      <BackButton label="العودة للمخزون" />
       <div className="flex items-center justify-between border-b border-border pb-6">
         <div className="flex items-center gap-4">
           <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10 text-primary">

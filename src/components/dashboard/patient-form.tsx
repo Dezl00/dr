@@ -3,6 +3,7 @@
 import { useActionState } from 'react'
 import { createPatientAction } from '@/actions/patients'
 import Link from 'next/link'
+import { SubmitButton } from '@/components/ui/submit-button'
 
 export function PatientForm() {
   const [state, formAction, isPending] = useActionState(createPatientAction, null)
@@ -80,12 +81,11 @@ export function PatientForm() {
       </div>
 
       <div className="mt-4 flex gap-3">
-        <button
-          type="submit" disabled={isPending}
-          className="rounded-lg bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
-        >
-          {isPending ? 'جارٍ الحفظ...' : 'حفظ'}
-        </button>
+        <SubmitButton 
+          label="حفظ بيانات المريض"
+          loadingLabel="جاري الحفظ..."
+          className="px-6 py-2.5"
+        />
         <Link
           href="/dashboard/patients"
           className="rounded-lg border border-border px-6 py-2.5 text-sm font-medium transition-colors hover:bg-accent"

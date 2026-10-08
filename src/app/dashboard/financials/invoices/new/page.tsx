@@ -11,6 +11,8 @@ async function getClinicId(userId: string) {
   return membership?.clinicId
 }
 
+import { BackButton } from '@/components/ui/back-button'
+
 export default async function NewInvoicePage() {
   const user = await requireAuth()
   const clinicId = await getClinicId(user.id)
@@ -24,6 +26,7 @@ export default async function NewInvoicePage() {
 
   return (
     <div className="max-w-3xl">
+      <BackButton label="العودة للإدارة المالية" />
       <h1 className="text-xl font-semibold mb-6">إنشاء فاتورة جديدة</h1>
       <InvoiceForm patients={patients} />
     </div>

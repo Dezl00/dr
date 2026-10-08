@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button'
 import { Plus, Trash2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { SubmitButton } from '@/components/ui/submit-button'
 
 export function InvoiceForm({ patients }: { patients: {id: string, fullName: string}[] }) {
   const router = useRouter()
@@ -149,9 +150,10 @@ export function InvoiceForm({ patients }: { patients: {id: string, fullName: str
       </div>
 
       <div className="flex gap-3">
-        <Button type="submit" disabled={isPending}>
-          {isPending ? 'جاري الحفظ...' : 'حفظ وإصدار الفاتورة'}
-        </Button>
+        <SubmitButton 
+          label="حفظ وإصدار الفاتورة"
+          loadingLabel="جاري الحفظ..."
+        />
         <Link href="/dashboard/financials" className="inline-flex items-center justify-center rounded-lg border px-6 py-2 text-sm font-medium transition hover:bg-accent">
           إلغاء
         </Link>

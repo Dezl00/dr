@@ -6,6 +6,7 @@ import { ar } from 'date-fns/locale'
 import { CreditCard, Building2, Phone, Mail } from 'lucide-react'
 import { PaymentForm } from './_components/payment-form'
 import { PrintButton } from './_components/print-button'
+import { BackButton } from '@/components/ui/back-button'
 
 async function getClinicId(userId: string) {
   const { session } = await getCurrentSession()
@@ -43,7 +44,9 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
 
   return (
     <div className="max-w-5xl mx-auto space-y-6 pb-20">
-      
+      <div className="print:hidden">
+        <BackButton label="العودة للإدارة المالية" />
+      </div>
       {/* Header Controls - Hidden in print */}
       <div className="flex items-center justify-between border-b border-border pb-6 print:hidden">
         <div>

@@ -3,7 +3,8 @@ import { requireAuth, getCurrentSession } from '@/lib/auth/dal'
 import { prisma } from '@/lib/db/prisma'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-
+import { BackButton } from '@/components/ui/back-button'
+import { SubmitButton } from '@/components/ui/submit-button'
 async function getActiveClinicId(userId: string): Promise<string> {
   const { session } = await getCurrentSession()
   const user = await requireAuth()
@@ -42,12 +43,7 @@ export default async function NewAppointmentPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold tracking-tight">حجز موعد جديد</h1>
-        <Link 
-          href="/dashboard/appointments"
-          className="text-sm text-gray-500 hover:text-black dark:text-gray-400 dark:hover:text-white"
-        >
-          العودة للقائمة
-        </Link>
+        <BackButton label="العودة للقائمة" />
       </div>
 
       <div className="bg-white dark:bg-[#050505] border border-gray-200 dark:border-[#1F1F1F] p-6 max-w-2xl">
@@ -133,12 +129,11 @@ export default async function NewAppointmentPage() {
             />
           </div>
 
-          <button 
-            type="submit" 
-            className="w-full mt-6 bg-black dark:bg-white text-white dark:text-black font-medium py-2 px-4 hover:opacity-90 transition-opacity"
-          >
-            حجز الموعد
-          </button>
+          <SubmitButton 
+            label="حجز الموعد"
+            loadingLabel="جاري الحجز..."
+            className="w-full mt-6"
+          />
         </form>
       </div>
     </div>

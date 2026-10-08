@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Plus, Trash2 } from 'lucide-react'
+import { BackButton } from '@/components/ui/back-button'
+import { SubmitButton } from '@/components/ui/submit-button'
 
 export default function NewPrescriptionPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: patientId } = use(params)
@@ -22,6 +24,7 @@ export default function NewPrescriptionPage({ params }: { params: Promise<{ id: 
 
   return (
     <div className="max-w-3xl">
+      <BackButton label="العودة لملف المريض" />
       <div className="mb-6">
         <h1 className="text-xl font-semibold">كتابة روشتة جديدة</h1>
         <p className="text-sm text-muted-foreground mt-1">إضافة الأدوية والجرعات للمريض</p>
@@ -117,9 +120,10 @@ export default function NewPrescriptionPage({ params }: { params: Promise<{ id: 
         </div>
 
         <div className="flex gap-3 pt-4 border-t border-border">
-          <Button type="submit" disabled={isPending}>
-            {isPending ? 'جاري الحفظ...' : 'حفظ وإصدار الروشتة'}
-          </Button>
+          <SubmitButton 
+            label="حفظ وإصدار الروشتة"
+            loadingLabel="جاري الحفظ..."
+          />
           <Link href={`/dashboard/patients/${patientId}`} className="inline-flex items-center justify-center rounded-lg border px-6 py-2 text-sm font-medium transition hover:bg-accent">
             إلغاء
           </Link>
