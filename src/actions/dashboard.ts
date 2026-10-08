@@ -184,7 +184,7 @@ export async function sendManualReminder(appointmentId: string) {
   
   try {
     const { sendAppointmentSMS } = await import('@/lib/sms')
-    await sendAppointmentSMS({ 
+    const result = await sendAppointmentSMS({ 
       clinicId, 
       patientId: apt.patientId, 
       serviceId: apt.serviceId || undefined, 
@@ -192,7 +192,7 @@ export async function sendManualReminder(appointmentId: string) {
       startTime: apt.startTime, 
       type: 'REMINDER' 
     })
-    return { success: true }
+    return result || { success: true }
   } catch (error: any) {
     console.error('Manual Reminder SMS Error:', error)
     return { success: false, error: error.message || 'حدث خطأ غير معروف' }

@@ -16,18 +16,23 @@ export async function sendAppointmentSMS({ clinicId, patientId, doctorId, servic
       where: { clinicId }
     })
 
-    if (!settings) return
+    // Default settings if the clinic hasn't configured them yet
+    const notifyBookingConfirmation = settings?.notifyBookingConfirmation ?? true
+    const notifyAppointmentReminder = settings?.notifyAppointmentReminder ?? true
+    const notifyBookingCancellation = settings?.notifyBookingCancellation ?? true
+    const notifyVisitCompletion = settings?.notifyVisitCompletion ?? true
 
     // Check if notification is enabled for this type
-    if (type === 'CONFIRMATION' && !settings.notifyBookingConfirmation) return
-    if (type === 'REMINDER' && !settings.notifyAppointmentReminder) return
-    if (type === 'CANCELLATION' && !settings.notifyBookingCancellation) return
-    if (type === 'COMPLETED' && !settings.notifyVisitCompletion) return
+    if (type === 'CONFIRMATION' && !notifyBookingConfirmation) return { success: false, error: 'مغلق من الإعدادات' }
+    if (type === 'REMINDER' && !notifyAppointmentReminder) return { success: false, error: 'مغلق من الإعدادات' }
+    if (type === 'CANCELLATION' && !notifyBookingCancellation) return { success: false, error: 'مغلق من الإعدادات' }
+    if (type === 'COMPLETED' && !notifyVisitCompletion) return { success: false, error: 'مغلق من الإعدادات' }
 
     const clinic = await prisma.clinic.findUnique({ where: { id: clinicId } })
     const patient = await prisma.patient.findUnique({ where: { id: patientId } })
     
-    if (!patient?.phone || !clinic) return
+    if (!patient?.phone) return { success: false, error: 'المريض لا يملك رقم هاتف' }
+    if (!clinic) return { success: false, error: 'العيادة غير موجودة' }
 
     const service = serviceId ? await prisma.service.findUnique({ where: { id: serviceId } }) : null
 
@@ -57,8 +62,11 @@ export async function sendAppointmentSMS({ clinicId, patientId, doctorId, servic
     if (result.success) {
       console.log(`[SMS Gateway] Sent to ${patient.phone}: ${message}`)
     }
+    
+    return result
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Failed to send SMS:', error)
+    return { success: false, error: error.message }
   }
 }

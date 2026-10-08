@@ -1,14 +1,12 @@
 export async function sendOtpSms(phone: string, code: string) {
-  // Format phone number for Egypt (default)
-  let formattedPhone = phone.trim();
+  // Format phone number for Egypt (default) without +
+  let formattedPhone = phone.trim()
+  formattedPhone = formattedPhone.replace('+', '')
   
   if (formattedPhone.startsWith('01') && formattedPhone.length === 11) {
-    formattedPhone = `+20${formattedPhone.substring(1)}`; // e.g. +2010xxxxxxxx
-  } else if (formattedPhone.startsWith('20') && formattedPhone.length === 12) {
-    formattedPhone = `+${formattedPhone}`; // add + if missing
-  } else if (!formattedPhone.startsWith('+')) {
-    // If it doesn't have a country code, we can assume Egypt or just add +
-    formattedPhone = `+${formattedPhone}`;
+    formattedPhone = `20${formattedPhone.substring(1)}` // e.g. 2010xxxxxxxx
+  } else if (!formattedPhone.startsWith('20') && formattedPhone.length === 10) {
+    formattedPhone = `20${formattedPhone}`
   }
 
   // WhySMS API configuration
@@ -58,20 +56,22 @@ export async function sendOtpSms(phone: string, code: string) {
 export async function sendSms(phone: string, message: string) {
   let formattedPhone = phone.trim()
   
+  // Remove any existing +
+  formattedPhone = formattedPhone.replace('+', '')
+  
+  // Standardize Egyptian numbers if it starts with 01
   if (formattedPhone.startsWith('01') && formattedPhone.length === 11) {
-    formattedPhone = `+20${formattedPhone.substring(1)}`
-  } else if (formattedPhone.startsWith('20') && formattedPhone.length === 12) {
-    formattedPhone = `+${formattedPhone}`
-  } else if (!formattedPhone.startsWith('+')) {
-    formattedPhone = `+${formattedPhone}`
+    formattedPhone = `20${formattedPhone.substring(1)}`
+  } else if (!formattedPhone.startsWith('20') && formattedPhone.length === 10) {
+    formattedPhone = `20${formattedPhone}`
   }
 
   const apiKey = process.env.WHYSMS_API_KEY
-  const senderId = process.env.WHYSMS_SENDER_ID || 'DRS'
+  const senderId = process.env.WHYSMS_SENDER_ID || 'OTP' // Use OTP as fallback if it's the approved one
 
   if (!apiKey) {
     console.warn('WHYSMS_API_KEY is not set. SMS sending skipped. Message:', message)
-    return { success: true, dummy: true }
+    return { success: true, dummy: true, error: 'API KEY MISSING IN ENV' }
   }
 
   try {
@@ -93,13 +93,17 @@ export async function sendSms(phone: string, message: string) {
     if (!response.ok) {
       const errorText = await response.text()
       console.error('WhySMS API Error:', errorText)
-      return { success: false, error: 'Failed to send SMS via WhySMS' }
+      return { success: false, error: `WhySMS Error: ${response.status} - ${errorText}` }
     }
 
     const data = await response.json()
+    if (data.status === 'error') {
+      return { success: false, error: `WhySMS API Error: ${data.message}` }
+    }
+    
     return { success: true, data }
-  } catch (error) {
+  } catch (error: any) {
     console.error('WhySMS Network Error:', error)
-    return { success: false, error: 'Network error connecting to WhySMS' }
+    return { success: false, error: `Network Error: ${error.message}` }
   }
 }
