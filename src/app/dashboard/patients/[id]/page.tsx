@@ -6,6 +6,8 @@ import { PatientBasicInfo } from './_components/patient-basic-info'
 import { PatientMedicalHistory } from './_components/patient-medical-history'
 import { PatientDentalChart } from './_components/patient-dental-chart'
 import { PatientAppointments } from './_components/patient-appointments'
+import { PatientBilling } from './_components/patient-billing'
+import { PatientPrescriptions } from './_components/patient-prescriptions'
 
 export const metadata = {
   title: 'ملف المريض | DRS',
@@ -102,15 +104,11 @@ export default async function PatientEMRPage({ params }: { params: Promise<{ id:
           </TabsContent>
 
           <TabsContent value="prescriptions" className="mt-0 outline-none">
-            <div className="p-12 text-center text-muted-foreground border rounded-xl bg-card">
-              جاري برمجة نظام الروشتات الإلكترونية...
-            </div>
+            <PatientPrescriptions prescriptions={patient.prescriptions} />
           </TabsContent>
 
           <TabsContent value="billing" className="mt-0 outline-none">
-            <div className="p-12 text-center text-muted-foreground border rounded-xl bg-card">
-              جاري برمجة نظام الفوترة المتقدم...
-            </div>
+            <PatientBilling invoices={patient.invoices} />
           </TabsContent>
         </div>
       </Tabs>
