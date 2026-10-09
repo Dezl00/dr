@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../providers/financial_provider.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../models/invoice.dart';
-import 'create_invoice_screen.dart';
+import '../providers/financial_provider.dart';
+import 'invoice_details_screen.dart';
 
 class InvoicesScreen extends ConsumerStatefulWidget {
   const InvoicesScreen({super.key});
@@ -12,167 +13,168 @@ class InvoicesScreen extends ConsumerStatefulWidget {
 }
 
 class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
-  final ScrollController _scrollController = ScrollController();
-
-  @override
-  void initState() {
-    super.initState();
-    _scrollController.addListener(_onScroll);
-  }
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
-  }
-
-  void _onScroll() {
-    if (_scrollController.position.pixels >= 
-        _scrollController.position.maxScrollExtent - 200) {
-      ref.read(invoiceStateProvider.notifier).fetchNextPage();
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(invoiceStateProvider);
 
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('إدارة الفواتير'),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(60),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            child: Row(
-              children: [
-                Expanded(
-                  child: SegmentedButton<String>(
-                    segments: const [
-                      ButtonSegment(value: 'ALL', label: Text('الكل')),
-                      ButtonSegment(value: 'UNPAID', label: Text('غير مسدد')),
-                      ButtonSegment(value: 'PAID', label: Text('مسدد')),
-                    ],
-                    selected: {state.statusFilter},
-                    onSelectionChanged: (Set<String> newSelection) {
-                      ref.read(invoiceStateProvider.notifier)
-                         .fetchInitialInvoices(status: newSelection.first);
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
+        backgroundColor: Colors.white,
+        title: Text('الفواتير', style: GoogleFonts.ibmPlexSansArabic(color: Colors.black)),
+        elevation: 0,
+        actions: [
+          IconButton(icon: const Icon(Icons.refresh, color: Colors.black), onPressed: () => ref.read(invoiceStateProvider.notifier).fetchInitialInvoices()),
+        ],
       ),
       body: _buildBody(state),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const CreateInvoiceScreen()),
-          );
-        },
-        child: const Icon(Icons.add),
+        backgroundColor: const Color(0xFF2563EB),
+        onPressed: () => _showAddInvoiceDialog(context, ref),
+        child: const Icon(Icons.add, color: Colors.white),
       ),
     );
   }
 
-  Widget _buildBody(InvoiceState state) {
-    if (state.isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
+  void _showAddInvoiceDialog(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        final formKey = GlobalKey<FormState>();
+        final patientController = TextEditingController();
+        final amountController = TextEditingController();
+        bool isLoading = false;
 
-    if (state.error != null && state.invoices.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text('حدث خطأ: ${state.error}'),
-            ElevatedButton(
-              onPressed: () => ref.read(invoiceStateProvider.notifier).fetchInitialInvoices(),
-              child: const Text('إعادة المحاولة'),
-            ),
-          ],
-        ),
-      );
-    }
-
-    if (state.invoices.isEmpty) {
-      return const Center(child: Text('لا توجد فواتير'));
-    }
-
-    return RefreshIndicator(
-      onRefresh: () => ref.read(invoiceStateProvider.notifier).fetchInitialInvoices(),
-      child: ListView.builder(
-        controller: _scrollController,
-        itemCount: state.invoices.length + (state.isFetchingMore ? 1 : 0),
-        itemBuilder: (context, index) {
-          if (index == state.invoices.length) {
-            return const Padding(
-              padding: EdgeInsets.all(16.0),
-              child: Center(child: CircularProgressIndicator()),
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              backgroundColor: Colors.white,
+              surfaceTintColor: Colors.transparent,
+              title: Text('إضافة فاتورة جديدة', style: GoogleFonts.ibmPlexSansArabic(fontWeight: FontWeight.bold, fontSize: 18)),
+              content: Form(
+                key: formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextFormField(
+                      controller: patientController,
+                      decoration: InputDecoration(
+                        labelText: 'اسم المريض',
+                        labelStyle: GoogleFonts.ibmPlexSansArabic(),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      validator: (val) => val != null && val.isEmpty ? 'مطلوب' : null,
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: amountController,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        labelText: 'المبلغ الإجمالي',
+                        labelStyle: GoogleFonts.ibmPlexSansArabic(),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        prefixText: '\$ ',
+                      ),
+                      validator: (val) => val != null && val.isEmpty ? 'مطلوب' : null,
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text('إلغاء', style: GoogleFonts.ibmPlexSansArabic(color: const Color(0xFF64748B))),
+                ),
+                ElevatedButton(
+                  onPressed: isLoading ? null : () async {
+                    if (formKey.currentState!.validate()) {
+                      setState(() => isLoading = true);
+                      await Future.delayed(const Duration(seconds: 1)); // Mock API
+                      if (context.mounted) {
+                        ref.read(invoiceStateProvider.notifier).fetchInitialInvoices();
+                        Navigator.pop(context);
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تمت الإضافة بنجاح (محاكاة)')));
+                      }
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF2563EB)),
+                  child: isLoading 
+                    ? const SizedBox(width:20, height:20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                    : Text('حفظ', style: GoogleFonts.ibmPlexSansArabic(color: Colors.white)),
+                ),
+              ],
             );
-          }
+          },
+        );
+      },
+    );
+  }
 
-          final invoice = state.invoices[index];
-          return _buildInvoiceCard(context, invoice);
-        },
-      ),
+  Widget _buildBody(InvoiceState state) {
+    if (state.isLoading) return const Center(child: CircularProgressIndicator());
+    if (state.invoices.isEmpty) return const Center(child: Text('لا توجد فواتير'));
+
+    return ListView.builder(
+      itemCount: state.invoices.length,
+      itemBuilder: (context, index) => _buildInvoiceCard(context, state.invoices[index]),
     );
   }
 
   Widget _buildInvoiceCard(BuildContext context, Invoice invoice) {
     Color statusColor;
+    Color statusBgColor;
     String statusText;
     switch (invoice.status) {
       case 'PAID': 
-        statusColor = Colors.green; 
+        statusColor = const Color(0xFF16A34A);
+        statusBgColor = const Color(0xFFDCFCE7);
         statusText = 'مسدد';
         break;
       case 'PARTIAL': 
-        statusColor = Colors.orange; 
+        statusColor = const Color(0xFFD97706);
+        statusBgColor = const Color(0xFFFEF3C7);
         statusText = 'مسدد جزئياً';
         break;
       case 'UNPAID': 
-        statusColor = Colors.red; 
+        statusColor = const Color(0xFFDC2626);
+        statusBgColor = const Color(0xFFFEF2F2);
         statusText = 'غير مسدد';
         break;
       default: 
-        statusColor = Colors.grey; 
+        statusColor = const Color(0xFF64748B);
+        statusBgColor = const Color(0xFFF1F5F9);
         statusText = invoice.status;
     }
 
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-      child: ListTile(
-        title: Text(invoice.patientName, style: const TextStyle(fontWeight: FontWeight.bold)),
-        subtitle: Text('التاريخ: ${invoice.issueDate.year}-${invoice.issueDate.month}-${invoice.issueDate.day}'),
-        trailing: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Text(
-              '${invoice.total} ج.م', 
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              decoration: BoxDecoration(
-                color: statusColor.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Text(
-                statusText,
-                style: TextStyle(color: statusColor, fontSize: 10, fontWeight: FontWeight.bold),
-              ),
-            ),
-          ],
+    return GestureDetector(
+      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => InvoiceDetailsScreen(invoice: invoice))),
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border.all(color: const Color(0xFFE2E8F0)),
+          borderRadius: BorderRadius.circular(12),
         ),
-        onTap: () {
-          // Open invoice details
-        },
+        child: ListTile(
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          title: Text(invoice.patientName, style: GoogleFonts.ibmPlexSansArabic(fontWeight: FontWeight.w600, color: const Color(0xFF1E293B), fontSize: 16)),
+          subtitle: Text('التاريخ: \-\-', style: GoogleFonts.ibmPlexSansArabic(color: const Color(0xFF64748B), fontSize: 14)),
+          trailing: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text('\$', style: GoogleFonts.ibmPlexSansArabic(fontWeight: FontWeight.bold, color: const Color(0xFF1E293B), fontSize: 15)),
+              const SizedBox(height: 4),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(color: statusBgColor, borderRadius: BorderRadius.circular(6)),
+                child: Text(statusText, style: GoogleFonts.ibmPlexSansArabic(color: statusColor, fontSize: 12, fontWeight: FontWeight.w600)),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
 }
+

@@ -16,6 +16,5 @@ final selectedDateProvider = StateProvider<DateTime>((ref) {
 
 final appointmentsFutureProvider = FutureProvider.autoDispose<List<Appointment>>((ref) async {
   final repo = ref.watch(appointmentRepositoryProvider);
-  final date = ref.watch(selectedDateProvider);
-  return repo.getAppointmentsByDate(date);
+  return repo.getAppointments();
 });

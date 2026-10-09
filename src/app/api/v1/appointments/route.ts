@@ -20,19 +20,18 @@ export async function GET(req: Request) {
     
     // Default to today if no date provided
     const dateParam = url.searchParams.get("date");
-    let targetDate = new Date();
+    const whereClause: any = {
+      clinicId: clinic.id,
+    };
+
     if (dateParam) {
-      targetDate = new Date(dateParam);
+      const targetDate = new Date(dateParam);
+      targetDate.setUTCHours(0, 0, 0, 0);
+      whereClause.date = targetDate;
     }
-    
-    // Normalize to start of day
-    targetDate.setUTCHours(0, 0, 0, 0);
 
     const appointments = await prisma.appointment.findMany({
-      where: {
-        clinicId: clinic.id,
-        date: targetDate,
-      },
+      where: whereClause,
       orderBy: {
         startTime: 'asc'
       },

@@ -7,13 +7,10 @@ class AppointmentRepository {
 
   AppointmentRepository(this._dio);
 
-  Future<List<Appointment>> getAppointmentsByDate(DateTime date) async {
+  Future<List<Appointment>> getAppointments() async {
     try {
-      final dateString = "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
-      
       final response = await _dio.get(
         ApiEndpoints.appointments,
-        queryParameters: {'date': dateString},
       );
 
       if (response.statusCode == 200 && response.data['success'] == true) {

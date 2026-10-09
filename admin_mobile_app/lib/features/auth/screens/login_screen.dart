@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../providers/auth_provider.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -17,80 +18,81 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Widget build(BuildContext context) {
     final authState = ref.watch(authStateProvider);
 
-    // If clinic selection is required, show a different UI
-    if (authState.requireClinicSelection) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('اختيار العيادة')),
-        body: authState.isLoading 
-          ? const Center(child: CircularProgressIndicator())
-          : ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: authState.availableClinics.length,
-              itemBuilder: (context, index) {
-                final clinic = authState.availableClinics[index];
-                return Card(
-                  child: ListTile(
-                    title: Text(clinic['name']),
-                    subtitle: Text(clinic['role']),
-                    trailing: const Icon(Icons.arrow_forward_ios),
-                    onTap: () {
-                      ref.read(authStateProvider.notifier).loginWithClinic(clinic['id']);
-                    },
-                  ),
-                );
-              },
-            ),
-      );
-    }
+    ref.listen(authStateProvider, (previous, next) {
+      if (next.isAuthenticated == true) {
+        Navigator.pushReplacementNamed(context, '/dashboard');
+      } else if (next.error != null && next.error!.isNotEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(next.error!)));
+      }
+    });
 
     return Scaffold(
-      appBar: AppBar(title: const Text('تسجيل الدخول')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (authState.error != null)
-              Text(authState.error!, style: const TextStyle(color: Colors.red)),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _emailController,
-              decoration: const InputDecoration(
-                labelText: 'البريد الإلكتروني',
-                border: OutlineInputBorder(),
-              ),
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.monitor_heart_outlined, color: Color(0xFF2563EB), size: 64),
+                const SizedBox(height: 16),
+                Text('تسجيل الدخول', style: GoogleFonts.ibmPlexSansArabic(fontSize: 28, fontWeight: FontWeight.bold, color: const Color(0xFF1E293B))),
+                const SizedBox(height: 8),
+                Text('قم بتسجيل الدخول لإدارة عيادتك', style: GoogleFonts.ibmPlexSansArabic(fontSize: 16, color: const Color(0xFF64748B))),
+                const SizedBox(height: 32),
+                TextField(
+                  controller: _emailController,
+                  decoration: InputDecoration(
+                    labelText: 'البريد الإلكتروني',
+                    labelStyle: GoogleFonts.ibmPlexSansArabic(),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    prefixIcon: const Icon(Icons.email_outlined),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: _passwordController,
+                  obscureText: true,
+                  decoration: InputDecoration(
+                    labelText: 'كلمة المرور',
+                    labelStyle: GoogleFonts.ibmPlexSansArabic(),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    prefixIcon: const Icon(Icons.lock_outline),
+                  ),
+                ),
+                const SizedBox(height: 32),
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF2563EB),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    onPressed: authState.isLoading
+                        ? null
+                        : () {
+                            ref.read(authStateProvider.notifier).login(
+                                  _emailController.text,
+                                  _passwordController.text,
+                                );
+                          },
+                    child: authState.isLoading
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : Text('دخول', style: GoogleFonts.ibmPlexSansArabic(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                TextButton(
+                  onPressed: () => Navigator.pushNamed(context, '/register'),
+                  child: Text('إنشاء عيادة جديدة', style: GoogleFonts.ibmPlexSansArabic(fontSize: 16, color: const Color(0xFF2563EB), fontWeight: FontWeight.bold)),
+                ),
+              ],
             ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _passwordController,
-              obscureText: true,
-              decoration: const InputDecoration(
-                labelText: 'كلمة المرور',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              height: 48,
-              child: ElevatedButton(
-                onPressed: authState.isLoading
-                    ? null
-                    : () {
-                        ref.read(authStateProvider.notifier).login(
-                              _emailController.text,
-                              _passwordController.text,
-                            );
-                      },
-                child: authState.isLoading
-                    ? const CircularProgressIndicator()
-                    : const Text('دخول'),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
   }
-
 }

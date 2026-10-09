@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:dio/dio.dart';
+import '../../../../core/api/dio_client.dart';
+import '../../../../core/api/api_endpoints.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class DentalChartTab extends StatefulWidget {
   final String patientId;
@@ -10,39 +14,31 @@ class DentalChartTab extends StatefulWidget {
 }
 
 class _DentalChartTabState extends State<DentalChartTab> {
-  // Simple map to hold tooth status
+  // Map to hold tooth status
   final Map<int, String> _toothStatus = {};
+  
+  // FDI Numbering
+  final List<int> upperRight = [18, 17, 16, 15, 14, 13, 12, 11];
+  final List<int> upperLeft = [21, 22, 23, 24, 25, 26, 27, 28];
+  final List<int> lowerRight = [48, 47, 46, 45, 44, 43, 42, 41];
+  final List<int> lowerLeft = [31, 32, 33, 34, 35, 36, 37, 38];
+
+  bool _isLoading = false;
 
   void _showToothDialog(int toothNumber) {
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('تحديث السن رقم $toothNumber'),
+          title: Text('تحديث السن رقم ', style: GoogleFonts.ibmPlexSansArabic(fontWeight: FontWeight.bold)),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              ListTile(
-                title: const Text('سليم'),
-                onTap: () {
-                  setState(() => _toothStatus[toothNumber] = 'HEALTHY');
-                  Navigator.pop(context);
-                },
-              ),
-              ListTile(
-                title: const Text('تسوس'),
-                onTap: () {
-                  setState(() => _toothStatus[toothNumber] = 'CAVITY');
-                  Navigator.pop(context);
-                },
-              ),
-              ListTile(
-                title: const Text('مخلوع'),
-                onTap: () {
-                  setState(() => _toothStatus[toothNumber] = 'EXTRACTED');
-                  Navigator.pop(context);
-                },
-              ),
+              _buildToothOption(context, toothNumber, 'سليم', 'HEALTHY', Colors.green),
+              _buildToothOption(context, toothNumber, 'تسوس', 'DECAYED', Colors.red),
+              _buildToothOption(context, toothNumber, 'حشو', 'FILLED', Colors.blue),
+              _buildToothOption(context, toothNumber, 'مخلوع', 'MISSING', Colors.grey),
+              _buildToothOption(context, toothNumber, 'تاج', 'CROWNED', Colors.orange),
             ],
           ),
         );
@@ -50,62 +46,135 @@ class _DentalChartTabState extends State<DentalChartTab> {
     );
   }
 
+  Widget _buildToothOption(BuildContext context, int toothNumber, String label, String status, Color color) {
+    return ListTile(
+      leading: CircleAvatar(backgroundColor: color, radius: 10),
+      title: Text(label, style: GoogleFonts.ibmPlexSansArabic()),
+      onTap: () {
+        setState(() => _toothStatus[toothNumber] = status);
+        Navigator.pop(context);
+      },
+    );
+  }
+
   Color _getToothColor(int toothNumber) {
     switch (_toothStatus[toothNumber]) {
-      case 'CAVITY': return Colors.orange;
-      case 'EXTRACTED': return Colors.red;
-      case 'HEALTHY': return Colors.green;
-      default: return Colors.grey.shade300;
+      case 'DECAYED': return Colors.red.shade400;
+      case 'MISSING': return Colors.grey.shade400;
+      case 'HEALTHY': return Colors.green.shade400;
+      case 'FILLED': return Colors.blue.shade400;
+      case 'CROWNED': return Colors.orange.shade400;
+      default: return Colors.white;
+    }
+  }
+
+  Widget _buildJaw(List<int> right, List<int> left, String label) {
+    return Column(
+      children: [
+        Text(label, style: GoogleFonts.ibmPlexSansArabic(fontSize: 16, fontWeight: FontWeight.bold, color: const Color(0xFF64748B))),
+        const SizedBox(height: 16),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Right Side (Patient's right is on the left side of the screen when facing them)
+            Row(
+              children: right.map((num) => _buildTooth(num)).toList(),
+            ),
+            Container(width: 2, height: 60, color: const Color(0xFFE2E8F0), margin: const EdgeInsets.symmetric(horizontal: 4)),
+            // Left Side
+            Row(
+              children: left.map((num) => _buildTooth(num)).toList(),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTooth(int toothNumber) {
+    return GestureDetector(
+      onTap: () => _showToothDialog(toothNumber),
+      child: Container(
+        width: 32,
+        height: 48,
+        margin: const EdgeInsets.symmetric(horizontal: 2),
+        decoration: BoxDecoration(
+          color: _getToothColor(toothNumber),
+          border: Border.all(color: const Color(0xFFCBD5E1), width: 2),
+          borderRadius: const BorderRadius.only(topLeft: Radius.circular(8), topRight: Radius.circular(8)),
+        ),
+        child: Center(
+          child: Text('', style: GoogleFonts.ibmPlexSansArabic(fontSize: 12, fontWeight: FontWeight.bold, color: const Color(0xFF1E293B))),
+        ),
+      ),
+    );
+  }
+
+  void _saveChart() async {
+    setState(() => _isLoading = true);
+    try {
+      final dio = DioClient().dio;
+      for (var entry in _toothStatus.entries) {
+        await dio.post(ApiEndpoints.baseUrl + '/patients/' + widget.patientId + '/dental-records', data: {
+          'toothNumber': entry.key,
+          'condition': entry.value,
+          'notes': 'تم التحديث من التطبيق'
+        });
+      }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('تم حفظ الخريطة السنية بنجاح', style: GoogleFonts.ibmPlexSansArabic(color: Colors.white)), backgroundColor: Colors.green));
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('حدث خطأ أثناء الحفظ', style: GoogleFonts.ibmPlexSansArabic(color: Colors.white)), backgroundColor: Colors.red));
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        const Padding(
-          padding: EdgeInsets.all(16.0),
-          child: Text('الخريطة السنية العلوية والسفلية', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-        ),
-        Expanded(
-          child: GridView.builder(
-            padding: const EdgeInsets.all(16),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 8,
-              crossAxisSpacing: 8,
-              mainAxisSpacing: 8,
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
             ),
-            itemCount: 32,
-            itemBuilder: (context, index) {
-              // Standard FDI numbering logic (simplified for mockup)
-              int toothNumber = index + 1;
-              return GestureDetector(
-                onTap: () => _showToothDialog(toothNumber),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: _getToothColor(toothNumber),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Center(
-                    child: Text('$toothNumber', style: const TextStyle(fontWeight: FontWeight.bold)),
-                  ),
-                ),
-              );
-            },
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Column(
+                children: [
+                  _buildJaw(upperRight, upperLeft, 'الفك العلوي'),
+                  const SizedBox(height: 32),
+                  const Divider(color: Color(0xFFE2E8F0)),
+                  const SizedBox(height: 32),
+                  _buildJaw(lowerRight, lowerLeft, 'الفك السفلي'),
+                ],
+              ),
+            ),
           ),
-        ),
-        ElevatedButton(
-          onPressed: () {
-            // TODO: Submit to /api/v1/patients/[id]/dental-records
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم حفظ الخريطة السنية')));
-          },
-          child: const Padding(
-            padding: EdgeInsets.all(16.0),
-            child: Text('حفظ التحديثات'),
+          const SizedBox(height: 32),
+          SizedBox(
+            width: double.infinity,
+            height: 50,
+            child: ElevatedButton.icon(
+              onPressed: _isLoading ? null : _saveChart,
+              icon: _isLoading ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white)) : const Icon(Icons.save_outlined, color: Colors.white),
+              label: Text('حفظ التحديثات', style: GoogleFonts.ibmPlexSansArabic(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF2563EB),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+            ),
           ),
-        ),
-        const SizedBox(height: 16),
-      ],
+        ],
+      ),
     );
   }
 }

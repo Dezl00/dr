@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:dio/dio.dart';
 import '../../../core/api/dio_client.dart';
 import '../../../core/api/api_endpoints.dart';
 
@@ -10,6 +11,7 @@ final authStateProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
 });
 
 class AuthState {
+  final bool isCheckingAuth;
   final bool isLoading;
   final bool isAuthenticated;
   final String? error;
@@ -19,6 +21,7 @@ class AuthState {
   final String? tempPassword;
 
   AuthState({
+    this.isCheckingAuth = true,
     this.isLoading = false, 
     this.isAuthenticated = false, 
     this.error,
@@ -29,6 +32,7 @@ class AuthState {
   });
 
   AuthState copyWith({
+    bool? isCheckingAuth,
     bool? isLoading, 
     bool? isAuthenticated, 
     String? error,
@@ -38,6 +42,7 @@ class AuthState {
     String? tempPassword,
   }) {
     return AuthState(
+      isCheckingAuth: isCheckingAuth ?? this.isCheckingAuth,
       isLoading: isLoading ?? this.isLoading,
       isAuthenticated: isAuthenticated ?? this.isAuthenticated,
       error: error,
@@ -59,9 +64,13 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<void> _checkAuthStatus() async {
+    // Show splash screen for at least 1.5 seconds for visual branding
+    await Future.delayed(const Duration(milliseconds: 1500));
     final token = await _storage.read(key: 'jwt_token');
     if (token != null) {
-      state = state.copyWith(isAuthenticated: true);
+      state = state.copyWith(isCheckingAuth: false, isAuthenticated: true);
+    } else {
+      state = state.copyWith(isCheckingAuth: false, isAuthenticated: false);
     }
   }
 
@@ -87,8 +96,16 @@ class AuthNotifier extends StateNotifier<AuthState> {
           );
         }
       }
+    } on DioException catch (e) {
+      String errMsg = 'بيانات الدخول غير صحيحة';
+      if (e.response?.data != null && e.response?.data is Map && e.response?.data['error'] != null) {
+        errMsg = e.response?.data['error'];
+      } else {
+        errMsg = e.message ?? e.toString();
+      }
+      state = state.copyWith(isLoading: false, error: errMsg);
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: 'بيانات الدخول غير صحيحة');
+      state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 

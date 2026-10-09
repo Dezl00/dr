@@ -1,20 +1,9 @@
-﻿import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
-import '../providers/financial_provider.dart';
-import '../models/expense.dart';
+import re
 
-// Very basic StateNotifier for expenses to demonstrate Phase 2 functionality
-final expensesFutureProvider = FutureProvider.autoDispose<List<Expense>>((ref) async {
-  final repo = ref.watch(financialRepositoryProvider);
-  final rawData = await repo.getExpenses();
-  return rawData.map((e) => Expense.fromJson(e)).toList();
-});
+with open(r'C:\xampp\htdocs\drs\admin_mobile_app\lib\features\financials\screens\expenses_screen.dart', 'r', encoding='utf-8') as f:
+    content = f.read()
 
-class ExpensesScreen extends ConsumerWidget {
-  const ExpensesScreen({super.key});
-
-  void _showAddExpenseDialog(BuildContext context, WidgetRef ref) {
+new_method = """  void _showAddExpenseDialog(BuildContext context, WidgetRef ref) {
     showDialog(
       context: context,
       builder: (context) {
@@ -174,7 +163,7 @@ class ExpensesScreen extends ConsumerWidget {
                 ),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
+                    backgroundColor: const Color(0xFF2563EB),
                     foregroundColor: Colors.white,
                     elevation: 0,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -197,7 +186,7 @@ class ExpensesScreen extends ConsumerWidget {
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                             content: Text(e.toString(), style: GoogleFonts.ibmPlexSansArabic()),
-                            backgroundColor: Colors.white,
+                            backgroundColor: const Color(0xFF1E293B),
                           ));
                         }
                       }
@@ -213,114 +202,12 @@ class ExpensesScreen extends ConsumerWidget {
         );
       },
     );
-  }
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final expensesAsync = ref.watch(expensesFutureProvider);
+  }"""
 
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        title: Text(
-          'المصروفات التشغيلية',
-          style: GoogleFonts.ibmPlexSansArabic(
-            color: const Color(0xFF0F172A),
-            fontWeight: FontWeight.w600,
-            fontSize: 20,
-          ),
-        ),
-        iconTheme: const IconThemeData(color: Color(0xFF0F172A)),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1),
-          child: Container(color: const Color(0xFFE2E8F0), height: 1),
-        ),
-      ),
-      body: expensesAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFF2563EB))),
-        error: (err, stack) => Center(
-          child: Text(
-            'خطأ: $err',
-            style: GoogleFonts.ibmPlexSansArabic(color: Colors.red),
-          ),
-        ),
-        data: (expenses) {
-          if (expenses.isEmpty) {
-            return Center(
-              child: Text(
-                'لا توجد مصروفات مسجلة',
-                style: GoogleFonts.ibmPlexSansArabic(
-                  color: const Color(0xFF64748B),
-                  fontSize: 16,
-                ),
-              ),
-            );
-          }
-          return RefreshIndicator(
-            color: const Color(0xFF2563EB),
-            onRefresh: () async => ref.refresh(expensesFutureProvider),
-            child: ListView.builder(
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              itemCount: expenses.length,
-              itemBuilder: (context, index) {
-                final exp = expenses[index];
-                return Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    border: Border.all(color: const Color(0xFFE2E8F0)),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: ListTile(
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    leading: Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFEF2F2), // Red 50
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Icon(Icons.money_off, color: Color(0xFFDC2626)), // Red 600
-                    ),
-                    title: Text(
-                      exp.description,
-                      style: GoogleFonts.ibmPlexSansArabic(
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF1E293B),
-                        fontSize: 16,
-                      ),
-                    ),
-                    subtitle: Text(
-                      '${exp.expenseDate.year}-${exp.expenseDate.month}-${exp.expenseDate.day} • ${exp.category}',
-                      style: GoogleFonts.ibmPlexSansArabic(
-                        color: const Color(0xFF64748B),
-                        fontSize: 14,
-                      ),
-                    ),
-                    trailing: Text(
-                      '${exp.amount} ج.م',
-                      style: GoogleFonts.ibmPlexSansArabic(
-                        color: const Color(0xFFDC2626), // Red 600
-                        fontWeight: FontWeight.w700,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
-          );
-        },
-      ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        onPressed: () => _showAddExpenseDialog(context, ref),
-        child: const Icon(Icons.add, color: Colors.white),
-      ),
-    );
-  }
-}
+old_method_pattern = re.compile(r'  void _showAddExpenseDialog\(BuildContext context, WidgetRef ref\) \{.*?(?=\n  @override\n  Widget build)', re.DOTALL)
+content = old_method_pattern.sub(new_method, content)
 
+with open(r'C:\xampp\htdocs\drs\admin_mobile_app\lib\features\financials\screens\expenses_screen.dart', 'w', encoding='utf-8') as f:
+    f.write(content)
+
+print('Replaced Add Expense dialog successfully.')
