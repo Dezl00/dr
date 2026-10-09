@@ -11,9 +11,12 @@ import 'core/theme/app_theme.dart';
 
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 
-void main() {
+import 'package:google_fonts/google_fonts.dart';
+
+void main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+  await GoogleFonts.pendingFonts([GoogleFonts.ibmPlexSansArabicTextTheme()]);
   runApp(const ProviderScope(child: DrsAdminApp()));
 }
 
