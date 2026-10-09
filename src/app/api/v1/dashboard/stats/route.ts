@@ -19,42 +19,63 @@ export async function GET(req: Request) {
     const [
       todaysAppointments,
       totalPatients,
-      pendingInvoicesTotal
+      completedCount,
+      upcomingCount,
+      todaysList,
+      upcomingList,
     ] = await Promise.all([
-      // Count today's appointments for this clinic
+      prisma.appointment.count({
+        where: { clinicId: clinic.id, date: { gte: today, lt: tomorrow } }
+      }),
+      prisma.patient.count({
+        where: { clinicId: clinic.id }
+      }),
+      prisma.appointment.count({
+        where: { clinicId: clinic.id, status: 'COMPLETED', date: { gte: today, lt: tomorrow } }
+      }),
       prisma.appointment.count({
         where: {
           clinicId: clinic.id,
-          date: {
-            gte: today,
-            lt: tomorrow
-          }
+          status: { in: ['SCHEDULED', 'CONFIRMED'] },
+          date: { gte: today },
         }
       }),
-      // Count total active patients
-      prisma.patient.count({
-        where: {
-          clinicId: clinic.id
-        }
+      prisma.appointment.findMany({
+        where: { clinicId: clinic.id, date: { gte: today, lt: tomorrow } },
+        include: {
+          patient: { select: { fullName: true } },
+          doctor: { select: { fullName: true } },
+          service: { select: { name: true } },
+        },
+        orderBy: { startTime: 'asc' },
       }),
-      // Sum pending/unpaid invoices
-      prisma.invoice.aggregate({
+      prisma.appointment.findMany({
         where: {
           clinicId: clinic.id,
-          status: { in: ['UNPAID', 'PARTIAL'] }
+          status: { in: ['SCHEDULED', 'CONFIRMED'] },
+          date: { gte: new Date() },
         },
-        _sum: {
-          total: true
-        }
+        include: {
+          patient: { select: { fullName: true } },
+          doctor: { select: { fullName: true } },
+          service: { select: { name: true } },
+        },
+        orderBy: [{ date: 'asc' }, { startTime: 'asc' }],
+        take: 5,
       })
     ]);
 
     return NextResponse.json({
       success: true,
       data: {
-        todaysAppointments,
-        totalPatients,
-        pendingRevenue: pendingInvoicesTotal._sum.total || 0,
+        stats: {
+          todaysAppointments,
+          totalPatients,
+          completedCount,
+          upcomingCount,
+        },
+        todaysList,
+        upcomingList,
       }
     });
 
