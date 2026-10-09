@@ -26,32 +26,49 @@ export async function POST(req: Request) {
     const existingClinic = await prisma.clinic.findUnique({ where: { slug } });
     if (existingClinic) return NextResponse.json({ success: false, error: 'هذا الرابط مستخدم بالفعل' }, { status: 400 });
 
+    const ownerRole = await prisma.role.findFirst({
+      where: { name: 'Owner', clinicId: null, isSystem: true },
+    });
+    
+    if (!ownerRole) {
+      return NextResponse.json({ success: false, error: 'حدث خطأ في النظام' }, { status: 500 });
+    }
+
     const hashedPassword = await hashPassword(password);
 
-    const user = await prisma.user.create({
-      data: {
-        email,
-        phone,
-        passwordHash: hashedPassword,
-        name: fullName,
-        role: 'CLINIC_ADMIN',
-        phoneVerified: false,
-        memberships: {
-          create: {
-            role: 'ADMIN',
-            status: 'ACTIVE',
-            clinic: {
-              create: {
-                name: clinicName,
-                slug,
-                status: 'ACTIVE',
-                settings: { create: {} }
-              }
-            }
-          }
+    const user = await prisma.$transaction(async (tx) => {
+      const u = await tx.user.create({
+        data: {
+          email,
+          phone,
+          passwordHash: hashedPassword,
+          fullName,
+          phoneVerified: false,
         }
-      },
-      include: { memberships: { include: { clinic: true } } }
+      });
+      
+      const c = await tx.clinic.create({
+        data: {
+          name: clinicName,
+          slug,
+          status: 'ACTIVE',
+        }
+      });
+      
+      await tx.clinicSettings.create({
+        data: { clinicId: c.id }
+      });
+      
+      await tx.clinicMembership.create({
+        data: {
+          userId: u.id,
+          clinicId: c.id,
+          roleId: ownerRole.id,
+          status: 'ACTIVE'
+        }
+      });
+      
+      return u;
     });
 
     // Generate OTP
@@ -72,6 +89,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ success: true, message: 'تم إرسال رمز التحقق (OTP)', userId: user.id });
   } catch (error: any) {
+    console.error('Registration Error:', error);
     return NextResponse.json({ success: false, error: 'حدث خطأ داخلي' }, { status: 500 });
   }
 }

@@ -14,10 +14,11 @@ export async function PUT(req: Request) {
     
     // Password update
     if (body.currentPassword && body.newPassword) {
-      if (!user.passwordHash) {
+      const fullUser = await prisma.user.findUnique({ where: { id: user.id } });
+      if (!fullUser || !fullUser.passwordHash) {
          return NextResponse.json({ success: false, error: "لا توجد كلمة مرور حالية" }, { status: 400 });
       }
-      const isValid = await verifyPassword(user.passwordHash, body.currentPassword);
+      const isValid = await verifyPassword(fullUser.passwordHash, body.currentPassword);
       if (!isValid) {
         return NextResponse.json({ success: false, error: "كلمة المرور الحالية غير صحيحة" }, { status: 400 });
       }

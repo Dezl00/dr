@@ -52,7 +52,7 @@ export async function GET(req: Request) {
       success: true,
       data: appointments,
       meta: {
-        date: targetDate.toISOString().split('T')[0]
+        date: dateParam || 'ALL'
       }
     });
   } catch (error: any) {
