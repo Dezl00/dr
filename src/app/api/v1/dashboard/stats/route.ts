@@ -25,7 +25,7 @@ export async function GET(req: Request) {
       prisma.appointment.count({
         where: {
           clinicId: clinic.id,
-          startTime: {
+          date: {
             gte: today,
             lt: tomorrow
           }
