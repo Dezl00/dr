@@ -43,8 +43,11 @@ class MoreMenuScreen extends ConsumerWidget {
                 side: BorderSide.none,
               ),
             ),
-            onPressed: () {
-              ref.read(authStateProvider.notifier).logout();
+            onPressed: () async {
+              await ref.read(authStateProvider.notifier).logout();
+              if (context.mounted) {
+                Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+              }
             },
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,

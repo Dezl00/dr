@@ -122,8 +122,11 @@ class SettingsScreen extends ConsumerWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: TextButton.icon(
-              onPressed: () {
-                ref.read(authStateProvider.notifier).logout();
+              onPressed: () async {
+                await ref.read(authStateProvider.notifier).logout();
+                if (context.mounted) {
+                  Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+                }
               },
               icon: const Icon(Icons.logout, color: Color(0xFFEF4444)),
               label: Text(
