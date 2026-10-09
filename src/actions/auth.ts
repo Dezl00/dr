@@ -280,8 +280,8 @@ export async function signupAction(_prev: unknown, formData: FormData) {
     }
   })
 
-  // Send OTP SMS (async, non-blocking)
-  sendOtpSms(phone, otpCode).catch(console.error)
+  // Send OTP SMS
+  await sendOtpSms(phone, otpCode)
 
   // Audit
   await writeAuditLog({

@@ -55,8 +55,8 @@ export async function POST(req: Request) {
       otpHash,
     });
 
-    // Send SMS (non-blocking)
-    sendOtpSms(phone, otpCode).catch(console.error);
+    // Send SMS (await it so Vercel doesn't kill the lambda)
+    await sendOtpSms(phone, otpCode);
 
     return NextResponse.json({ success: true, message: 'تم إرسال رمز التحقق (OTP)', registrationToken: token });
   } catch (error: any) {

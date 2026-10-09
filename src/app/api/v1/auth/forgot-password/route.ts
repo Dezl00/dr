@@ -30,7 +30,7 @@ export async function POST(req: Request) {
       }
     });
 
-    sendOtpSms(user.phone!, otpCode).catch(console.error);
+    await sendOtpSms(user.phone!, otpCode);
 
     return NextResponse.json({ success: true, message: 'تم إرسال رمز التحقق' });
   } catch (error: any) {
