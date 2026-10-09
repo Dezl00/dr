@@ -22,6 +22,12 @@ class AppTheme {
         bodyLarge: GoogleFonts.ibmPlexSansArabic(color: const Color(0xFF171717)),
         bodyMedium: GoogleFonts.ibmPlexSansArabic(color: const Color(0xFF171717)),
       ),
+      pageTransitionsTheme: const PageTransitionsTheme(
+        builders: <TargetPlatform, PageTransitionsBuilder>{
+          TargetPlatform.android: CupertinoPageTransitionsBuilder(),
+          TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+        },
+      ),
       appBarTheme: AppBarTheme(
         backgroundColor: const Color(0xFFFFFFFF),
         foregroundColor: const Color(0xFF171717),
