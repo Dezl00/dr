@@ -48,7 +48,7 @@ class ServicesScreen extends ConsumerWidget {
           );
         },
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton(heroTag: null, 
         onPressed: () {
           _showAddServiceDialog(context);
         },

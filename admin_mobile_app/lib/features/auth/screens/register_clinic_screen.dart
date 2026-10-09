@@ -22,6 +22,45 @@ class _RegisterClinicScreenState extends State<RegisterClinicScreen> {
   final _password = TextEditingController();
   final _slug = TextEditingController();
 
+  bool _obscurePassword = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _clinicName.addListener(() {
+      _slug.text = _transliterate(_clinicName.text);
+    });
+  }
+
+  String _transliterate(String text) {
+    const map = {
+      'ا': 'a', 'أ': 'a', 'إ': 'e', 'آ': 'a', 'ب': 'b', 'ت': 't', 'ث': 'th',
+      'ج': 'j', 'ح': 'h', 'خ': 'kh', 'د': 'd', 'ذ': 'th', 'ر': 'r', 'ز': 'z',
+      'س': 's', 'ش': 'sh', 'ص': 's', 'ض': 'd', 'ط': 't', 'ظ': 'dh', 'ع': 'a',
+      'غ': 'gh', 'ف': 'f', 'ق': 'q', 'ك': 'k', 'ل': 'l', 'م': 'm', 'ن': 'n',
+      'ه': 'h', 'و': 'w', 'ي': 'y', 'ى': 'a', 'ة': 'a', 'ئ': 'e', 'ؤ': 'o',
+      ' ': '-'
+    };
+    String result = '';
+    for(int i=0; i<text.length; i++) {
+      String char = text[i];
+      result += map[char] ?? char;
+    }
+    
+    // Convert to lowercase, replace non-alphanumeric with hyphens
+    String slug = result.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), '-');
+    // Remove consecutive hyphens
+    slug = slug.replaceAll(RegExp(r'-+'), '-');
+    // Remove leading and trailing hyphens
+    slug = slug.replaceAll(RegExp(r'^-+|-+$'), '');
+    
+    if (slug.length < 3 && slug.isNotEmpty) {
+      slug += '-clinic';
+    }
+    
+    return slug;
+  }
+
   void _register() async {
     if (_clinicName.text.isEmpty || _adminName.text.isEmpty || _phone.text.isEmpty || _email.text.isEmpty || _password.text.isEmpty || _slug.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('الرجاء تعبئة جميع الحقول')));
@@ -80,7 +119,7 @@ class _RegisterClinicScreenState extends State<RegisterClinicScreen> {
               
               _buildTextField('اسم العيادة', Icons.local_hospital_outlined, _clinicName),
               const SizedBox(height: 16),
-              _buildTextField('رابط العيادة (Slug بالحروف الانجليزية)', Icons.link, _slug),
+              _buildTextField('رابط العيادة الفرعي', Icons.link, _slug, readOnly: true),
               const SizedBox(height: 16),
               _buildTextField('اسم المسؤول', Icons.person_outline, _adminName),
               const SizedBox(height: 16),
@@ -88,7 +127,7 @@ class _RegisterClinicScreenState extends State<RegisterClinicScreen> {
               const SizedBox(height: 16),
               _buildTextField('البريد الإلكتروني', Icons.email_outlined, _email),
               const SizedBox(height: 16),
-              _buildTextField('كلمة المرور', Icons.lock_outline, _password, obscureText: true),
+              _buildTextField('كلمة المرور', Icons.lock_outline, _password, isPassword: true),
               
               const SizedBox(height: 32),
               SizedBox(
@@ -112,15 +151,27 @@ class _RegisterClinicScreenState extends State<RegisterClinicScreen> {
     );
   }
 
-  Widget _buildTextField(String label, IconData icon, TextEditingController controller, {bool obscureText = false}) {
+  Widget _buildTextField(String label, IconData icon, TextEditingController controller, {bool isPassword = false, bool readOnly = false}) {
     return TextField(
       controller: controller,
-      obscureText: obscureText,
+      obscureText: isPassword ? _obscurePassword : false,
+      readOnly: readOnly,
       decoration: InputDecoration(
         labelText: label,
         labelStyle: GoogleFonts.ibmPlexSansArabic(),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         prefixIcon: Icon(icon),
+        fillColor: readOnly ? const Color(0xFFF1F5F9) : Colors.white,
+        suffixIcon: isPassword
+            ? IconButton(
+                icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility, color: const Color(0xFF94A3B8)),
+                onPressed: () {
+                  setState(() {
+                    _obscurePassword = !_obscurePassword;
+                  });
+                },
+              )
+            : null,
       ),
     );
   }

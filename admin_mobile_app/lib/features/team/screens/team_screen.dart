@@ -51,7 +51,7 @@ class TeamScreen extends ConsumerWidget {
           );
         },
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton(heroTag: null, 
         onPressed: () {
           _showAddTeamDialog(context);
         },

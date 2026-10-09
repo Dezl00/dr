@@ -28,7 +28,7 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
         ],
       ),
       body: _buildBody(state),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton(heroTag: null, 
         backgroundColor: const Color(0xFF2563EB),
         onPressed: () => _showAddInvoiceDialog(context, ref),
         child: const Icon(Icons.add, color: Colors.white),

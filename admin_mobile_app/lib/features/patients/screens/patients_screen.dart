@@ -105,7 +105,7 @@ class _PatientsScreenState extends ConsumerState<PatientsScreen> {
         ),
       ),
       body: _buildBody(state),
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: FloatingActionButton.extended(heroTag: null, 
         onPressed: () {
           Navigator.push(
             context,
