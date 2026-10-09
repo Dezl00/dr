@@ -1,7 +1,7 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../providers/financial_provider.dart';
+import '../providers/expense_provider.dart';
 import '../models/expense.dart';
 
 // Very basic StateNotifier for expenses to demonstrate Phase 2 functionality

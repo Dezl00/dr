@@ -178,4 +178,64 @@ class PatientNotifier extends StateNotifier<PatientState> {
       return true;
     }
   }
+
+  Future<bool> updatePatient(String id, Map<String, dynamic> data) async {
+    try {
+      final updatedPatient = await _repository.updatePatient(id, data);
+      
+      final box = HiveService.getPatientsBox();
+      final key = box.keys.firstWhere((k) => box.get(k)?.id == id, orElse: () => null);
+      if (key != null) {
+        await box.put(key, updatedPatient);
+      } else {
+        await box.add(updatedPatient);
+      }
+
+      final updatedPatients = state.patients.map((p) => p.id == id ? updatedPatient : p).toList();
+
+      state = state.copyWith(
+        patients: updatedPatients,
+      );
+      return true;
+    } catch (e) {
+      // Offline fallback: Optimistic update
+      final box = HiveService.getPatientsBox();
+      final key = box.keys.firstWhere((k) => box.get(k)?.id == id, orElse: () => null);
+      
+      final currentPatient = key != null ? box.get(key) : state.patients.firstWhere((p) => p.id == id);
+      
+      if (currentPatient != null) {
+        final offlinePatient = Patient(
+          id: currentPatient.id,
+          fullName: data['fullName']?.toString() ?? currentPatient.fullName,
+          phone: data['phone']?.toString() ?? currentPatient.phone,
+          gender: data['gender']?.toString() ?? currentPatient.gender,
+          dateOfBirth: data['dateOfBirth'] != null ? DateTime.tryParse(data['dateOfBirth'].toString()) : currentPatient.dateOfBirth,
+          appointmentsCount: currentPatient.appointmentsCount,
+          unpaidInvoicesCount: currentPatient.unpaidInvoicesCount,
+        );
+        
+        if (key != null) {
+          await box.put(key, offlinePatient);
+        } else {
+          await box.add(offlinePatient);
+        }
+
+        final pendingBox = HiveService.getPendingActionsBox();
+        final pendingAction = PendingAction(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          type: 'UPDATE_PATIENT',
+          data: {...data, 'id': id},
+        );
+        await pendingBox.add(pendingAction);
+
+        final updatedPatients = state.patients.map((p) => p.id == id ? offlinePatient : p).toList();
+
+        state = state.copyWith(
+          patients: updatedPatients,
+        );
+      }
+      return true;
+    }
+  }
 }

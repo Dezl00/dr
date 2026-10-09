@@ -48,5 +48,22 @@ class PatientRepository {
       throw Exception(e.response?.data?['error'] ?? e.message ?? 'Network error occurred');
     }
   }
+
+  Future<Patient> updatePatient(String id, Map<String, dynamic> data) async {
+    try {
+      final response = await _dio.put(
+        '${ApiEndpoints.patients}/$id',
+        data: data,
+      );
+
+      if (response.statusCode == 200 && response.data['success'] == true) {
+        return Patient.fromJson(response.data['data']);
+      } else {
+        throw Exception(response.data['error'] ?? 'Failed to update patient');
+      }
+    } on DioException catch (e) {
+      throw Exception(e.response?.data?['error'] ?? e.message ?? 'Network error occurred');
+    }
+  }
 }
 

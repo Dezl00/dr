@@ -133,7 +133,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
   @override
   Widget build(BuildContext context) {
     final currentTimeFilter = ref.watch(timeFilterProvider);
-    final appointmentsAsync = ref.watch(appointmentsFutureProvider);
+    final appointmentState = ref.watch(appointmentStateProvider);
     final currentFilter = ref.watch(statusFilterProvider);
 
     return Scaffold(
@@ -162,60 +162,42 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
           _buildTimeFilter(currentTimeFilter),
           _buildStatusFilter(currentFilter),
           Expanded(
-            child: appointmentsAsync.when(
-              loading: () => const Center(
-                child: CircularProgressIndicator(color: Color(0xFF2563EB)),
-              ),
-              error: (err, stack) => Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(24.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFFEE2E2), // Red-100
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(Icons.error_outline, color: Color(0xFFDC2626), size: 48), // Red-600
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'حدث خطأ',
-                        style: GoogleFonts.ibmPlexSansArabic(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xFF0F172A),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        err.toString(), 
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.ibmPlexSansArabic(
-                          color: const Color(0xFF64748B),
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      ElevatedButton.icon(
-                        onPressed: () => ref.refresh(appointmentsFutureProvider),
-                        icon: const Icon(Icons.refresh),
-                        label: Text('إعادة المحاولة', style: GoogleFonts.ibmPlexSansArabic()),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
+            child: Builder(
+              builder: (context) {
+                if (appointmentState.isLoading && appointmentState.appointments.isEmpty) {
+                  return const Center(child: CircularProgressIndicator(color: Color(0xFF2563EB)));
+                }
+                if (appointmentState.error != null && appointmentState.appointments.isEmpty) {
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: const BoxDecoration(color: Color(0xFFFEE2E2), shape: BoxShape.circle),
+                            child: const Icon(Icons.error_outline, color: Color(0xFFDC2626), size: 48),
                           ),
-                        ),
-                      )
-                    ],
-                  ),
-                ),
-              ),
-              data: (appointments) {
+                          const SizedBox(height: 16),
+                          Text('حدث خطأ', style: GoogleFonts.ibmPlexSansArabic(fontSize: 18, fontWeight: FontWeight.bold, color: const Color(0xFF0F172A))),
+                          const SizedBox(height: 8),
+                          Text(appointmentState.error.toString(), textAlign: TextAlign.center, style: GoogleFonts.ibmPlexSansArabic(color: const Color(0xFF64748B))),
+                          const SizedBox(height: 24),
+                          ElevatedButton.icon(
+                            onPressed: () => ref.read(appointmentStateProvider.notifier).fetchData(),
+                            icon: const Icon(Icons.refresh),
+                            label: Text('إعادة المحاولة', style: GoogleFonts.ibmPlexSansArabic()),
+                            style: ElevatedButton.styleFrom(backgroundColor: Colors.white, foregroundColor: Colors.white, elevation: 0, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                          )
+                        ],
+                      ),
+                    ),
+                  );
+                }
+                
+                final appointments = appointmentState.appointments;
+
                 final effectiveAppointments = appointments.map((appt) {
                   final overrideStatus = ref.watch(optimisticStatusProvider(appt.hashCode));
                   return {'appt': appt, 'status': overrideStatus ?? appt.status};
@@ -300,7 +282,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                 
                 return RefreshIndicator(
                   color: const Color(0xFF2563EB),
-                  onRefresh: () async => ref.refresh(appointmentsFutureProvider),
+                  onRefresh: () async => ref.read(appointmentStateProvider.notifier).fetchData(),
                   child: ListView.builder(
                     padding: const EdgeInsets.only(top: 8, bottom: 80), // Space for FAB
                     itemCount: filteredAppointments.length,
@@ -313,7 +295,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                     },
                   ),
                 );
-              },
+              }
             ),
           ),
         ],

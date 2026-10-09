@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../models/invoice.dart';
-import '../providers/financial_provider.dart';
+import '../providers/invoice_provider.dart';
 import 'invoice_details_screen.dart';
 
 class InvoicesScreen extends ConsumerStatefulWidget {
@@ -24,7 +24,7 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
         title: Text('الفواتير', style: GoogleFonts.ibmPlexSansArabic(color: Colors.black)),
         elevation: 0,
         actions: [
-          IconButton(icon: const Icon(Icons.refresh, color: Colors.black), onPressed: () => ref.read(invoiceStateProvider.notifier).fetchInitialInvoices()),
+          IconButton(icon: const Icon(Icons.refresh, color: Colors.black), onPressed: () => ref.read(invoiceStateProvider.notifier).fetchData()),
         ],
       ),
       body: _buildBody(state),
@@ -91,7 +91,7 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
                       setState(() => isLoading = true);
                       await Future.delayed(const Duration(seconds: 1)); // Mock API
                       if (context.mounted) {
-                        ref.read(invoiceStateProvider.notifier).fetchInitialInvoices();
+                        ref.read(invoiceStateProvider.notifier).fetchData();
                         Navigator.pop(context);
                         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تمت الإضافة بنجاح (محاكاة)')));
                       }

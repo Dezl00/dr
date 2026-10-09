@@ -4,6 +4,7 @@ import '../models/patient.dart';
 import 'tabs/medical_history_tab.dart';
 import 'tabs/prescriptions_tab.dart';
 import 'tabs/dental_chart_tab.dart';
+import 'edit_patient_screen.dart';
 
 class PatientProfileScreen extends StatelessWidget {
   final Patient patient;
@@ -28,8 +29,12 @@ class PatientProfileScreen extends StatelessWidget {
                     children: [
                       IconButton(icon: const Icon(Icons.arrow_back, color: Colors.white), onPressed: () => Navigator.pop(context)),
                       IconButton(icon: const Icon(Icons.edit, color: Colors.white), onPressed: () {
-                          // TODO: Open Edit Screen
-                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('شاشة التعديل قيد التطوير')));
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => EditPatientScreen(patient: patient),
+                            ),
+                          );
                       }),
                     ],
                   ),
