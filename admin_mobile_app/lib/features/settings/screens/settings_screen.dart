@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../auth/providers/auth_provider.dart';
@@ -121,26 +121,26 @@ class SettingsScreen extends ConsumerWidget {
           const SizedBox(height: 24),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: ElevatedButton.icon(
+            child: TextButton.icon(
               onPressed: () {
                 ref.read(authStateProvider.notifier).logout();
               },
-              icon: const Icon(Icons.logout, color: Colors.red),
+              icon: const Icon(Icons.logout, color: Color(0xFFEF4444)),
               label: Text(
                 'تسجيل الخروج',
                 style: GoogleFonts.ibmPlexSansArabic(
-                  color: Colors.red,
+                  color: const Color(0xFFEF4444),
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
                 ),
               ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
+              style: TextButton.styleFrom(
+                backgroundColor: const Color(0xFFFEE2E2),
                 elevation: 0,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
-                  side: const BorderSide(color: Color(0xFFFECACA)),
+                  side: BorderSide.none,
                 ),
               ),
             ),

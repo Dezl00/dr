@@ -4,6 +4,8 @@ import 'package:dio/dio.dart';
 import '../../../core/api/dio_client.dart';
 import '../../../core/api/api_endpoints.dart';
 
+import 'package:flutter_native_splash/flutter_native_splash.dart';
+
 final dioProvider = Provider((ref) => DioClient().dio);
 
 final authStateProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
@@ -72,6 +74,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     } else {
       state = state.copyWith(isCheckingAuth: false, isAuthenticated: false);
     }
+    FlutterNativeSplash.remove();
   }
 
   Future<void> login(String email, String password) async {

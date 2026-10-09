@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../settings/screens/settings_screen.dart';
@@ -33,10 +33,10 @@ class MoreMenuScreen extends ConsumerWidget {
         // Logout Button
         SizedBox(
           height: 48,
-          child: ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: const Color(0xFFEF4444),
+          child: TextButton(
+            style: TextButton.styleFrom(
+              backgroundColor: const Color(0xFFFEE2E2), // Light red background
+              foregroundColor: const Color(0xFFEF4444), // Red text/icon
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
