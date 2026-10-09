@@ -17,7 +17,12 @@ import 'package:google_fonts/google_fonts.dart';
 void main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
-  await GoogleFonts.pendingFonts([GoogleFonts.ibmPlexSansArabicTextTheme()]);
+  try {
+    await GoogleFonts.pendingFonts([GoogleFonts.ibmPlexSansArabicTextTheme()]);
+  } catch (e) {
+    debugPrint('Failed to load Google Fonts: $e');
+  }
+  
   runApp(const ProviderScope(child: DrsAdminApp()));
 }
 
