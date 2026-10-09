@@ -23,7 +23,7 @@ export async function POST(req: Request) {
           where: { status: 'ACTIVE' },
           include: {
             clinic: {
-              select: { id: true, name: true, slug: true, status: true, logoUrl: true }
+              select: { id: true, name: true, slug: true, status: true }
             },
             role: {
               select: { id: true, name: true, nameAr: true }
