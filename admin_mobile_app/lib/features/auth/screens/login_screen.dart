@@ -45,6 +45,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 const SizedBox(height: 32),
                 TextField(
                   controller: _emailController,
+                  autofillHints: const [AutofillHints.email],
                   decoration: InputDecoration(
                     labelText: 'البريد الإلكتروني',
                     labelStyle: GoogleFonts.ibmPlexSansArabic(),
@@ -56,6 +57,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 TextField(
                   controller: _passwordController,
                   obscureText: _obscurePassword,
+                  autofillHints: const [AutofillHints.password],
                   decoration: InputDecoration(
                     labelText: 'كلمة المرور',
                     labelStyle: GoogleFonts.ibmPlexSansArabic(),
@@ -89,7 +91,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 );
                           },
                     child: authState.isLoading
-                        ? const CircularProgressIndicator(color: Colors.white)
+                        ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
                         : Text('دخول', style: GoogleFonts.ibmPlexSansArabic(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
                   ),
                 ),

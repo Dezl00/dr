@@ -125,9 +125,9 @@ class _RegisterClinicScreenState extends State<RegisterClinicScreen> {
               const SizedBox(height: 16),
               _buildTextField('رقم الهاتف', Icons.phone_outlined, _phone),
               const SizedBox(height: 16),
-              _buildTextField('البريد الإلكتروني', Icons.email_outlined, _email),
+              _buildTextField('البريد الإلكتروني', Icons.email_outlined, _email, autofillHints: [AutofillHints.email]),
               const SizedBox(height: 16),
-              _buildTextField('كلمة المرور', Icons.lock_outline, _password, isPassword: true),
+              _buildTextField('كلمة المرور', Icons.lock_outline, _password, isPassword: true, autofillHints: [AutofillHints.newPassword]),
               
               const SizedBox(height: 32),
               SizedBox(
@@ -140,8 +140,15 @@ class _RegisterClinicScreenState extends State<RegisterClinicScreen> {
                   ),
                   onPressed: _isLoading ? null : _register,
                   child: _isLoading
-                      ? const CircularProgressIndicator(color: Colors.white)
+                      ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
                       : Text('إنشاء الحساب', style: GoogleFonts.ibmPlexSansArabic(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                ),
+              ),
+              const SizedBox(height: 24),
+              Center(
+                child: TextButton(
+                  onPressed: () => Navigator.pushReplacementNamed(context, '/login'),
+                  child: Text('هل لديك حساب بالفعل؟ تسجيل الدخول', style: GoogleFonts.ibmPlexSansArabic(fontSize: 16, color: const Color(0xFF2563EB), fontWeight: FontWeight.bold)),
                 ),
               ),
             ],
@@ -151,11 +158,12 @@ class _RegisterClinicScreenState extends State<RegisterClinicScreen> {
     );
   }
 
-  Widget _buildTextField(String label, IconData icon, TextEditingController controller, {bool isPassword = false, bool readOnly = false}) {
+  Widget _buildTextField(String label, IconData icon, TextEditingController controller, {bool isPassword = false, bool readOnly = false, Iterable<String>? autofillHints}) {
     return TextField(
       controller: controller,
       obscureText: isPassword ? _obscurePassword : false,
       readOnly: readOnly,
+      autofillHints: autofillHints,
       decoration: InputDecoration(
         labelText: label,
         labelStyle: GoogleFonts.ibmPlexSansArabic(),
