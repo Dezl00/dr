@@ -8,7 +8,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     const { clinic } = await requireApiAuth(req);
     const { id } = await params;
 
-    const appointment = await prisma.appointment.findUnique({
+    const appointment = await prisma.appointment.findFirst({
       where: { id, clinicId: clinic.id },
       include: { patient: true }
     });
