@@ -199,6 +199,19 @@ model PhoneOtp {
   @@index([phone])
 }
 
+model PendingRegistration {
+  id        String   @id @default(cuid())
+  phone     String
+  email     String
+  otpCode   String
+  payload   Json     // stores the registration details temporarily
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([phone])
+  @@index([email])
+}
+
 // ===== CLINIC & MULTI-TENANCY =====
 
 model Clinic {

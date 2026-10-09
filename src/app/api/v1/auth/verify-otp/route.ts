@@ -1,46 +1,75 @@
-﻿import { NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
+import { verifyRegistrationToken } from '@/lib/auth/api-auth';
+import { verifyPassword } from '@/lib/auth/password';
 
 export async function POST(req: Request) {
   try {
-    const { userId, code } = await req.json();
+    const { token, code } = await req.json();
 
-    if (!userId || !code) {
+    if (!token || !code) {
       return NextResponse.json({ success: false, error: 'بيانات غير مكتملة' }, { status: 400 });
     }
 
-    const user = await prisma.user.findUnique({ where: { id: userId } });
-    if (!user) {
-      return NextResponse.json({ success: false, error: 'المستخدم غير موجود' }, { status: 404 });
+    const payload = await verifyRegistrationToken(token);
+    if (!payload) {
+      return NextResponse.json({ success: false, error: 'انتهت صلاحية الجلسة، يرجى التسجيل مرة أخرى' }, { status: 400 });
     }
 
-    const otpRecord = await prisma.phoneOtp.findFirst({
-      where: {
-        userId: user.id,
-        code,
-        usedAt: null,
-        expiresAt: { gt: new Date() }
-      },
-      orderBy: { createdAt: 'desc' }
+    const isMatch = await verifyPassword(payload.otpHash, code);
+    if (!isMatch) {
+      return NextResponse.json({ success: false, error: 'الرمز غير صحيح' }, { status: 400 });
+    }
+
+    const { email, phone, passwordHash, fullName, clinicName, slug, roleId } = payload.registrationData;
+
+    // Check if somehow created in the meantime
+    const existingUser = await prisma.user.findFirst({ where: { OR: [{ email }, { phone }] } });
+    if (existingUser) return NextResponse.json({ success: false, error: 'البريد الإلكتروني أو رقم الهاتف مستخدم بالفعل' }, { status: 400 });
+
+    const existingClinic = await prisma.clinic.findUnique({ where: { slug } });
+    if (existingClinic) return NextResponse.json({ success: false, error: 'هذا الرابط مستخدم بالفعل' }, { status: 400 });
+
+    // Create everything
+    const user = await prisma.$transaction(async (tx) => {
+      const u = await tx.user.create({
+        data: {
+          email,
+          phone,
+          passwordHash,
+          fullName,
+          phoneVerified: true, // Auto verify since they just entered OTP
+        }
+      });
+      
+      const c = await tx.clinic.create({
+        data: {
+          name: clinicName,
+          slug,
+          status: 'ACTIVE',
+        }
+      });
+      
+      await tx.clinicSettings.create({
+        data: { clinicId: c.id }
+      });
+      
+      await tx.clinicMembership.create({
+        data: {
+          userId: u.id,
+          clinicId: c.id,
+          roleId,
+          status: 'ACTIVE'
+        }
+      });
+      
+      return u;
     });
 
-    if (!otpRecord) {
-      return NextResponse.json({ success: false, error: 'الرمز غير صحيح أو منتهي الصلاحية' }, { status: 400 });
-    }
-
-    await prisma.$transaction([
-      prisma.phoneOtp.update({
-        where: { id: otpRecord.id },
-        data: { usedAt: new Date() }
-      }),
-      prisma.user.update({
-        where: { id: user.id },
-        data: { phoneVerified: true }
-      })
-    ]);
-
-    return NextResponse.json({ success: true, message: 'تم التحقق بنجاح' });
+    return NextResponse.json({ success: true, message: 'تم التحقق وإنشاء الحساب بنجاح' });
   } catch (error: any) {
+    console.error('Verify OTP Error:', error);
     return NextResponse.json({ success: false, error: 'حدث خطأ داخلي' }, { status: 500 });
   }
 }
+

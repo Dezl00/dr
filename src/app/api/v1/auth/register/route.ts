@@ -1,4 +1,4 @@
-﻿import { NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { hashPassword } from '@/lib/auth/password';
 import { signupSchema } from '@/lib/validators/auth';
@@ -35,59 +35,30 @@ export async function POST(req: Request) {
     }
 
     const hashedPassword = await hashPassword(password);
-
-    const user = await prisma.$transaction(async (tx) => {
-      const u = await tx.user.create({
-        data: {
-          email,
-          phone,
-          passwordHash: hashedPassword,
-          fullName,
-          phoneVerified: false,
-        }
-      });
-      
-      const c = await tx.clinic.create({
-        data: {
-          name: clinicName,
-          slug,
-          status: 'ACTIVE',
-        }
-      });
-      
-      await tx.clinicSettings.create({
-        data: { clinicId: c.id }
-      });
-      
-      await tx.clinicMembership.create({
-        data: {
-          userId: u.id,
-          clinicId: c.id,
-          roleId: ownerRole.id,
-          status: 'ACTIVE'
-        }
-      });
-      
-      return u;
-    });
-
+    
     // Generate OTP
     const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+    const otpHash = await hashPassword(otpCode);
 
-    await prisma.phoneOtp.create({
-      data: {
-        userId: user.id,
-        phone: user.phone!,
-        code: otpCode,
-        expiresAt,
-      }
+    // Sign registration token
+    const { signRegistrationToken } = await import('@/lib/auth/api-auth');
+    const token = await signRegistrationToken({
+      registrationData: {
+        email,
+        phone,
+        passwordHash: hashedPassword,
+        fullName,
+        clinicName,
+        slug,
+        roleId: ownerRole.id
+      },
+      otpHash,
     });
 
     // Send SMS (non-blocking)
-    sendOtpSms(user.phone!, otpCode).catch(console.error);
+    sendOtpSms(phone, otpCode).catch(console.error);
 
-    return NextResponse.json({ success: true, message: 'تم إرسال رمز التحقق (OTP)', userId: user.id });
+    return NextResponse.json({ success: true, message: 'تم إرسال رمز التحقق (OTP)', registrationToken: token });
   } catch (error: any) {
     console.error('Registration Error:', error);
     return NextResponse.json({ success: false, error: 'حدث خطأ داخلي' }, { status: 500 });

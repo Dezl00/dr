@@ -66,15 +66,17 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<void> _checkAuthStatus() async {
-    // Show splash screen for at least 1.5 seconds for visual branding
-    await Future.delayed(const Duration(milliseconds: 1500));
     final token = await _storage.read(key: 'jwt_token');
     if (token != null) {
       state = state.copyWith(isCheckingAuth: false, isAuthenticated: true);
     } else {
       state = state.copyWith(isCheckingAuth: false, isAuthenticated: false);
     }
-    FlutterNativeSplash.remove();
+    
+    // Safely remove splash screen
+    try {
+      FlutterNativeSplash.remove();
+    } catch (_) {}
   }
 
   Future<void> login(String email, String password) async {

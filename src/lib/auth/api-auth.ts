@@ -22,6 +22,28 @@ export async function signMobileToken(payload: Omit<MobileJwtPayload, 'iat' | 'e
     .sign(secretKey)
 }
 
+export interface RegistrationJwtPayload extends JWTPayload {
+  registrationData: any;
+  otpHash: string;
+}
+
+export async function signRegistrationToken(payload: Omit<RegistrationJwtPayload, 'iat' | 'exp'>) {
+  return await new SignJWT(payload as any)
+    .setProtectedHeader({ alg: 'HS256' })
+    .setIssuedAt()
+    .setExpirationTime('15m')
+    .sign(secretKey)
+}
+
+export async function verifyRegistrationToken(token: string): Promise<RegistrationJwtPayload | null> {
+  try {
+    const { payload } = await jwtVerify(token, secretKey)
+    return payload as RegistrationJwtPayload
+  } catch (error) {
+    return null
+  }
+}
+
 /**
  * Verify and decode a mobile JWT token.
  */

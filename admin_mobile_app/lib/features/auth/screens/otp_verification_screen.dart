@@ -7,8 +7,8 @@ import '../../../core/api/dio_client.dart';
 import '../../../core/api/api_endpoints.dart';
 
 class OtpVerificationScreen extends StatefulWidget {
-  final String userId;
-  const OtpVerificationScreen({super.key, required this.userId});
+  final String token;
+  const OtpVerificationScreen({super.key, required this.token});
 
   @override
   State<OtpVerificationScreen> createState() => _OtpVerificationScreenState();
@@ -72,7 +72,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     try {
       final dio = DioClient().dio;
       final response = await dio.post(ApiEndpoints.baseUrl + '/auth/verify-otp', data: {
-        'userId': widget.userId,
+        'token': widget.token,
         'code': _codeController.text,
       });
 

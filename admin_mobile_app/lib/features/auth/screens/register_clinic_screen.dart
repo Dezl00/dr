@@ -82,9 +82,9 @@ class _RegisterClinicScreenState extends State<RegisterClinicScreen> {
 
       if (response.data['success']) {
         if (mounted) {
-          final userId = response.data['userId'];
+          final token = response.data['registrationToken'];
           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم إرسال رمز التحقق إلى هاتفك')));
-          Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => OtpVerificationScreen(userId: userId)));
+          Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => OtpVerificationScreen(token: token)));
         }
       }
     } on DioException catch (e) {
