@@ -17,7 +17,7 @@ export async function POST(req: Request) {
 
     // 1. Find the user
     const user = await prisma.user.findUnique({
-      where: { email },
+      where: { email: email.toLowerCase().trim() },
       include: {
         memberships: {
           where: { status: 'ACTIVE' },
