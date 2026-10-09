@@ -2,6 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../models/patient.dart';
 import '../repositories/patient_repository.dart';
+import '../../../core/offline/hive_service.dart';
+import '../../../core/offline/pending_action.dart';
 
 final patientRepositoryProvider = Provider((ref) {
   final dio = ref.watch(dioProvider);
@@ -44,7 +46,7 @@ class PatientState {
       isLoading: isLoading ?? this.isLoading,
       isFetchingMore: isFetchingMore ?? this.isFetchingMore,
       patients: patients ?? this.patients,
-      error: error, // Can be null, so we don't fallback to this.error
+      error: error,
       currentPage: currentPage ?? this.currentPage,
       hasReachedMax: hasReachedMax ?? this.hasReachedMax,
       searchQuery: searchQuery ?? this.searchQuery,
@@ -57,7 +59,18 @@ class PatientNotifier extends StateNotifier<PatientState> {
   static const int _limit = 20;
 
   PatientNotifier(this._repository) : super(PatientState()) {
+    _loadFromHive();
     fetchInitialPatients();
+  }
+
+  void _loadFromHive() {
+    final box = HiveService.getPatientsBox();
+    final cachedPatients = box.values.toList();
+    if (cachedPatients.isNotEmpty) {
+      state = state.copyWith(
+        patients: cachedPatients,
+      );
+    }
   }
 
   Future<void> fetchInitialPatients({String? query}) async {
@@ -69,7 +82,7 @@ class PatientNotifier extends StateNotifier<PatientState> {
       currentPage: 1, 
       hasReachedMax: false,
       searchQuery: searchQuery,
-      patients: [],
+      // We don't clear patients here immediately to keep showing cached data
     );
 
     try {
@@ -78,6 +91,13 @@ class PatientNotifier extends StateNotifier<PatientState> {
         limit: _limit,
         searchQuery: searchQuery,
       );
+
+      // Update Hive Cache (only for first page without query)
+      if (searchQuery.isEmpty) {
+        final box = HiveService.getPatientsBox();
+        await box.clear();
+        await box.addAll(result.data);
+      }
 
       state = state.copyWith(
         isLoading: false,
@@ -122,14 +142,40 @@ class PatientNotifier extends StateNotifier<PatientState> {
   Future<bool> createPatient(Map<String, dynamic> data) async {
     try {
       final newPatient = await _repository.createPatient(data);
-      // Insert at the top of the list
+      
+      final box = HiveService.getPatientsBox();
+      await box.add(newPatient);
+
       state = state.copyWith(
         patients: [newPatient, ...state.patients],
       );
       return true;
     } catch (e) {
-      // Return false or handle error display in UI
-      throw Exception(e.toString());
+      // Offline fallback: Optimistic update
+      final offlineId = 'offline_${DateTime.now().millisecondsSinceEpoch}';
+      final offlinePatient = Patient(
+        id: offlineId,
+        fullName: data['fullName']?.toString() ?? 'بدون اسم',
+        phone: data['phone']?.toString() ?? 'بدون هاتف',
+        gender: data['gender']?.toString(),
+        dateOfBirth: data['dateOfBirth'] != null ? DateTime.tryParse(data['dateOfBirth'].toString()) : null,
+      );
+      
+      final patientsBox = HiveService.getPatientsBox();
+      await patientsBox.add(offlinePatient);
+
+      final pendingBox = HiveService.getPendingActionsBox();
+      final pendingAction = PendingAction(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        type: 'CREATE_PATIENT',
+        data: data,
+      );
+      await pendingBox.add(pendingAction);
+
+      state = state.copyWith(
+        patients: [offlinePatient, ...state.patients],
+      );
+      return true;
     }
   }
 }

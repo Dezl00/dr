@@ -1,3 +1,5 @@
+import 'package:hive/hive.dart';
+
 class Patient {
   final String id;
   final String fullName;
@@ -58,5 +60,38 @@ class PaginatedPatients {
       limit: int.tryParse(meta['limit']?.toString() ?? '20') ?? 20,
       totalPages: int.tryParse(meta['totalPages']?.toString() ?? '1') ?? 1,
     );
+  }
+}
+
+
+class PatientAdapter extends TypeAdapter<Patient> {
+  @override
+  final int typeId = 0;
+
+  @override
+  Patient read(BinaryReader reader) {
+    final fields = reader.readMap();
+    return Patient(
+      id: fields['id'] as String,
+      fullName: fields['fullName'] as String,
+      phone: fields['phone'] as String,
+      gender: fields['gender'] as String?,
+      dateOfBirth: fields['dateOfBirth'] as DateTime?,
+      appointmentsCount: fields['appointmentsCount'] as int? ?? 0,
+      unpaidInvoicesCount: fields['unpaidInvoicesCount'] as int? ?? 0,
+    );
+  }
+
+  @override
+  void write(BinaryWriter writer, Patient obj) {
+    writer.writeMap({
+      'id': obj.id,
+      'fullName': obj.fullName,
+      'phone': obj.phone,
+      'gender': obj.gender,
+      'dateOfBirth': obj.dateOfBirth,
+      'appointmentsCount': obj.appointmentsCount,
+      'unpaidInvoicesCount': obj.unpaidInvoicesCount,
+    });
   }
 }

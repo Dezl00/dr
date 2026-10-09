@@ -66,6 +66,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<void> _checkAuthStatus() async {
+    // Artificial delay to show custom splash screen
+    await Future.delayed(const Duration(milliseconds: 1500));
     final token = await _storage.read(key: 'jwt_token');
     if (token != null) {
       state = state.copyWith(isCheckingAuth: false, isAuthenticated: true);

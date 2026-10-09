@@ -14,9 +14,16 @@ import 'package:flutter_native_splash/flutter_native_splash.dart';
 
 import 'package:google_fonts/google_fonts.dart';
 
+import 'core/offline/hive_service.dart';
+
+import 'core/offline/sync_manager.dart';
+
 void main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+  
+  await HiveService.init();
+
   try {
     await GoogleFonts.pendingFonts([GoogleFonts.ibmPlexSansArabicTextTheme()]);
   } catch (e) {
@@ -31,6 +38,9 @@ class DrsAdminApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Initialize global providers
+    ref.watch(syncManagerProvider);
+
     return MaterialApp(
       title: 'DRS Admin',
       debugShowCheckedModeBanner: false,
