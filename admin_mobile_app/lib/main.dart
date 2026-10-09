@@ -5,6 +5,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'features/auth/screens/login_screen.dart';
 import 'features/auth/screens/splash_screen.dart';
 import 'features/auth/screens/register_clinic_screen.dart';
+import 'features/auth/screens/forgot_password_screen.dart';
 import 'features/dashboard/screens/dashboard_screen.dart';
 import 'features/auth/providers/auth_provider.dart';
 import 'core/theme/app_theme.dart';
@@ -45,6 +46,7 @@ class DrsAdminApp extends ConsumerWidget {
         '/splash': (context) => const SplashScreen(),
         '/login': (context) => const LoginScreen(),
         '/register': (context) => const RegisterClinicScreen(),
+        '/forgot-password': (context) => const ForgotPasswordScreen(),
         '/dashboard': (context) => const DashboardScreen(),
         '/auth_wrapper': (context) => const AuthWrapper(),
       },

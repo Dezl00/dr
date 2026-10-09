@@ -430,3 +430,97 @@ export async function resendOtpAction() {
 
   return { success: 'تم إرسال رمز جديد بنجاح' }
 }
+
+// ─── FORGOT PASSWORD ───
+
+export async function forgotPasswordAction(_prev: unknown, formData: FormData) {
+  const phone = (formData.get('phone') as string) || ''
+  
+  if (!phone) {
+    return { error: 'الرجاء إدخال رقم الهاتف' }
+  }
+
+  const user = await prisma.user.findFirst({
+    where: { phone }
+  })
+
+  if (!user || !user.phone) {
+    return { error: 'رقم الهاتف غير مسجل لدينا' }
+  }
+
+  const otpCode = Math.floor(100000 + Math.random() * 900000).toString()
+  const expiresAt = new Date(Date.now() + 10 * 60 * 1000)
+
+  await prisma.phoneOtp.create({
+    data: {
+      userId: user.id,
+      phone: user.phone,
+      code: otpCode,
+      expiresAt,
+    }
+  })
+
+  const { sendOtpSms } = await import('@/lib/whysms')
+  await sendOtpSms(user.phone, otpCode)
+
+  redirect(`/reset-password?phone=${encodeURIComponent(user.phone)}`)
+}
+
+// ─── RESET PASSWORD ───
+
+export async function resetPasswordAction(_prev: unknown, formData: FormData) {
+  const phone = (formData.get('phone') as string) || ''
+  const code = (formData.get('code') as string) || ''
+  const newPassword = (formData.get('newPassword') as string) || ''
+  const confirmPassword = (formData.get('confirmPassword') as string) || ''
+
+  if (!phone || !code || !newPassword || !confirmPassword) {
+    return { error: 'الرجاء إكمال جميع الحقول' }
+  }
+
+  if (newPassword !== confirmPassword) {
+    return { error: 'كلمتا المرور غير متطابقتين' }
+  }
+
+  if (newPassword.length < 6) {
+    return { error: 'يجب أن تتكون كلمة المرور من 6 أحرف على الأقل' }
+  }
+
+  const user = await prisma.user.findFirst({
+    where: { phone }
+  })
+
+  if (!user) {
+    return { error: 'المستخدم غير موجود' }
+  }
+
+  const otpRecord = await prisma.phoneOtp.findFirst({
+    where: {
+      userId: user.id,
+      code,
+      usedAt: null,
+      expiresAt: { gt: new Date() }
+    },
+    orderBy: { createdAt: 'desc' }
+  })
+
+  if (!otpRecord) {
+    return { error: 'رمز التحقق غير صحيح أو منتهي الصلاحية' }
+  }
+
+  const { hashPassword } = await import('@/lib/auth/password')
+  const passwordHash = await hashPassword(newPassword)
+
+  await prisma.$transaction([
+    prisma.phoneOtp.update({
+      where: { id: otpRecord.id },
+      data: { usedAt: new Date() }
+    }),
+    prisma.user.update({
+      where: { id: user.id },
+      data: { passwordHash }
+    })
+  ])
+
+  redirect('/login?reset=success')
+}

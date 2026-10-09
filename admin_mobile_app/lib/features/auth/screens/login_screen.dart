@@ -73,7 +73,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 32),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: () {
+                      Navigator.pushNamed(context, '/forgot-password');
+                    },
+                    child: Text(
+                      'نسيت كلمة المرور؟',
+                      style: GoogleFonts.ibmPlexSansArabic(color: const Color(0xFF64748B)),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
                 SizedBox(
                   width: double.infinity,
                   height: 50,
