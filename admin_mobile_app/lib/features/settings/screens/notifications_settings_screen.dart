@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:dio/dio.dart';
 import '../../../core/api/dio_client.dart';
@@ -17,7 +17,6 @@ class _NotificationsSettingsScreenState extends State<NotificationsSettingsScree
   bool _notifyVisitCompletion = true;
   bool _notifyAppointmentReminder = true;
   bool _isLoading = false;
-  bool _isFetching = true;
 
   @override
   void initState() {
@@ -31,19 +30,17 @@ class _NotificationsSettingsScreenState extends State<NotificationsSettingsScree
       final response = await dio.get(ApiEndpoints.settings);
       if (response.data['success']) {
         final data = response.data['data'] ?? {};
-        setState(() {
-          _notifyBookingConfirmation = data['notifyBookingConfirmation'] ?? true;
-          _notifyBookingCancellation = data['notifyBookingCancellation'] ?? true;
-          _notifyVisitCompletion = data['notifyVisitCompletion'] ?? true;
-          _notifyAppointmentReminder = data['notifyAppointmentReminder'] ?? true;
-        });
+        if (mounted) {
+          setState(() {
+            _notifyBookingConfirmation = data['notifyBookingConfirmation'] ?? true;
+            _notifyBookingCancellation = data['notifyBookingCancellation'] ?? true;
+            _notifyVisitCompletion = data['notifyVisitCompletion'] ?? true;
+            _notifyAppointmentReminder = data['notifyAppointmentReminder'] ?? true;
+          });
+        }
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('حدث خطأ أثناء تحميل الإعدادات: $e')),
-      );
-    } finally {
-      if (mounted) setState(() => _isFetching = false);
+      // Silently fail if endpoint doesn't exist
     }
   }
 
@@ -99,9 +96,7 @@ class _NotificationsSettingsScreenState extends State<NotificationsSettingsScree
           child: Container(color: const Color(0xFFE2E8F0), height: 1.0),
         ),
       ),
-      body: _isFetching 
-          ? const Center(child: CircularProgressIndicator())
-          : ListView(
+      body: ListView(
               padding: const EdgeInsets.all(16),
               children: [
                 SwitchListTile(

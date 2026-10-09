@@ -100,6 +100,8 @@ class AppointmentNotifier extends StateNotifier<AppointmentState> {
         patientId: data['patientId']?.toString() ?? '',
         patientName: data['patientName']?.toString() ?? 'بدون اسم',
         patientPhone: data['patientPhone']?.toString() ?? 'بدون هاتف',
+        doctorId: data['doctorId']?.toString() ?? '',
+        doctorName: data['doctorName']?.toString() ?? '',
         date: DateTime.parse(data['date'] ?? DateTime.now().toIso8601String()),
         startTime: data['startTime']?.toString() ?? '00:00',
         endTime: data['endTime']?.toString(),
@@ -127,3 +129,4 @@ class AppointmentNotifier extends StateNotifier<AppointmentState> {
     }
   }
 }
+

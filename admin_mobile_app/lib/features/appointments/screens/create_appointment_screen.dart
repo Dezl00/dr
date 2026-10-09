@@ -74,11 +74,12 @@ class _CreateAppointmentScreenState extends ConsumerState<CreateAppointmentScree
       if (_selectedServiceId != null) data['serviceId'] = _selectedServiceId;
       if (formattedEndTime != null) data['endTime'] = formattedEndTime;
 
-      await ref.read(appointmentRepositoryProvider).createAppointment(data);
+      final success = await ref.read(appointmentStateProvider.notifier).createAppointment(data);
+      if (!success) throw Exception("Failed to create appointment");
 
       if (mounted) {
         Navigator.pop(context);
-        ref.refresh(appointmentsFutureProvider);
+        // ref.refresh no longer needed
       }
     } catch (e) {
       if (mounted) {

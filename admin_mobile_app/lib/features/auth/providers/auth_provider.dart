@@ -3,6 +3,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:dio/dio.dart';
 import '../../../core/api/dio_client.dart';
 import '../../../core/api/api_endpoints.dart';
+import '../../../core/services/notification_service.dart';
 
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 
@@ -71,6 +72,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     final token = await _storage.read(key: 'jwt_token');
     if (token != null) {
       state = state.copyWith(isCheckingAuth: false, isAuthenticated: true);
+      _registerDeviceToken();
     } else {
       state = state.copyWith(isCheckingAuth: false, isAuthenticated: false);
     }
@@ -93,6 +95,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         if (response.data['token'] != null) {
           await _storage.write(key: 'jwt_token', value: response.data['token']);
           state = state.copyWith(isLoading: false, isAuthenticated: true);
+          _registerDeviceToken();
         } else if (response.data['requireClinicSelection'] == true) {
           state = state.copyWith(
             isLoading: false,
@@ -139,9 +142,26 @@ class AuthNotifier extends StateNotifier<AuthState> {
           tempEmail: null,
           tempPassword: null,
         );
+        _registerDeviceToken();
       }
     } catch (e) {
       state = state.copyWith(isLoading: false, error: 'حدث خطأ أثناء اختيار العيادة');
+    }
+  }
+
+  Future<void> _registerDeviceToken() async {
+    try {
+      // Lazy import to avoid cyclic or early init issues
+      final NotificationService notificationService = NotificationService();
+      final token = await notificationService.getToken();
+      if (token != null) {
+        await _dio.put(
+          '${ApiEndpoints.baseUrl}/settings/device-token',
+          data: {'fcmToken': token},
+        );
+      }
+    } catch (e) {
+      print('Failed to register device token: $e');
     }
   }
 

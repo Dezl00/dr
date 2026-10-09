@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../auth/providers/auth_provider.dart';
@@ -7,6 +7,8 @@ import '../../appointments/screens/calendar_screen.dart';
 import '../../financials/screens/invoices_screen.dart';
 import 'home_overview_screen.dart';
 import 'more_menu_screen.dart';
+import 'package:permission_handler/permission_handler.dart';
+import '../../../core/services/notification_service.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
@@ -25,6 +27,59 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     const InvoicesScreen(),     // 3: المالية
     const MoreMenuScreen(),     // 4: المزيد
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkNotificationPermission();
+    });
+  }
+
+  Future<void> _checkNotificationPermission() async {
+    final notificationService = NotificationService();
+    bool isGranted = await notificationService.checkPermission();
+    if (!isGranted && mounted) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (ctx) => AlertDialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Row(
+            children: [
+              const Icon(Icons.notifications_active, color: Color(0xFF2563EB)),
+              const SizedBox(width: 8),
+              Text('تفعيل الإشعارات', style: GoogleFonts.ibmPlexSansArabic(fontSize: 18, fontWeight: FontWeight.bold)),
+            ],
+          ),
+          content: Text(
+            'يرجى تفعيل الإشعارات من إعدادات الهاتف حتى يصلك تنبيه فوري عند قيام أي مريض بحجز موعد جديد.',
+            style: GoogleFonts.ibmPlexSansArabic(fontSize: 14),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(ctx);
+              },
+              child: Text('ذكرني لاحقاً', style: GoogleFonts.ibmPlexSansArabic(color: Colors.grey)),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                Navigator.pop(ctx);
+                await openAppSettings();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF2563EB),
+                foregroundColor: Colors.white,
+              ),
+              child: Text('الذهاب للإعدادات', style: GoogleFonts.ibmPlexSansArabic()),
+            ),
+          ],
+        ),
+      );
+    }
+  }
 
   void _selectTab(int index) {
     setState(() {

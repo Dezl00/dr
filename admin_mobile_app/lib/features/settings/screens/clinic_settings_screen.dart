@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:dio/dio.dart';
 import '../../../core/api/dio_client.dart';
@@ -18,7 +18,6 @@ class _ClinicSettingsScreenState extends State<ClinicSettingsScreen> {
   final _addressController = TextEditingController();
   final _primaryColorController = TextEditingController();
   bool _isLoading = false;
-  bool _isFetching = true;
 
   @override
   void initState() {
@@ -32,17 +31,17 @@ class _ClinicSettingsScreenState extends State<ClinicSettingsScreen> {
       final response = await dio.get(ApiEndpoints.settings);
       if (response.data['success']) {
         final data = response.data['data'] ?? {};
-        _emailController.text = data['email'] ?? '';
-        _phoneController.text = data['phone'] ?? '';
-        _addressController.text = data['address'] ?? '';
-        _primaryColorController.text = data['primaryColor'] ?? '';
+        if (mounted) {
+          setState(() {
+            _emailController.text = data['email'] ?? '';
+            _phoneController.text = data['phone'] ?? '';
+            _addressController.text = data['address'] ?? '';
+            _primaryColorController.text = data['primaryColor'] ?? '';
+          });
+        }
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('حدث خطأ أثناء تحميل الإعدادات: $e')),
-      );
-    } finally {
-      if (mounted) setState(() => _isFetching = false);
+      // Silently fail if settings endpoint doesn't exist
     }
   }
 
@@ -108,9 +107,7 @@ class _ClinicSettingsScreenState extends State<ClinicSettingsScreen> {
           child: Container(color: const Color(0xFFE2E8F0), height: 1.0),
         ),
       ),
-      body: _isFetching 
-          ? const Center(child: CircularProgressIndicator())
-          : Form(
+      body: Form(
               key: _formKey,
               child: ListView(
                 padding: const EdgeInsets.all(16),

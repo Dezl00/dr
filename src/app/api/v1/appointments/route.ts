@@ -87,6 +87,38 @@ export async function POST(req: Request) {
       }
     });
 
+    try {
+      // Fetch users in this clinic to send push notifications
+      const clinicUsers = await prisma.clinicMembership.findMany({
+        where: { clinicId: clinic.id },
+        include: { user: true }
+      });
+
+      const tokens: string[] = [];
+      for (const m of clinicUsers) {
+        if (m.user.deviceTokens && m.user.deviceTokens.length > 0) {
+          tokens.push(...m.user.deviceTokens);
+        }
+      }
+
+      // De-duplicate tokens
+      const uniqueTokens = Array.from(new Set(tokens));
+
+      if (uniqueTokens.length > 0) {
+        const { getFirebaseAdminApp } = await import("@/lib/firebase-admin");
+        const firebaseAdmin = getFirebaseAdminApp();
+        await firebaseAdmin.messaging().sendEachForMulticast({
+          notification: {
+            title: "حجز موعد جديد 📅",
+            body: `تم حجز موعد للمريض ${newAppointment.patient?.fullName} الساعة ${validatedData.startTime}`,
+          },
+          tokens: uniqueTokens,
+        });
+      }
+    } catch (pushErr) {
+      console.error("Failed to send push notification:", pushErr);
+    }
+
     return NextResponse.json({
       success: true,
       data: newAppointment,

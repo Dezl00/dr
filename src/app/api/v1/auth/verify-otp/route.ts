@@ -63,6 +63,40 @@ export async function POST(req: Request) {
         }
       });
       
+      const w = await tx.website.create({
+        data: {
+          clinicId: c.id,
+          isPublished: false,
+        }
+      });
+
+      await tx.websiteSettings.create({
+        data: { websiteId: w.id }
+      });
+
+      // Default Website Sections
+      const defaultSections = [
+        { type: "HERO" as const, title: "الرئيسية", titleEn: "Hero", sortOrder: 0 },
+        { type: "ABOUT" as const, title: "من نحن", titleEn: "About", sortOrder: 1 },
+        { type: "SERVICES" as const, title: "خدماتنا", titleEn: "Services", sortOrder: 2 },
+        { type: "DOCTORS" as const, title: "أطبائنا", titleEn: "Doctors", sortOrder: 3 },
+        { type: "CONTACT" as const, title: "اتصل بنا", titleEn: "Contact", sortOrder: 4 },
+        { type: "BOOKING" as const, title: "احجز موعد", titleEn: "Booking", sortOrder: 5 },
+      ];
+
+      for (const section of defaultSections) {
+        await tx.websiteSection.create({
+          data: {
+            websiteId: w.id,
+            type: section.type,
+            title: section.title,
+            titleEn: section.titleEn,
+            sortOrder: section.sortOrder,
+            isEnabled: true,
+          }
+        });
+      }
+      
       return u;
     });
 

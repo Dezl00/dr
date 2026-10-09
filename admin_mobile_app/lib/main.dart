@@ -18,11 +18,25 @@ import 'core/offline/hive_service.dart';
 
 import 'core/offline/sync_manager.dart';
 
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
+import 'firebase_options.dart';
+import 'core/services/notification_service.dart';
+
 void main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   
   await HiveService.init();
+
+  if (!kIsWeb) {
+    try {
+      await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+      await NotificationService().initialize();
+    } catch (e) {
+      debugPrint('Firebase init error: $e');
+    }
+  }
 
   try {
     await GoogleFonts.pendingFonts([GoogleFonts.ibmPlexSansArabicTextTheme()]);
