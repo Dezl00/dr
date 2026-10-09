@@ -1,4 +1,4 @@
-﻿import { NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 import { requireApiAuth } from '@/lib/auth/api-auth';
 import { sendSms } from '@/lib/whysms';
@@ -22,7 +22,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     }
 
     const time = new Date(appointment.startTime).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
-    const message = مرحباً ، نذكركم بموعدكم في عيادة  غداً الساعة .;
+    const message = `مرحباً ${appointment.patient.fullName}، نذكركم بموعدكم في عيادة ${clinic.name} غداً الساعة ${time}.`;
 
     const smsResult = await sendSms(appointment.patient.phone, message);
 

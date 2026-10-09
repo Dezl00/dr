@@ -1,7 +1,7 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { requireApiAuth } from "@/lib/auth/api-auth";
-import * as bcrypt from "bcrypt";
+import { verifyPassword, hashPassword } from "@/lib/auth/password";
 
 export async function PUT(req: Request) {
   try {
@@ -14,15 +14,15 @@ export async function PUT(req: Request) {
     
     // Password update
     if (body.currentPassword && body.newPassword) {
-      const isValid = await bcrypt.compare(body.currentPassword, user.passwordHash);
+      if (!user.passwordHash) {
+         return NextResponse.json({ success: false, error: "لا توجد كلمة مرور حالية" }, { status: 400 });
+      }
+      const isValid = await verifyPassword(user.passwordHash, body.currentPassword);
       if (!isValid) {
         return NextResponse.json({ success: false, error: "كلمة المرور الحالية غير صحيحة" }, { status: 400 });
       }
-      const hashed = await bcrypt.hash(body.newPassword, 10);
+      const hashed = await hashPassword(body.newPassword);
       updateData.passwordHash = hashed;
-    } else if (body.newPassword) {
-      // If setting password without current (maybe via admin force? For safety, we require currentPassword usually)
-      // but let's just skip it if currentPassword is not provided unless explicitly allowed.
     }
 
     if (Object.keys(updateData).length === 0) {
@@ -45,6 +45,6 @@ export async function PUT(req: Request) {
   } catch (error: any) {
     if (error.message?.includes('Unauthorized')) return NextResponse.json({ success: false, error: error.message }, { status: 401 });
     console.error('Profile update error:', error);
-    return NextResponse.json({ success: false, error: "حدث خطأ" }, { status: 500 });
+    return NextResponse.json({ success: false, error: "حدث خطأ داخلي" }, { status: 500 });
   }
 }
