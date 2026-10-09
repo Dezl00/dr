@@ -1,0 +1,38 @@
+name: drs_admin_app
+description: "DRS Dental SaaS - Admin Mobile Application"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.2.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  
+  # State Management
+  flutter_riverpod: ^2.4.9
+  
+  # Networking
+  dio: ^5.4.0
+  
+  # Navigation
+  go_router: ^12.1.1
+  
+  # Secure Storage
+  flutter_secure_storage: ^9.0.0
+  
+  # Media
+  image_picker: ^1.0.7
+  
+  # UI Toolkit
+  cupertino_icons: ^1.0.2
+  google_fonts: ^6.3.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.1
+
+flutter:
+  uses-material-design: true
