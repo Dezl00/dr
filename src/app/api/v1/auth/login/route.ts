@@ -70,8 +70,7 @@ export async function POST(req: Request) {
         clinics: user.memberships.map(m => ({
           id: m.clinic.id,
           name: m.clinic.name,
-          role: m.role.nameAr,
-          logoUrl: m.clinic.logoUrl
+          role: m.role.nameAr
         }))
       });
     }
