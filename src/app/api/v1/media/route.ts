@@ -32,13 +32,14 @@ export async function POST(req: Request) {
     
     const url = `/uploads/${uniqueName}`;
 
-    const media = await prisma.media.create({
+    const media = await prisma.mediaAsset.create({
       data: {
         clinicId: clinic.id,
-        patientId: patientId || null,
-        url: url,
-        type: type || 'DOCUMENT',
-        filename: file.name,
+        fileUrl: url,
+        fileName: file.name,
+        fileSize: buffer.length,
+        mimeType: file.type || 'application/octet-stream',
+        category: type || 'DOCUMENT',
       }
     });
     
