@@ -3,10 +3,10 @@ import { prisma } from '@/lib/db/prisma';
 import { requireApiAuth } from '@/lib/auth/api-auth';
 import { sendSms } from '@/lib/whysms';
 
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { clinic } = await requireApiAuth(req);
-    const { id } = params;
+    const { id } = await params;
 
     const appointment = await prisma.appointment.findUnique({
       where: { id, clinicId: clinic.id },
