@@ -1,17 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/api/dio_client.dart';
+import '../../../core/api/api_endpoints.dart';
+import '../../../core/providers/doctors_provider.dart';
 
-class CreateDoctorScreen extends StatefulWidget {
+class CreateDoctorScreen extends ConsumerStatefulWidget {
   const CreateDoctorScreen({Key? key}) : super(key: key);
 
   @override
-  State<CreateDoctorScreen> createState() => _CreateDoctorScreenState();
+  ConsumerState<CreateDoctorScreen> createState() => _CreateDoctorScreenState();
 }
 
-class _CreateDoctorScreenState extends State<CreateDoctorScreen> {
+class _CreateDoctorScreenState extends ConsumerState<CreateDoctorScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
   final _specialtyController = TextEditingController();
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -19,6 +24,52 @@ class _CreateDoctorScreenState extends State<CreateDoctorScreen> {
     _phoneController.dispose();
     _specialtyController.dispose();
     super.dispose();
+  }
+
+  Future<void> _saveDoctor() async {
+    if (!_formKey.currentState!.validate()) return;
+    
+    setState(() => _isLoading = true);
+    
+    try {
+      final dio = DioClient().dio;
+      await dio.post(ApiEndpoints.doctors, data: {
+        'name': _nameController.text,
+        'specialty': _specialtyController.text,
+        'phone': _phoneController.text,
+      });
+      
+      ref.read(doctorsProvider.notifier).fetchData();
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'تم إضافة الطبيب بنجاح',
+              style: TextStyle(fontFamily: 'IBMPlexSansArabic'),
+            ),
+            backgroundColor: Colors.green,
+          ),
+        );
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'حدث خطأ أثناء إضافة الطبيب',
+              style: TextStyle(fontFamily: 'IBMPlexSansArabic'),
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
 
   @override
@@ -53,27 +104,33 @@ class _CreateDoctorScreenState extends State<CreateDoctorScreen> {
               _buildTextField('رقم الهاتف', _phoneController),
               const SizedBox(height: 32),
               ElevatedButton(
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    Navigator.pop(context);
-                  }
-                },
+                onPressed: _isLoading ? null : _saveDoctor,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF2563EB),
                   padding: const EdgeInsets.symmetric(vertical: 16),
+                  elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                child: const Text(
-                  'حفظ',
-                  style: TextStyle(
-                    fontFamily: 'IBMPlexSansArabic',
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
+                child: _isLoading
+                    ? const SizedBox(
+                        height: 24,
+                        width: 24,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : const Text(
+                        'حفظ',
+                        style: TextStyle(
+                          fontFamily: 'IBMPlexSansArabic',
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
               ),
             ],
           ),

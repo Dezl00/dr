@@ -729,7 +729,7 @@ class _AppointmentDetailsSheet extends ConsumerWidget {
               child: ElevatedButton.icon(
                 onPressed: () => _sendReminder(context),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF25D366),
+                  backgroundColor: const Color(0xFF2563EB),
                   elevation: 0,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
                 ),
