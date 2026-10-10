@@ -27,6 +27,39 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     const smsResult = await sendSms(appointment.patient.phone, message);
 
     if (smsResult.success) {
+      // Notify clinic admins that a reminder was sent
+      try {
+        const clinicUsers = await prisma.clinicMembership.findMany({
+          where: { clinicId: clinic.id },
+          include: { user: true }
+        });
+
+        const tokens: string[] = [];
+        for (const m of clinicUsers) {
+          if (m.user.deviceTokens && m.user.deviceTokens.length > 0) {
+            tokens.push(...m.user.deviceTokens);
+          }
+        }
+
+        const uniqueTokens = Array.from(new Set(tokens));
+
+        if (uniqueTokens.length > 0) {
+          const { getAdminMessaging } = await import("@/lib/firebase-admin");
+          const messaging = getAdminMessaging();
+          if (messaging) {
+            await messaging.sendEachForMulticast({
+              notification: {
+                title: "تم إرسال تذكير 🔔",
+                body: `تم إرسال رسالة تذكير للمريض ${appointment.patient.fullName} بنجاح`,
+              },
+              tokens: uniqueTokens,
+            });
+          }
+        }
+      } catch (pushErr) {
+        console.error("Failed to send push notification:", pushErr);
+      }
+
       return NextResponse.json({ success: true, message: 'تم الإرسال بنجاح' });
     } else {
       return NextResponse.json({ success: false, error: smsResult.error }, { status: 500 });
