@@ -21,45 +21,21 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       return NextResponse.json({ success: false, error: 'لا يوجد رقم هاتف للمريض' }, { status: 400 });
     }
 
-    const time = new Date(appointment.startTime).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
-    const message = `مرحباً ${appointment.patient.fullName}، نذكركم بموعدكم في عيادة ${clinic.name} غداً الساعة ${time}.`;
+    const timeParts = appointment.startTime.split(':');
+    let formattedTime = appointment.startTime;
+    if (timeParts.length >= 2) {
+      let hours = parseInt(timeParts[0], 10);
+      const minutes = timeParts[1];
+      const ampm = hours >= 12 ? 'مساءً' : 'صباحاً';
+      hours = hours % 12;
+      hours = hours ? hours : 12; 
+      formattedTime = `${hours}:${minutes} ${ampm}`;
+    }
+    const message = `مرحباً ${appointment.patient.fullName}، نذكركم بموعدكم في عيادة ${clinic.name} غداً الساعة ${formattedTime}.`;
 
     const smsResult = await sendSms(appointment.patient.phone, message);
 
     if (smsResult.success) {
-      // Notify clinic admins that a reminder was sent
-      try {
-        const clinicUsers = await prisma.clinicMembership.findMany({
-          where: { clinicId: clinic.id },
-          include: { user: true }
-        });
-
-        const tokens: string[] = [];
-        for (const m of clinicUsers) {
-          if (m.user.deviceTokens && m.user.deviceTokens.length > 0) {
-            tokens.push(...m.user.deviceTokens);
-          }
-        }
-
-        const uniqueTokens = Array.from(new Set(tokens));
-
-        if (uniqueTokens.length > 0) {
-          const { getAdminMessaging } = await import("@/lib/firebase-admin");
-          const messaging = getAdminMessaging();
-          if (messaging) {
-            await messaging.sendEachForMulticast({
-              notification: {
-                title: "تم إرسال تذكير 🔔",
-                body: `تم إرسال رسالة تذكير للمريض ${appointment.patient.fullName} بنجاح`,
-              },
-              tokens: uniqueTokens,
-            });
-          }
-        }
-      } catch (pushErr) {
-        console.error("Failed to send push notification:", pushErr);
-      }
-
       return NextResponse.json({ success: true, message: 'تم الإرسال بنجاح' });
     } else {
       return NextResponse.json({ success: false, error: smsResult.error }, { status: 500 });

@@ -76,15 +76,20 @@ class _PatientsScreenState extends ConsumerState<PatientsScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: Column(
-          children: [
-            _buildCustomHeader(context, state.items.length),
-            _buildSearchBar(),
-            _buildFilters(),
-            Expanded(
-              child: _buildContent(state),
-            ),
-          ],
+        child: Directionality(
+          textDirection: TextDirection.rtl,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildCustomHeader(context, state.items.length),
+              const SizedBox(height: 16),
+              _buildSearchBar(),
+              _buildFilters(),
+              Expanded(
+                child: _buildContent(state),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -92,7 +97,7 @@ class _PatientsScreenState extends ConsumerState<PatientsScreen> {
 
   Widget _buildCustomHeader(BuildContext context, int count) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -134,23 +139,21 @@ class _PatientsScreenState extends ConsumerState<PatientsScreen> {
                 MaterialPageRoute(builder: (_) => const CreatePatientScreen()),
               );
             },
-            icon: const Icon(Icons.add, color: Colors.white, size: 18),
-            label: const Text(
-              'إضافة',
-              style: TextStyle(
-                fontFamily: 'IBMPlexSansArabic',
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF2563EB),
               elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(50),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            ),
+            icon: const Icon(Icons.add, color: Colors.white, size: 20),
+            label: const Text(
+              'إضافة مريض',
+              style: TextStyle(
+                fontFamily: 'IBMPlexSansArabic',
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
               ),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             ),
           ),
         ],

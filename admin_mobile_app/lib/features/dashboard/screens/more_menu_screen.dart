@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:share_plus/share_plus.dart';
+
 import '../../settings/screens/settings_screen.dart';
 import '../../services/screens/services_screen.dart';
 import '../../team/screens/team_screen.dart';
@@ -18,12 +21,19 @@ class MoreMenuScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authStateProvider);
+    final clinic = authState.clinic;
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           children: [
+            _buildClinicHeader(clinic),
+            const SizedBox(height: 24),
+            _buildWebsiteActions(clinic),
+            const SizedBox(height: 32),
             const Text(
               'أقسام العيادة',
               style: TextStyle(
@@ -46,13 +56,96 @@ class MoreMenuScreen extends ConsumerWidget {
     );
   }
 
+  Widget _buildClinicHeader(Map<String, dynamic>? clinic) {
+    final name = clinic?['name'] as String? ?? 'العيادة';
+    final logoUrl = clinic?['logo'] as String?;
+
+    return Row(
+      children: [
+        if (logoUrl != null && logoUrl.isNotEmpty)
+          CircleAvatar(
+            radius: 32,
+            backgroundImage: NetworkImage(logoUrl),
+            backgroundColor: const Color(0xFFEFF6FF),
+          )
+        else
+          Container(
+            width: 64,
+            height: 64,
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              color: Color(0xFFEFF6FF),
+            ),
+            child: const Icon(Icons.local_hospital, color: Color(0xFF2563EB), size: 32),
+          ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Text(
+            name,
+            style: const TextStyle(
+              fontFamily: 'IBMPlexSansArabic',
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF0F172A),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildWebsiteActions(Map<String, dynamic>? clinic) {
+    final slug = clinic?['slug'] as String? ?? '';
+    final url = 'https://$slug.beyoondgroup.com';
+
+    return Row(
+      children: [
+        Expanded(
+          child: ElevatedButton.icon(
+            onPressed: () async {
+              final uri = Uri.parse(url);
+              if (await canLaunchUrl(uri)) {
+                await launchUrl(uri);
+              }
+            },
+            icon: const Icon(Icons.open_in_new, size: 20),
+            label: const Text('زيارة الموقع', style: TextStyle(fontFamily: 'IBMPlexSansArabic', fontWeight: FontWeight.bold)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF2563EB),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              elevation: 0,
+            ),
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: OutlinedButton.icon(
+            onPressed: () {
+              Share.share(url);
+            },
+            icon: const Icon(Icons.share_outlined, size: 20),
+            label: const Text('مشاركة الموقع', style: TextStyle(fontFamily: 'IBMPlexSansArabic', fontWeight: FontWeight.bold)),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: const Color(0xFF2563EB),
+              side: const BorderSide(color: Color(0xFF2563EB)),
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildMenuGrid(BuildContext context) {
     final items = [
-      {'title': 'المخازن', 'icon': Icons.inventory_2_outlined, 'screen': const InventoryScreen()},
+      {'title': 'فريق العمل', 'icon': Icons.groups_outlined, 'screen': const TeamScreen()},
       {'title': 'الخدمات', 'icon': Icons.medical_services_outlined, 'screen': const ServicesScreen()},
       {'title': 'الأطباء', 'icon': Icons.medical_information_outlined, 'screen': const DoctorsScreen()},
-      {'title': 'فريق العمل', 'icon': Icons.groups_outlined, 'screen': const TeamScreen()},
       {'title': 'علاقات المرضى', 'icon': Icons.group_add_outlined, 'screen': const LeadsScreen()},
+      {'title': 'المخازن', 'icon': Icons.inventory_2_outlined, 'screen': const InventoryScreen()},
       {'title': 'الموقع الإلكتروني', 'icon': Icons.language_outlined, 'screen': const WebsiteSettingsScreen()},
     ];
 
@@ -86,9 +179,10 @@ class MoreMenuScreen extends ConsumerWidget {
                 const SizedBox(height: 8),
                 Text(
                   item['title'] as String,
+                  textAlign: TextAlign.center,
                   style: const TextStyle(
                     fontFamily: 'IBMPlexSansArabic',
-                    fontSize: 14,
+                    fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: Color(0xFF0F172A),
                   ),

@@ -730,7 +730,7 @@ class _AppointmentDetailsSheet extends ConsumerWidget {
                 ),
                 icon: const Icon(Icons.sms_outlined, color: Colors.white),
                 label: const Text(
-                  'تذكير عبر واتساب',
+                  'إرسال تذكير SMS',
                   style: TextStyle(
                     fontFamily: 'IBMPlexSansArabic',
                     color: Colors.white,
@@ -782,6 +782,8 @@ class _AppointmentDetailsSheet extends ConsumerWidget {
     try {
       final dio = DioClient().dio;
       await dio.patch('${ApiEndpoints.appointments}/${appointment.id}/status', data: {'status': newStatus});
+      
+      if (!context.mounted) return;
       ref.read(appointmentStateProvider.notifier).fetchData();
       
       // SMS is now sent automatically from the backend on status change

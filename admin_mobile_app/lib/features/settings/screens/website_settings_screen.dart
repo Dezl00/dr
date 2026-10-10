@@ -4,6 +4,14 @@ import 'package:dio/dio.dart';
 import '../../../core/api/api_endpoints.dart';
 import '../../auth/providers/auth_provider.dart';
 
+class WebsiteSection {
+  final String id;
+  final String title;
+  bool isEnabled;
+
+  WebsiteSection({required this.id, required this.title, required this.isEnabled});
+}
+
 class WebsiteSettingsScreen extends ConsumerStatefulWidget {
   const WebsiteSettingsScreen({super.key});
 
@@ -21,21 +29,23 @@ class _WebsiteSettingsScreenState extends ConsumerState<WebsiteSettingsScreen> {
   final TextEditingController _twitterController = TextEditingController();
   final TextEditingController _whatsappController = TextEditingController();
 
-  // Website sections toggles
-  bool _showHero = true;
-  bool _showAbout = true;
-  bool _showServices = true;
-  bool _showDoctors = true;
-  bool _showWhyChooseUs = true;
-  bool _showGallery = true;
-  bool _showTestimonials = true;
-  bool _showFAQ = true;
-  bool _showContact = true;
-  bool _showBooking = true;
+  late List<WebsiteSection> _sections;
 
   @override
   void initState() {
     super.initState();
+    _sections = [
+      WebsiteSection(id: 'hero', title: 'القسم الرئيسي (Hero)', isEnabled: true),
+      WebsiteSection(id: 'about', title: 'من نحن (About)', isEnabled: true),
+      WebsiteSection(id: 'services', title: 'الخدمات (Services)', isEnabled: true),
+      WebsiteSection(id: 'doctors', title: 'الأطباء (Doctors)', isEnabled: true),
+      WebsiteSection(id: 'why_choose_us', title: 'لماذا نحن (Why Choose Us)', isEnabled: true),
+      WebsiteSection(id: 'gallery', title: 'معرض الصور (Gallery)', isEnabled: true),
+      WebsiteSection(id: 'testimonials', title: 'آراء العملاء (Testimonials)', isEnabled: true),
+      WebsiteSection(id: 'faq', title: 'الأسئلة الشائعة (FAQ)', isEnabled: true),
+      WebsiteSection(id: 'contact', title: 'اتصل بنا (Contact)', isEnabled: true),
+      WebsiteSection(id: 'booking', title: 'حجز موعد (Booking)', isEnabled: true),
+    ];
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initFromState();
       _fetchSettings();
@@ -108,6 +118,7 @@ class _WebsiteSettingsScreenState extends ConsumerState<WebsiteSettingsScreen> {
         'socialInstagram': _instagramController.text,
         'socialTwitter': _twitterController.text,
         'socialWhatsapp': _whatsappController.text,
+        'sections': _sections.map((s) => {'id': s.id, 'isEnabled': s.isEnabled}).toList(),
       };
       
       await dio.put(ApiEndpoints.settings, data: data);
@@ -181,6 +192,24 @@ class _WebsiteSettingsScreenState extends ConsumerState<WebsiteSettingsScreen> {
                       label: 'رابط الموقع (Domain)',
                       controller: _domainController,
                       isEnglish: true,
+                      suffixWidget: Padding(
+                        padding: const EdgeInsets.only(right: 12.0, left: 16.0),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: const [
+                            Text(
+                              '.beyoondgroup.com',
+                              textDirection: TextDirection.ltr,
+                              style: TextStyle(
+                                fontFamily: 'IBMPlexSansArabic',
+                                fontSize: 16,
+                                color: Color(0xFF64748B),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                     const SizedBox(height: 16),
                     _buildLogoUpload(),
@@ -189,7 +218,7 @@ class _WebsiteSettingsScreenState extends ConsumerState<WebsiteSettingsScreen> {
                     _buildSectionTitle('أقسام الموقع الإلكتروني'),
                     const SizedBox(height: 8),
                     const Text(
-                      'قم بتفعيل أو تعطيل الأقسام التي تود عرضها في موقعك الإلكتروني.',
+                      'قم بسحب وإفلات الأقسام لترتيبها، أو تفعيلها وتعطيلها.',
                       style: TextStyle(
                         fontFamily: 'IBMPlexSansArabic',
                         fontSize: 14,
@@ -203,28 +232,42 @@ class _WebsiteSettingsScreenState extends ConsumerState<WebsiteSettingsScreen> {
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(color: const Color(0xFFE2E8F0)),
                       ),
-                      child: Column(
-                        children: [
-                          _buildToggleRow('القسم الرئيسي (Hero)', _showHero, (v) => setState(() => _showHero = v)),
-                          _buildDivider(),
-                          _buildToggleRow('من نحن (About)', _showAbout, (v) => setState(() => _showAbout = v)),
-                          _buildDivider(),
-                          _buildToggleRow('الخدمات (Services)', _showServices, (v) => setState(() => _showServices = v)),
-                          _buildDivider(),
-                          _buildToggleRow('الأطباء (Doctors)', _showDoctors, (v) => setState(() => _showDoctors = v)),
-                          _buildDivider(),
-                          _buildToggleRow('لماذا نحن (Why Choose Us)', _showWhyChooseUs, (v) => setState(() => _showWhyChooseUs = v)),
-                          _buildDivider(),
-                          _buildToggleRow('معرض الصور (Gallery)', _showGallery, (v) => setState(() => _showGallery = v)),
-                          _buildDivider(),
-                          _buildToggleRow('آراء العملاء (Testimonials)', _showTestimonials, (v) => setState(() => _showTestimonials = v)),
-                          _buildDivider(),
-                          _buildToggleRow('الأسئلة الشائعة (FAQ)', _showFAQ, (v) => setState(() => _showFAQ = v)),
-                          _buildDivider(),
-                          _buildToggleRow('اتصل بنا (Contact)', _showContact, (v) => setState(() => _showContact = v)),
-                          _buildDivider(),
-                          _buildToggleRow('حجز موعد (Booking)', _showBooking, (v) => setState(() => _showBooking = v), isLast: true),
-                        ],
+                      clipBehavior: Clip.antiAlias,
+                      child: ReorderableListView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: _sections.length,
+                        onReorder: (oldIndex, newIndex) {
+                          setState(() {
+                            if (oldIndex < newIndex) {
+                              newIndex -= 1;
+                            }
+                            final item = _sections.removeAt(oldIndex);
+                            _sections.insert(newIndex, item);
+                          });
+                        },
+                        itemBuilder: (context, index) {
+                          final section = _sections[index];
+                          return Container(
+                            key: ValueKey(section.id),
+                            color: Colors.white,
+                            child: Column(
+                              children: [
+                                _buildToggleRow(
+                                  title: section.title,
+                                  value: section.isEnabled,
+                                  onChanged: (v) {
+                                    setState(() {
+                                      section.isEnabled = v;
+                                    });
+                                  },
+                                ),
+                                if (index < _sections.length - 1)
+                                  _buildDivider(),
+                              ],
+                            ),
+                          );
+                        },
                       ),
                     ),
                     
@@ -254,37 +297,46 @@ class _WebsiteSettingsScreenState extends ConsumerState<WebsiteSettingsScreen> {
                       controller: _whatsappController,
                       isEnglish: true,
                     ),
-                    
-                    const SizedBox(height: 32),
-                    ElevatedButton(
-                      onPressed: _isSaving ? null : _saveSettings,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF2563EB),
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(50),
-                        ),
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                      ),
-                      child: _isSaving
-                          ? const SizedBox(
-                              height: 24,
-                              width: 24,
-                              child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                            )
-                          : const Text(
-                              'حفظ التغييرات',
-                              style: TextStyle(
-                                fontFamily: 'IBMPlexSansArabic',
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                    ),
                   ],
                 ),
               ),
+        bottomNavigationBar: Container(
+          padding: const EdgeInsets.all(20),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            border: Border(
+              top: BorderSide(color: Color(0xFFE2E8F0)),
+            ),
+          ),
+          child: SafeArea(
+            child: ElevatedButton(
+              onPressed: _isSaving || _isLoading ? null : _saveSettings,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF2563EB),
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(50),
+                ),
+                padding: const EdgeInsets.symmetric(vertical: 16),
+              ),
+              child: _isSaving
+                  ? const SizedBox(
+                      height: 24,
+                      width: 24,
+                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                    )
+                  : const Text(
+                      'حفظ التغييرات',
+                      style: TextStyle(
+                        fontFamily: 'IBMPlexSansArabic',
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -301,20 +353,30 @@ class _WebsiteSettingsScreenState extends ConsumerState<WebsiteSettingsScreen> {
     );
   }
 
-  Widget _buildToggleRow(String title, bool value, ValueChanged<bool> onChanged, {bool isLast = false}) {
+  Widget _buildToggleRow({
+    required String title,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            title,
-            style: const TextStyle(
-              fontFamily: 'IBMPlexSansArabic',
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF0F172A),
-            ),
+          Row(
+            children: [
+              const Icon(Icons.drag_indicator, color: Color(0xFF94A3B8)),
+              const SizedBox(width: 12),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontFamily: 'IBMPlexSansArabic',
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF0F172A),
+                ),
+              ),
+            ],
           ),
           Switch(
             value: value,
@@ -336,6 +398,7 @@ class _WebsiteSettingsScreenState extends ConsumerState<WebsiteSettingsScreen> {
     required String label,
     required TextEditingController controller,
     bool isEnglish = false,
+    Widget? suffixWidget,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -362,6 +425,7 @@ class _WebsiteSettingsScreenState extends ConsumerState<WebsiteSettingsScreen> {
           decoration: InputDecoration(
             filled: true,
             fillColor: Colors.white,
+            suffixIcon: suffixWidget,
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
