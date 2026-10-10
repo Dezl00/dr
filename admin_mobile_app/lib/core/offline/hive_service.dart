@@ -13,6 +13,11 @@ class HiveService {
   static const String appointmentsBoxName = 'appointmentsBox';
   static const String invoicesBoxName = 'invoicesBox';
   static const String expensesBoxName = 'expensesBox';
+  static const String teamBoxName = 'teamBox';
+  static const String servicesBoxName = 'servicesBox';
+  static const String doctorsBoxName = 'doctorsBox';
+  static const String leadsBoxName = 'leadsBox';
+  static const String inventoryBoxName = 'inventoryBox';
 
   static Future<void> init() async {
     await Hive.initFlutter();
@@ -56,6 +61,11 @@ class HiveService {
     await openEncryptedBox<Appointment>(appointmentsBoxName);
     await openEncryptedBox<Invoice>(invoicesBoxName);
     await openEncryptedBox<Expense>(expensesBoxName);
+    await openEncryptedBox<String>(teamBoxName);
+    await openEncryptedBox<String>(servicesBoxName);
+    await openEncryptedBox<String>(doctorsBoxName);
+    await openEncryptedBox<String>(leadsBoxName);
+    await openEncryptedBox<String>(inventoryBoxName);
   }
   
   static Box<Patient> getPatientsBox() {
@@ -76,5 +86,25 @@ class HiveService {
 
   static Box<Expense> getExpensesBox() {
     return Hive.box<Expense>(expensesBoxName);
+  }
+
+  static Box<String> getTeamBox() {
+    return Hive.box<String>(teamBoxName);
+  }
+
+  static Box<String> getServicesBox() {
+    return Hive.box<String>(servicesBoxName);
+  }
+
+  static Box<String> getDoctorsBox() {
+    return Hive.box<String>(doctorsBoxName);
+  }
+
+  static Box<String> getLeadsBox() {
+    return Hive.box<String>(leadsBoxName);
+  }
+
+  static Box<String> getInventoryBox() {
+    return Hive.box<String>(inventoryBoxName);
   }
 }

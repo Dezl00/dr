@@ -75,9 +75,9 @@ class MoreMenuScreen extends ConsumerWidget {
           borderRadius: BorderRadius.circular(16),
           child: Container(
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: const Color(0xFFEFF6FF), // Light blue background
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFFE2E8F0), width: 1),
+              border: null, // No border
             ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,

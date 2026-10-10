@@ -1,91 +1,124 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../auth/providers/auth_provider.dart';
-import '../../../core/api/api_endpoints.dart';
 
-final teamFutureProvider = FutureProvider.autoDispose<List<dynamic>>((ref) async {
-  final dio = ref.watch(dioProvider);
-  final response = await dio.get(ApiEndpoints.team);
-  if (response.statusCode == 200 && response.data['success'] == true) {
-    return response.data['data'] as List<dynamic>;
-  }
-  throw Exception('فشل في جلب فريق العمل');
-});
+// Assuming the offline provider is defined in the core providers folder
+import '../../../core/providers/team_provider.dart';
 
 class TeamScreen extends ConsumerWidget {
   const TeamScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final teamAsync = ref.watch(teamFutureProvider);
+    final teamList = ref.watch(teamProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('فريق العمل')),
-      body: teamAsync.when(
-        loading: () => const SizedBox(),
-        error: (err, stack) => Center(child: Text('خطأ: $err', style: const TextStyle(fontFamily: 'IBMPlexSansArabic'))),
-        data: (team) {
-          if (team.isEmpty) return const Center(child: Text('لا يوجد أعضاء في الفريق'));
-          return RefreshIndicator(
-            onRefresh: () async => ref.refresh(teamFutureProvider),
-            child: ListView.builder(
-              itemCount: team.length,
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        title: const Text(
+          'فريق العمل',
+          style: TextStyle(
+            fontFamily: 'IBMPlexSansArabic',
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        iconTheme: const IconThemeData(color: Colors.black),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1.0),
+          child: Container(color: const Color(0xFFE2E8F0), height: 1.0),
+        ),
+      ),
+      body: teamList.isEmpty
+          ? _buildEmptyState()
+          : ListView.separated(
+              padding: const EdgeInsets.all(16),
+              itemCount: teamList.length,
+              separatorBuilder: (context, index) => const SizedBox(height: 12),
               itemBuilder: (context, index) {
-                final member = team[index];
-                final user = member['user'];
-                final role = member['role'];
-                return Card(
-                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-                      child: Text(user['fullName']?.substring(0, 1) ?? '?'),
-                    ),
-                    title: Text(user['fullName'] ?? 'بدون اسم', style: const TextStyle(fontWeight: FontWeight.bold)),
-                    subtitle: Text(user['email'] ?? ''),
-                    trailing: Chip(label: Text(role['nameAr'] ?? role['name'])),
-                  ),
-                );
+                final member = teamList[index];
+                return _buildTeamCard(member);
               },
             ),
-          );
-        },
-      ),
-      floatingActionButton: FloatingActionButton(heroTag: null, 
-        onPressed: () {
-          _showAddTeamDialog(context);
-        },
-        child: const Icon(Icons.add),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return const Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.group_outlined, size: 64, color: Color(0xFFE2E8F0)),
+          SizedBox(height: 16),
+          Text(
+            'لا يوجد أعضاء في الفريق',
+            style: TextStyle(
+              fontFamily: 'IBMPlexSansArabic',
+              color: Colors.black54,
+              fontSize: 16,
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  void _showAddTeamDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('إضافة موظف / طبيب جديد'),
-          content: const Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(decoration: InputDecoration(labelText: 'الاسم بالكامل')),
-              TextField(decoration: InputDecoration(labelText: 'البريد الإلكتروني')),
-              TextField(decoration: InputDecoration(labelText: 'الدور (مثال: طبيب، استقبال)')),
-            ],
-          ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text('إلغاء')),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم إرسال دعوة للموظف الجديد')));
-              },
-              child: const Text('إضافة'),
+  Widget _buildTeamCard(dynamic member) {
+    // English numerals conversion if needed: member['id'].toString().replaceAll(RegExp(r'[٠-٩]'), (m) => String.fromCharCode(m.group(0)!.codeUnitAt(0) - 1584)) (example)
+    final name = member['name'] ?? 'اسم الموظف';
+    final role = member['role'] ?? 'المنصب';
+    
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        children: [
+          CircleAvatar(
+            backgroundColor: const Color(0xFFEFF6FF),
+            radius: 24,
+            child: Text(
+              name.substring(0, 1),
+              style: const TextStyle(
+                fontFamily: 'IBMPlexSansArabic',
+                color: Colors.blue,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-          ],
-        );
-      },
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  name,
+                  style: const TextStyle(
+                    fontFamily: 'IBMPlexSansArabic',
+                    color: Colors.black,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  role,
+                  style: const TextStyle(
+                    fontFamily: 'IBMPlexSansArabic',
+                    color: Colors.black54,
+                    fontSize: 14,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Icon(Icons.arrow_forward_ios, size: 16, color: Color(0xFFE2E8F0)),
+        ],
+      ),
     );
   }
 }

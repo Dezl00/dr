@@ -784,26 +784,24 @@ class _AppointmentDetailsSheet extends ConsumerWidget {
       await dio.patch('${ApiEndpoints.appointments}/${appointment.id}/status', data: {'status': newStatus});
       ref.read(appointmentStateProvider.notifier).fetchData();
       
-      // WhatsApp message logic
+      // SMS is now sent automatically from the backend on status change
       if (context.mounted) {
-        String msg = '';
-        switch(newStatus) {
-          case 'CONFIRMED':
-            msg = 'مرحباً ${appointment.patientName}، تم تأكيد موعدك بنجاح.';
-            break;
-          case 'CANCELLED':
-            msg = 'مرحباً ${appointment.patientName}، تم إلغاء موعدك.';
-            break;
-          case 'SCHEDULED':
-            msg = 'مرحباً ${appointment.patientName}، موعدك الآن مجدول.';
-            break;
-        }
-        if (msg.isNotEmpty) {
-          final url = Uri.parse('https://wa.me/${appointment.patientPhone}?text=${Uri.encodeComponent(msg)}');
-          if (await canLaunchUrl(url)) {
-            await launchUrl(url, mode: LaunchMode.externalApplication);
-          }
-        }
+        final statusAr = {
+          'CONFIRMED': 'مؤكد',
+          'CANCELLED': 'ملغي',
+          'COMPLETED': 'مكتمل',
+          'SCHEDULED': 'مجدول',
+          'NO_SHOW': 'لم يحضر',
+        };
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'تم تغيير الحالة إلى ${statusAr[newStatus] ?? newStatus} وإرسال رسالة SMS للمريض',
+              style: const TextStyle(fontFamily: 'IBMPlexSansArabic'),
+            ),
+            backgroundColor: const Color(0xFF10B981),
+          ),
+        );
       }
     } catch (e) {
       ref.read(optimisticStatusProvider(appointment.id).notifier).state = appointment.status;
@@ -815,10 +813,32 @@ class _AppointmentDetailsSheet extends ConsumerWidget {
     }
   }
 
-  Future<void> _openWhatsApp(String phone) async {
-    final url = Uri.parse('https://wa.me/$phone');
-    if (await canLaunchUrl(url)) {
-      await launchUrl(url, mode: LaunchMode.externalApplication);
+  Future<void> _sendReminder(BuildContext context) async {
+    try {
+      final dio = DioClient().dio;
+      final response = await dio.post('${ApiEndpoints.appointments}/${appointment.id}/remind');
+      if (context.mounted) {
+        if (response.data['success'] == true) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('تم إرسال رسالة التذكير SMS بنجاح', style: TextStyle(fontFamily: 'IBMPlexSansArabic')),
+              backgroundColor: Color(0xFF10B981),
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('فشل الإرسال: ${response.data['error'] ?? 'خطأ غير معروف'}', style: const TextStyle(fontFamily: 'IBMPlexSansArabic')),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('فشل في إرسال التذكير', style: TextStyle(fontFamily: 'IBMPlexSansArabic'))),
+        );
+      }
     }
   }
 }

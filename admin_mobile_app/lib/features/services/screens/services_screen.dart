@@ -1,87 +1,117 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../auth/providers/auth_provider.dart';
-import '../../../core/api/api_endpoints.dart';
 
-final servicesFutureProvider = FutureProvider.autoDispose<List<dynamic>>((ref) async {
-  final dio = ref.watch(dioProvider);
-  final response = await dio.get(ApiEndpoints.services);
-  if (response.statusCode == 200 && response.data['success'] == true) {
-    return response.data['data'] as List<dynamic>;
-  }
-  throw Exception('فشل في جلب الخدمات');
-});
+import '../../../core/providers/services_provider.dart';
 
 class ServicesScreen extends ConsumerWidget {
   const ServicesScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final servicesAsync = ref.watch(servicesFutureProvider);
+    final servicesList = ref.watch(servicesProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('الخدمات الطبية')),
-      body: servicesAsync.when(
-        loading: () => const SizedBox(),
-        error: (err, stack) => Center(child: Text('خطأ: $err', style: const TextStyle(fontFamily: 'IBMPlexSansArabic'))),
-        data: (services) {
-          if (services.isEmpty) return const Center(child: Text('لا توجد خدمات مسجلة'));
-          return RefreshIndicator(
-            onRefresh: () async => ref.refresh(servicesFutureProvider),
-            child: ListView.builder(
-              itemCount: services.length,
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        title: const Text(
+          'الخدمات',
+          style: TextStyle(
+            fontFamily: 'IBMPlexSansArabic',
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        iconTheme: const IconThemeData(color: Colors.black),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1.0),
+          child: Container(color: const Color(0xFFE2E8F0), height: 1.0),
+        ),
+      ),
+      body: servicesList.isEmpty
+          ? _buildEmptyState()
+          : ListView.separated(
+              padding: const EdgeInsets.all(16),
+              itemCount: servicesList.length,
+              separatorBuilder: (context, index) => const SizedBox(height: 12),
               itemBuilder: (context, index) {
-                final service = services[index];
-                return Card(
-                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: ListTile(
-                    leading: const CircleAvatar(child: Icon(Icons.medical_services)),
-                    title: Text(service['name'], style: const TextStyle(fontWeight: FontWeight.bold)),
-                    subtitle: Text(service['description'] ?? 'لا يوجد وصف'),
-                    trailing: service['price'] != null 
-                        ? Text('${service['price']} ج.م', style: const TextStyle(fontWeight: FontWeight.bold))
-                        : const Text('مجاناً'),
-                  ),
-                );
+                final service = servicesList[index];
+                return _buildServiceCard(service);
               },
             ),
-          );
-        },
-      ),
-      floatingActionButton: FloatingActionButton(heroTag: null, 
-        onPressed: () {
-          _showAddServiceDialog(context);
-        },
-        child: const Icon(Icons.add),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return const Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.medical_services_outlined, size: 64, color: Color(0xFFE2E8F0)),
+          SizedBox(height: 16),
+          Text(
+            'لا توجد خدمات متاحة',
+            style: TextStyle(
+              fontFamily: 'IBMPlexSansArabic',
+              color: Colors.black54,
+              fontSize: 16,
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  void _showAddServiceDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('إضافة خدمة طبية جديدة'),
-          content: const Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(decoration: InputDecoration(labelText: 'اسم الخدمة (مثال: تنظيف وتلميع)')),
-              TextField(decoration: InputDecoration(labelText: 'السعر (ج.م)'), keyboardType: TextInputType.number),
-            ],
-          ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text('إلغاء')),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تمت إضافة الخدمة بنجاح')));
-              },
-              child: const Text('حفظ'),
+  Widget _buildServiceCard(dynamic service) {
+    final name = service['name'] ?? 'اسم الخدمة';
+    final price = (service['price'] ?? 0).toString(); // English numerals by default with toString() on int/double
+    
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: const Color(0xFFEFF6FF),
+              borderRadius: BorderRadius.circular(8),
             ),
-          ],
-        );
-      },
+            child: const Icon(Icons.medical_information, color: Colors.blue),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  name,
+                  style: const TextStyle(
+                    fontFamily: 'IBMPlexSansArabic',
+                    color: Colors.black,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '$price EGP',
+                  style: const TextStyle(
+                    fontFamily: 'IBMPlexSansArabic',
+                    color: Colors.black54,
+                    fontSize: 14,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

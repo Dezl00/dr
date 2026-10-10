@@ -30,4 +30,7 @@ class ApiEndpoints {
   // Settings
   static const String settings = '/settings';
   static const String profileSettings = '/settings/profile';
+  
+  // Doctors
+  static const String doctors = '/doctors';
 }
