@@ -57,6 +57,38 @@ export async function bookAppointment(data: z.infer<typeof bookingSchema>) {
       },
     })
 
+    try {
+      const clinicUsers = await prisma.clinicMembership.findMany({
+        where: { clinicId },
+        include: { user: true }
+      });
+
+      const tokens: string[] = [];
+      for (const m of clinicUsers) {
+        if (m.user.deviceTokens && m.user.deviceTokens.length > 0) {
+          tokens.push(...m.user.deviceTokens);
+        }
+      }
+
+      const uniqueTokens = Array.from(new Set(tokens));
+
+      if (uniqueTokens.length > 0) {
+        const { getAdminMessaging } = await import("@/lib/firebase-admin");
+        const messaging = getAdminMessaging();
+        if (messaging) {
+          await messaging.sendEachForMulticast({
+            notification: {
+              title: "حجز موعد جديد 📅",
+              body: `تم حجز موعد للمريض ${validated.fullName} الساعة ${validated.startTime}`,
+            },
+            tokens: uniqueTokens,
+          });
+        }
+      }
+    } catch (pushErr) {
+      console.error("Failed to send push notification:", pushErr);
+    }
+
     // Trigger SMS synchronously
     try {
       const { sendAppointmentSMS } = await import('@/lib/sms')
