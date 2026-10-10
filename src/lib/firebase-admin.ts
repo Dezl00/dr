@@ -14,7 +14,13 @@ export function getFirebaseAdminApp() {
         
         // Use environment variable in production (Vercel)
         if (process.env.FIREBASE_SERVICE_ACCOUNT) {
-          serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+          try {
+            serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+          } catch (e) {
+            // Fallback: try decoding from base64
+            const decoded = Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT, 'base64').toString('utf8');
+            serviceAccount = JSON.parse(decoded);
+          }
         } else {
           // Fallback to local file for development
           const serviceAccountPath = path.join(process.cwd(), 'firebase-admin-key.json');
