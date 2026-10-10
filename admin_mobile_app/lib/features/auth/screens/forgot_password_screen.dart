@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:dio/dio.dart';
 import '../../../core/api/dio_client.dart';
 import '../../../core/api/api_endpoints.dart';
@@ -62,16 +61,16 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('نسيت كلمة المرور', style: GoogleFonts.ibmPlexSansArabic(fontSize: 28, fontWeight: FontWeight.bold, color: const Color(0xFF1E293B))),
+              Text('نسيت كلمة المرور', style: TextStyle(fontFamily: 'IBMPlexSansArabic', fontSize: 28, fontWeight: FontWeight.bold, color: const Color(0xFF1E293B))),
               const SizedBox(height: 8),
-              Text('أدخل رقم هاتفك وسنرسل لك رمزاً لإعادة تعيين كلمة المرور.', style: GoogleFonts.ibmPlexSansArabic(fontSize: 16, color: const Color(0xFF64748B))),
+              Text('أدخل رقم هاتفك وسنرسل لك رمزاً لإعادة تعيين كلمة المرور.', style: TextStyle(fontFamily: 'IBMPlexSansArabic', fontSize: 16, color: const Color(0xFF64748B))),
               const SizedBox(height: 32),
               TextField(
                 controller: _phoneController,
                 keyboardType: TextInputType.phone,
                 decoration: InputDecoration(
                   labelText: 'رقم الهاتف',
-                  labelStyle: GoogleFonts.ibmPlexSansArabic(),
+                  labelStyle: TextStyle(fontFamily: 'IBMPlexSansArabic'),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   prefixIcon: const Icon(Icons.phone_outlined),
                 ),
@@ -88,7 +87,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   onPressed: _isLoading ? null : _submit,
                   child: _isLoading
                       ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                      : Text('إرسال الرمز', style: GoogleFonts.ibmPlexSansArabic(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                      : Text('إرسال الرمز', style: TextStyle(fontFamily: 'IBMPlexSansArabic', fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
                 ),
               ),
             ],

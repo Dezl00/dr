@@ -1,6 +1,5 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../providers/appointment_provider.dart';
 
 class CreateAppointmentScreen extends ConsumerStatefulWidget {
@@ -51,7 +50,7 @@ class _CreateAppointmentScreenState extends ConsumerState<CreateAppointmentScree
     if (!_formKey.currentState!.validate()) return;
     if (_selectedPatientId == null || _selectedDoctorId == null) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('الرجاء اختيار المريض والطبيب', style: GoogleFonts.ibmPlexSansArabic()),
+        content: Text('الرجاء اختيار المريض والطبيب', style: TextStyle(fontFamily: 'IBMPlexSansArabic')),
       ));
       return;
     }
@@ -74,7 +73,7 @@ class _CreateAppointmentScreenState extends ConsumerState<CreateAppointmentScree
       if (_selectedServiceId != null) data['serviceId'] = _selectedServiceId;
       if (formattedEndTime != null) data['endTime'] = formattedEndTime;
 
-      final success = await ref.read(appointmentStateProvider.notifier).createAppointment(data);
+      final success = await ref.read(appointmentStateProvider.notifier).createItem(data);
       if (!success) throw Exception("Failed to create appointment");
 
       if (mounted) {
@@ -84,7 +83,7 @@ class _CreateAppointmentScreenState extends ConsumerState<CreateAppointmentScree
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(e.toString(), style: GoogleFonts.ibmPlexSansArabic()),
+          content: Text(e.toString(), style: TextStyle(fontFamily: 'IBMPlexSansArabic')),
         ));
       }
     } finally {
@@ -99,7 +98,7 @@ class _CreateAppointmentScreenState extends ConsumerState<CreateAppointmentScree
       appBar: AppBar(
         title: Text(
           'حجز موعد جديد',
-          style: GoogleFonts.ibmPlexSansArabic(fontWeight: FontWeight.bold, color: const Color(0xFF0F172A)),
+          style: TextStyle(fontFamily: 'IBMPlexSansArabic', fontWeight: FontWeight.bold, color: const Color(0xFF0F172A)),
         ),
         backgroundColor: Colors.white,
         surfaceTintColor: Colors.white,
@@ -115,13 +114,13 @@ class _CreateAppointmentScreenState extends ConsumerState<CreateAppointmentScree
               DropdownButtonFormField<String>(
                 decoration: InputDecoration(
                   labelText: 'المريض',
-                  labelStyle: GoogleFonts.ibmPlexSansArabic(),
+                  labelStyle: TextStyle(fontFamily: 'IBMPlexSansArabic'),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   filled: true,
                   fillColor: Colors.white,
                 ),
                 items: [
-                  DropdownMenuItem(value: 'mock-patient-1', child: Text('مريض افتراضي 1', style: GoogleFonts.ibmPlexSansArabic())),
+                  DropdownMenuItem(value: 'mock-patient-1', child: Text('مريض افتراضي 1', style: TextStyle(fontFamily: 'IBMPlexSansArabic'))),
                 ],
                 onChanged: (val) => _selectedPatientId = val,
               ),
@@ -129,13 +128,13 @@ class _CreateAppointmentScreenState extends ConsumerState<CreateAppointmentScree
               DropdownButtonFormField<String>(
                 decoration: InputDecoration(
                   labelText: 'الطبيب المعالج',
-                  labelStyle: GoogleFonts.ibmPlexSansArabic(),
+                  labelStyle: TextStyle(fontFamily: 'IBMPlexSansArabic'),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   filled: true,
                   fillColor: Colors.white,
                 ),
                 items: [
-                  DropdownMenuItem(value: 'mock-doc-1', child: Text('طبيب افتراضي 1', style: GoogleFonts.ibmPlexSansArabic())),
+                  DropdownMenuItem(value: 'mock-doc-1', child: Text('طبيب افتراضي 1', style: TextStyle(fontFamily: 'IBMPlexSansArabic'))),
                 ],
                 onChanged: (val) => _selectedDoctorId = val,
               ),
@@ -143,13 +142,13 @@ class _CreateAppointmentScreenState extends ConsumerState<CreateAppointmentScree
               DropdownButtonFormField<String>(
                 decoration: InputDecoration(
                   labelText: 'الخدمة (اختياري)',
-                  labelStyle: GoogleFonts.ibmPlexSansArabic(),
+                  labelStyle: TextStyle(fontFamily: 'IBMPlexSansArabic'),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   filled: true,
                   fillColor: Colors.white,
                 ),
                 items: [
-                  DropdownMenuItem(value: 'mock-srv-1', child: Text('خدمة افتراضية 1', style: GoogleFonts.ibmPlexSansArabic())),
+                  DropdownMenuItem(value: 'mock-srv-1', child: Text('خدمة افتراضية 1', style: TextStyle(fontFamily: 'IBMPlexSansArabic'))),
                 ],
                 onChanged: (val) => _selectedServiceId = val,
               ),
@@ -157,7 +156,7 @@ class _CreateAppointmentScreenState extends ConsumerState<CreateAppointmentScree
               OutlinedButton.icon(
                 onPressed: _pickDate,
                 icon: const Icon(Icons.calendar_month),
-                label: Text('${_selectedDate.year}-${_selectedDate.month}-${_selectedDate.day}', style: GoogleFonts.ibmPlexSansArabic()),
+                label: Text('${_selectedDate.year}-${_selectedDate.month}-${_selectedDate.day}', style: TextStyle(fontFamily: 'IBMPlexSansArabic')),
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.all(16),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -171,7 +170,7 @@ class _CreateAppointmentScreenState extends ConsumerState<CreateAppointmentScree
                     child: OutlinedButton.icon(
                       onPressed: _pickStartTime,
                       icon: const Icon(Icons.access_time),
-                      label: Text('البدء: ${_selectedStartTime.format(context)}', style: GoogleFonts.ibmPlexSansArabic(fontSize: 13)),
+                      label: Text('البدء: ${_selectedStartTime.format(context)}', style: TextStyle(fontFamily: 'IBMPlexSansArabic', fontSize: 13)),
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -184,7 +183,7 @@ class _CreateAppointmentScreenState extends ConsumerState<CreateAppointmentScree
                     child: OutlinedButton.icon(
                       onPressed: _pickEndTime,
                       icon: const Icon(Icons.access_time_filled),
-                      label: Text('الانتهاء: ${_selectedEndTime?.format(context) ?? '-'}', style: GoogleFonts.ibmPlexSansArabic(fontSize: 13)),
+                      label: Text('الانتهاء: ${_selectedEndTime?.format(context) ?? '-'}', style: TextStyle(fontFamily: 'IBMPlexSansArabic', fontSize: 13)),
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -198,10 +197,10 @@ class _CreateAppointmentScreenState extends ConsumerState<CreateAppointmentScree
               TextFormField(
                 controller: _notesController,
                 maxLines: 3,
-                style: GoogleFonts.ibmPlexSansArabic(),
+                style: TextStyle(fontFamily: 'IBMPlexSansArabic'),
                 decoration: InputDecoration(
                   labelText: 'ملاحظات (اختياري)',
-                  labelStyle: GoogleFonts.ibmPlexSansArabic(),
+                  labelStyle: TextStyle(fontFamily: 'IBMPlexSansArabic'),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   filled: true,
                   fillColor: Colors.white,
@@ -219,7 +218,7 @@ class _CreateAppointmentScreenState extends ConsumerState<CreateAppointmentScree
                 ),
                 child: _isLoading 
                     ? const SizedBox(height: 24, width: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) 
-                    : Text('تأكيد الحجز', style: GoogleFonts.ibmPlexSansArabic(fontSize: 18, fontWeight: FontWeight.bold)),
+                    : Text('تأكيد الحجز', style: TextStyle(fontFamily: 'IBMPlexSansArabic', fontSize: 18, fontWeight: FontWeight.bold)),
               ),
             ],
           ),

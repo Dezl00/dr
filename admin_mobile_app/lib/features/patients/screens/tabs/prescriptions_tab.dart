@@ -19,21 +19,21 @@ class _PrescriptionsTabState extends State<PrescriptionsTab> {
       builder: (context) {
         return AlertDialog(
           title: const Text('كتابة روشتة جديدة'),
-          content: SingleChildScrollView(
+          content: const SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 TextField(
-                  decoration: const InputDecoration(labelText: 'اسم الدواء الأول', border: OutlineInputBorder()),
+                  decoration: InputDecoration(labelText: 'اسم الدواء الأول', border: OutlineInputBorder()),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8),
                 TextField(
-                  decoration: const InputDecoration(labelText: 'الجرعة (مثال: قرص كل 12 ساعة)', border: OutlineInputBorder()),
+                  decoration: InputDecoration(labelText: 'الجرعة (مثال: قرص كل 12 ساعة)', border: OutlineInputBorder()),
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16),
                 TextField(
                   maxLines: 3,
-                  decoration: const InputDecoration(labelText: 'ملاحظات إضافية للطبيب', border: OutlineInputBorder()),
+                  decoration: InputDecoration(labelText: 'ملاحظات إضافية للطبيب', border: OutlineInputBorder()),
                 ),
               ],
             ),

@@ -23,7 +23,7 @@ class _CreatePatientScreenState extends ConsumerState<CreatePatientScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final success = await ref.read(patientStateProvider.notifier).createPatient({
+      final success = await ref.read(patientStateProvider.notifier).createItem({
         'fullName': _nameController.text.trim(),
         'phone': _phoneController.text.trim(),
         if (_emailController.text.isNotEmpty) 'email': _emailController.text.trim(),

@@ -12,8 +12,6 @@ import 'core/theme/app_theme.dart';
 
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 
-import 'package:google_fonts/google_fonts.dart';
-
 import 'core/offline/hive_service.dart';
 
 import 'core/offline/sync_manager.dart';
@@ -38,12 +36,7 @@ void main() async {
     }
   }
 
-  try {
-    await GoogleFonts.pendingFonts([GoogleFonts.ibmPlexSansArabicTextTheme()]);
-  } catch (e) {
-    debugPrint('Failed to load Google Fonts: $e');
-  }
-  
+
   runApp(const ProviderScope(child: DrsAdminApp()));
 }
 

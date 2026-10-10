@@ -1,9 +1,11 @@
-﻿import 'dart:async';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
-import '../providers/patient_provider.dart';
+import '../../../core/widgets/error_state_widget.dart';
+import '../../../core/widgets/empty_state_widget.dart';
+import '../../../core/providers/base_offline_provider.dart';
 import '../models/patient.dart';
+import '../providers/patient_provider.dart';
 import 'create_patient_screen.dart';
 import 'patient_profile_screen.dart';
 
@@ -15,36 +17,56 @@ class PatientsScreen extends ConsumerStatefulWidget {
 }
 
 class _PatientsScreenState extends ConsumerState<PatientsScreen> {
-  final ScrollController _scrollController = ScrollController();
   final TextEditingController _searchController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
   Timer? _debounce;
+  String _selectedFilter = 'الكل';
+  final List<String> _filters = ['الكل', 'جدد', 'متابعة'];
+
+  String _toEnglishNumbers(String input) {
+    const arabic = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+    const english = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+    for (int i = 0; i < arabic.length; i++) {
+      input = input.replaceAll(arabic[i], english[i]);
+    }
+    return input;
+  }
 
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
-  }
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    _searchController.dispose();
-    _debounce?.cancel();
-    super.dispose();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(patientStateProvider.notifier).fetchData();
+    });
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels >= 
-        _scrollController.position.maxScrollExtent - 200) {
-      ref.read(patientStateProvider.notifier).fetchNextPage();
+    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+      final state = ref.read(patientStateProvider);
+      if (!state.isLoading && !state.hasReachedMax) {
+        ref.read(patientStateProvider.notifier).fetchNextPage();
+      }
     }
   }
 
   void _onSearchChanged(String query) {
     if (_debounce?.isActive ?? false) _debounce!.cancel();
     _debounce = Timer(const Duration(milliseconds: 500), () {
-      ref.read(patientStateProvider.notifier).fetchInitialPatients(query: query);
+      ref.read(patientStateProvider.notifier).fetchData(query: query);
     });
+  }
+
+  Future<void> _onRefresh() async {
+    await ref.read(patientStateProvider.notifier).fetchData(query: _searchController.text);
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _scrollController.dispose();
+    _debounce?.cancel();
+    super.dispose();
   }
 
   @override
@@ -52,284 +74,307 @@ class _PatientsScreenState extends ConsumerState<PatientsScreen> {
     final state = ref.watch(patientStateProvider);
 
     return Scaffold(
-      backgroundColor: Colors.white, // Tailwind Slate-50
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        title: Text(
-          'إدارة المرضى',
-          style: GoogleFonts.ibmPlexSansArabic(
-            color: const Color(0xFF1E293B), // Slate-800
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(76),
-          child: Container(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              border: Border(
-                bottom: BorderSide(color: Color(0xFFE2E8F0), width: 1), // Slate-200
-              ),
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: Column(
+          children: [
+            _buildCustomHeader(context, state.items.length),
+            _buildSearchBar(),
+            _buildFilters(),
+            Expanded(
+              child: _buildContent(state),
             ),
-            child: TextField(
-              controller: _searchController,
-              onChanged: _onSearchChanged,
-              style: GoogleFonts.ibmPlexSansArabic(
-                color: const Color(0xFF334155), // Slate-700
-              ),
-              decoration: InputDecoration(
-                hintText: 'ابحث بالاسم أو رقم الهاتف...',
-                hintStyle: GoogleFonts.ibmPlexSansArabic(
-                  color: const Color(0xFF94A3B8), // Slate-400
-                ),
-                prefixIcon: const Icon(Icons.search, color: Color(0xFF64748B)), // Slate-500
-                filled: true,
-                fillColor: const Color(0xFFF1F5F9), // Slate-100
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFF2563EB), width: 1.5),
-                ),
-              ),
-            ),
-          ),
+          ],
         ),
       ),
-      body: _buildBody(state),
-      floatingActionButton: FloatingActionButton.extended(heroTag: null, 
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const CreatePatientScreen()),
-          );
-        },
-        backgroundColor: Colors.white, // Blue-600
-        elevation: 0,
-        icon: const Icon(Icons.add, color: Colors.white),
-        label: Text(
-          'مريض جديد',
-          style: GoogleFonts.ibmPlexSansArabic(
-            color: Colors.white,
-            fontWeight: FontWeight.w600,
+    );
+  }
+
+  Widget _buildCustomHeader(BuildContext context, int count) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            children: [
+              const Text(
+                'المرضى',
+                style: TextStyle(
+                  fontFamily: 'IBMPlexSansArabic',
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF0F172A),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEFF6FF),
+                  borderRadius: BorderRadius.circular(50),
+                ),
+                child: Text(
+                  _toEnglishNumbers(count.toString()),
+                  textDirection: TextDirection.ltr,
+                  style: const TextStyle(
+                    fontFamily: 'IBMPlexSansArabic',
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF2563EB),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          ElevatedButton.icon(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const CreatePatientScreen()),
+              );
+            },
+            icon: const Icon(Icons.add, color: Colors.white, size: 18),
+            label: const Text(
+              'إضافة',
+              style: TextStyle(
+                fontFamily: 'IBMPlexSansArabic',
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF2563EB),
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(50),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSearchBar() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(50),
+          border: Border.all(color: const Color(0xFFE2E8F0)),
+        ),
+        child: TextField(
+          controller: _searchController,
+          onChanged: _onSearchChanged,
+          style: const TextStyle(
+            fontFamily: 'IBMPlexSansArabic',
+            fontSize: 16,
+            color: Color(0xFF0F172A),
+          ),
+          decoration: const InputDecoration(
+            hintText: 'ابحث عن مريض...',
+            hintStyle: TextStyle(
+              fontFamily: 'IBMPlexSansArabic',
+              color: Color(0xFF94A3B8),
+            ),
+            prefixIcon: Icon(Icons.search, color: Color(0xFF94A3B8)),
+            border: InputBorder.none,
+            contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 14),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildBody(PatientState state) {
-    if (state.isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(color: Color(0xFF2563EB)),
-      );
-    }
-
-    if (state.error != null && state.patients.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error_outline, color: Color(0xFFEF4444), size: 48), // Red-500
-              const SizedBox(height: 16),
-              Text(
-                'حدث خطأ: ${state.error}',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.ibmPlexSansArabic(
-                  color: const Color(0xFF64748B),
-                  fontSize: 16,
+  Widget _buildFilters() {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      child: Row(
+        children: _filters.map((filter) {
+          final isSelected = filter == _selectedFilter;
+          return Padding(
+            padding: const EdgeInsets.only(left: 8),
+            child: InkWell(
+              onTap: () {
+                setState(() {
+                  _selectedFilter = filter;
+                });
+              },
+              borderRadius: BorderRadius.circular(50),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                decoration: BoxDecoration(
+                  color: isSelected ? const Color(0xFF2563EB) : Colors.white,
+                  borderRadius: BorderRadius.circular(50),
+                  border: Border.all(
+                    color: isSelected ? const Color(0xFF2563EB) : const Color(0xFFE2E8F0),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                ),
-                onPressed: () => ref.read(patientStateProvider.notifier).fetchInitialPatients(),
                 child: Text(
-                  'إعادة المحاولة',
-                  style: GoogleFonts.ibmPlexSansArabic(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
+                  filter,
+                  style: TextStyle(
+                    fontFamily: 'IBMPlexSansArabic',
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: isSelected ? Colors.white : const Color(0xFF475569),
                   ),
                 ),
               ),
-            ],
-          ),
-        ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildContent(OfflineState<Patient> state) {
+    if (state.isLoading && state.items.isEmpty) {
+      return const Center(child: CircularProgressIndicator(color: Color(0xFF2563EB)));
+    }
+
+    if (state.error != null && state.items.isEmpty) {
+      return ErrorStateWidget(
+        error: state.error.toString(),
+        onRetry: _onRefresh,
       );
     }
 
-    if (state.patients.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.search_off, color: Color(0xFF94A3B8), size: 64),
-            const SizedBox(height: 16),
-            Text(
-              'لا يوجد مرضى مطابقين للبحث',
-              style: GoogleFonts.ibmPlexSansArabic(
-                color: const Color(0xFF64748B),
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
+    if (state.items.isEmpty) {
+      return const EmptyStateWidget(
+        title: 'لا يوجد مرضى',
+        description: 'قم بإضافة مريض جديد للبدء',
+        icon: Icons.people_outline,
       );
     }
 
     return RefreshIndicator(
+      onRefresh: _onRefresh,
       color: const Color(0xFF2563EB),
       backgroundColor: Colors.white,
-      onRefresh: () => ref.read(patientStateProvider.notifier).fetchInitialPatients(),
       child: ListView.separated(
         controller: _scrollController,
-        padding: const EdgeInsets.all(16),
-        itemCount: state.patients.length + (state.isFetchingMore ? 1 : 0),
-        separatorBuilder: (context, index) => const SizedBox(height: 12),
+        padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
+        itemCount: state.items.length + (!state.hasReachedMax ? 1 : 0),
+        separatorBuilder: (_, __) => const SizedBox(height: 12),
         itemBuilder: (context, index) {
-          if (index == state.patients.length) {
+          if (index == state.items.length) {
             return const Padding(
-              padding: EdgeInsets.symmetric(vertical: 16.0),
+              padding: EdgeInsets.all(16.0),
               child: Center(
                 child: CircularProgressIndicator(color: Color(0xFF2563EB)),
               ),
             );
           }
 
-          final patient = state.patients[index];
-          return InkWell(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => PatientProfileScreen(patient: patient),
-                ),
-              );
-            },
-            borderRadius: BorderRadius.circular(12),
-            child: Container(
-              padding: const EdgeInsets.all(16),
+          final patient = state.items[index];
+          return _buildPatientCard(patient);
+        },
+      ),
+    );
+  }
+
+  Widget _buildPatientCard(Patient patient) {
+    final name = patient.fullName;
+    
+    final bool isFemale = patient.gender == 'female' || patient.gender == 'أنثى';
+    final Color avatarBgColor = isFemale ? const Color(0xFFFDF2F8) : const Color(0xFFEFF6FF);
+    final Color avatarIconColor = isFemale ? const Color(0xFFDB2777) : const Color(0xFF2563EB);
+    final IconData avatarIcon = isFemale ? Icons.face_3 : Icons.person;
+
+    String phoneText = patient.phone.isNotEmpty ? _toEnglishNumbers(patient.phone) : 'لا يوجد رقم';
+    String? genderText = (patient.gender != null && patient.gender!.isNotEmpty) ? patient.gender : null;
+
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => PatientProfileScreen(patient: patient),
+          ),
+        );
+      },
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFE2E8F0)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 48,
+              height: 48,
               decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFFE2E8F0)), // Slate-200
+                color: avatarBgColor,
+                shape: BoxShape.circle,
               ),
-              child: Row(
+              child: Center(
+                child: Icon(
+                  avatarIcon,
+                  color: avatarIconColor,
+                  size: 24,
+                ),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFEFF6FF), // Blue-50
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0xFFBFDBFE)), // Blue-200
+                  Text(
+                    name,
+                    style: const TextStyle(
+                      fontFamily: 'IBMPlexSansArabic',
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF0F172A),
                     ),
-                    child: Center(
-                      child: Text(
-                        patient.fullName.substring(0, 1).toUpperCase(),
-                        style: GoogleFonts.ibmPlexSansArabic(
-                          color: const Color(0xFF1D4ED8), // Blue-700
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          patient.fullName,
-                          style: GoogleFonts.ibmPlexSansArabic(
-                            color: const Color(0xFF1E293B), // Slate-800
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            const Icon(Icons.phone_outlined, size: 14, color: Color(0xFF64748B)),
-                            const SizedBox(width: 4),
-                            Text(
-                              patient.phone,
-                              style: GoogleFonts.ibmPlexSansArabic(
-                                color: const Color(0xFF64748B), // Slate-500
-                                fontSize: 13,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
+                  const SizedBox(height: 4),
+                  Row(
                     children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF1F5F9), // Slate-100
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          '${patient.appointmentsCount} موعد',
-                          style: GoogleFonts.ibmPlexSansArabic(
-                            color: const Color(0xFF475569), // Slate-600
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                          ),
+                      const Icon(Icons.phone_outlined, size: 14, color: Color(0xFF94A3B8)),
+                      const SizedBox(width: 4),
+                      Text(
+                        phoneText,
+                        textDirection: TextDirection.ltr,
+                        style: const TextStyle(
+                          fontFamily: 'IBMPlexSansArabic',
+                          fontSize: 13,
+                          color: Color(0xFF94A3B8),
                         ),
                       ),
-                      if (patient.unpaidInvoicesCount > 0) ...[
-                        const SizedBox(height: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFEF2F2), // Red-50
-                            borderRadius: BorderRadius.circular(6),
-                            border: Border.all(color: const Color(0xFFFECACA)), // Red-200
-                          ),
-                          child: Text(
-                            '${patient.unpaidInvoicesCount} فواتير',
-                            style: GoogleFonts.ibmPlexSansArabic(
-                              color: const Color(0xFFDC2626), // Red-600
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
+                      if (genderText != null) ...[
+                        const SizedBox(width: 12),
+                        Icon(
+                          genderText == 'male' || genderText == 'ذكر' ? Icons.male : Icons.female,
+                          size: 14,
+                          color: const Color(0xFF94A3B8),
                         ),
-                      ],
+                      ]
                     ],
                   ),
                 ],
               ),
             ),
-          );
-        },
+            const SizedBox(width: 16),
+            const Icon(
+              Icons.arrow_back_ios_new,
+              size: 16,
+              color: Color(0xFF94A3B8),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
-

@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:dio/dio.dart';
 import '../../../../core/api/dio_client.dart';
 import '../../../../core/api/api_endpoints.dart';
-import 'package:google_fonts/google_fonts.dart';
-
 class DentalChartTab extends StatefulWidget {
   final String patientId;
 
@@ -30,7 +27,7 @@ class _DentalChartTabState extends State<DentalChartTab> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('تحديث السن رقم ', style: GoogleFonts.ibmPlexSansArabic(fontWeight: FontWeight.bold)),
+          title: Text('تحديث السن رقم ', style: TextStyle(fontFamily: 'IBMPlexSansArabic', fontWeight: FontWeight.bold)),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -49,7 +46,7 @@ class _DentalChartTabState extends State<DentalChartTab> {
   Widget _buildToothOption(BuildContext context, int toothNumber, String label, String status, Color color) {
     return ListTile(
       leading: CircleAvatar(backgroundColor: color, radius: 10),
-      title: Text(label, style: GoogleFonts.ibmPlexSansArabic()),
+      title: Text(label, style: TextStyle(fontFamily: 'IBMPlexSansArabic')),
       onTap: () {
         setState(() => _toothStatus[toothNumber] = status);
         Navigator.pop(context);
@@ -71,7 +68,7 @@ class _DentalChartTabState extends State<DentalChartTab> {
   Widget _buildJaw(List<int> right, List<int> left, String label) {
     return Column(
       children: [
-        Text(label, style: GoogleFonts.ibmPlexSansArabic(fontSize: 16, fontWeight: FontWeight.bold, color: const Color(0xFF64748B))),
+        Text(label, style: TextStyle(fontFamily: 'IBMPlexSansArabic', fontSize: 16, fontWeight: FontWeight.bold, color: const Color(0xFF64748B))),
         const SizedBox(height: 16),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -104,7 +101,7 @@ class _DentalChartTabState extends State<DentalChartTab> {
           borderRadius: const BorderRadius.only(topLeft: Radius.circular(8), topRight: Radius.circular(8)),
         ),
         child: Center(
-          child: Text('', style: GoogleFonts.ibmPlexSansArabic(fontSize: 12, fontWeight: FontWeight.bold, color: const Color(0xFF1E293B))),
+          child: Text('', style: TextStyle(fontFamily: 'IBMPlexSansArabic', fontSize: 12, fontWeight: FontWeight.bold, color: const Color(0xFF1E293B))),
         ),
       ),
     );
@@ -115,18 +112,18 @@ class _DentalChartTabState extends State<DentalChartTab> {
     try {
       final dio = DioClient().dio;
       for (var entry in _toothStatus.entries) {
-        await dio.post(ApiEndpoints.baseUrl + '/patients/' + widget.patientId + '/dental-records', data: {
+        await dio.post('${ApiEndpoints.baseUrl}/patients/${widget.patientId}/dental-records', data: {
           'toothNumber': entry.key,
           'condition': entry.value,
           'notes': 'تم التحديث من التطبيق'
         });
       }
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('تم حفظ الخريطة السنية بنجاح', style: GoogleFonts.ibmPlexSansArabic(color: Colors.white)), backgroundColor: Colors.green));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('تم حفظ الخريطة السنية بنجاح', style: TextStyle(fontFamily: 'IBMPlexSansArabic', color: Colors.white)), backgroundColor: Colors.green));
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('حدث خطأ أثناء الحفظ', style: GoogleFonts.ibmPlexSansArabic(color: Colors.white)), backgroundColor: Colors.red));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('حدث خطأ أثناء الحفظ', style: TextStyle(fontFamily: 'IBMPlexSansArabic', color: Colors.white)), backgroundColor: Colors.red));
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -166,7 +163,7 @@ class _DentalChartTabState extends State<DentalChartTab> {
             child: ElevatedButton.icon(
               onPressed: _isLoading ? null : _saveChart,
               icon: _isLoading ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white)) : const Icon(Icons.save_outlined, color: Colors.white),
-              label: Text('حفظ التحديثات', style: GoogleFonts.ibmPlexSansArabic(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+              label: Text('حفظ التحديثات', style: TextStyle(fontFamily: 'IBMPlexSansArabic', fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF2563EB),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),

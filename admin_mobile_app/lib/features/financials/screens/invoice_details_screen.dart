@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../models/invoice.dart';
 
 class InvoiceDetailsScreen extends StatelessWidget {
@@ -12,14 +11,14 @@ class InvoiceDetailsScreen extends StatelessWidget {
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
-        title: Text('تفاصيل الفاتورة', style: GoogleFonts.ibmPlexSansArabic(color: const Color(0xFF1E293B), fontWeight: FontWeight.bold)),
+        title: Text('تفاصيل الفاتورة', style: TextStyle(fontFamily: 'IBMPlexSansArabic', color: const Color(0xFF1E293B), fontWeight: FontWeight.bold)),
         iconTheme: const IconThemeData(color: Colors.black),
         elevation: 0,
         actions: [
           IconButton(
             icon: const Icon(Icons.print_outlined),
             onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('الطباعة من التطبيق قيد التطوير', style: GoogleFonts.ibmPlexSansArabic())));
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('الطباعة من التطبيق قيد التطوير', style: TextStyle(fontFamily: 'IBMPlexSansArabic'))));
             },
           )
         ],
@@ -42,7 +41,7 @@ class InvoiceDetailsScreen extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('الفاتورة #', style: GoogleFonts.ibmPlexSansArabic(fontSize: 20, fontWeight: FontWeight.bold, color: const Color(0xFF1E293B))),
+                      Text('الفاتورة #', style: TextStyle(fontFamily: 'IBMPlexSansArabic', fontSize: 20, fontWeight: FontWeight.bold, color: const Color(0xFF1E293B))),
                       _buildStatusBadge(invoice.status),
                     ],
                   ),
@@ -51,16 +50,16 @@ class InvoiceDetailsScreen extends StatelessWidget {
                   const SizedBox(height: 16),
                   _buildInfoRow(Icons.person_outline, 'المريض', invoice.patientName),
                   const SizedBox(height: 12),
-                  _buildInfoRow(Icons.calendar_today_outlined, 'تاريخ الإصدار', '\-\-'),
+                  _buildInfoRow(Icons.calendar_today_outlined, 'تاريخ الإصدار', '--'),
                   if (invoice.dueDate != null) ...[
                     const SizedBox(height: 12),
-                    _buildInfoRow(Icons.event_outlined, 'تاريخ الاستحقاق', '\-\-'),
+                    _buildInfoRow(Icons.event_outlined, 'تاريخ الاستحقاق', '--'),
                   ],
                 ],
               ),
             ),
             const SizedBox(height: 24),
-            Text('المالية', style: GoogleFonts.ibmPlexSansArabic(fontSize: 18, fontWeight: FontWeight.bold, color: const Color(0xFF1E293B))),
+            Text('المالية', style: TextStyle(fontFamily: 'IBMPlexSansArabic', fontSize: 18, fontWeight: FontWeight.bold, color: const Color(0xFF1E293B))),
             const SizedBox(height: 16),
             Container(
               padding: const EdgeInsets.all(20),
@@ -120,7 +119,7 @@ class InvoiceDetailsScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(color: bgColor, borderRadius: BorderRadius.circular(20)),
-      child: Text(text, style: GoogleFonts.ibmPlexSansArabic(color: color, fontWeight: FontWeight.bold, fontSize: 12)),
+      child: Text(text, style: TextStyle(fontFamily: 'IBMPlexSansArabic', color: color, fontWeight: FontWeight.bold, fontSize: 12)),
     );
   }
 
@@ -129,10 +128,10 @@ class InvoiceDetailsScreen extends StatelessWidget {
       children: [
         Icon(icon, size: 20, color: const Color(0xFF64748B)),
         const SizedBox(width: 8),
-        Text(label + ':', style: GoogleFonts.ibmPlexSansArabic(color: const Color(0xFF64748B), fontSize: 14)),
+        Text('$label:', style: TextStyle(fontFamily: 'IBMPlexSansArabic', color: const Color(0xFF64748B), fontSize: 14)),
         const SizedBox(width: 8),
         Expanded(
-          child: Text(value, style: GoogleFonts.ibmPlexSansArabic(color: const Color(0xFF1E293B), fontSize: 14, fontWeight: FontWeight.w600), textAlign: TextAlign.left),
+          child: Text(value, style: TextStyle(fontFamily: 'IBMPlexSansArabic', color: const Color(0xFF1E293B), fontSize: 14, fontWeight: FontWeight.w600), textAlign: TextAlign.left),
         ),
       ],
     );
@@ -142,8 +141,8 @@ class InvoiceDetailsScreen extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: GoogleFonts.ibmPlexSansArabic(fontSize: 16, fontWeight: isBold ? FontWeight.bold : FontWeight.w500, color: const Color(0xFF64748B))),
-        Text('\$', style: GoogleFonts.ibmPlexSansArabic(fontSize: 18, fontWeight: FontWeight.bold, color: color)),
+        Text(label, style: TextStyle(fontFamily: 'IBMPlexSansArabic', fontSize: 16, fontWeight: isBold ? FontWeight.bold : FontWeight.w500, color: const Color(0xFF64748B))),
+        Text('\$', style: TextStyle(fontFamily: 'IBMPlexSansArabic', fontSize: 18, fontWeight: FontWeight.bold, color: color)),
       ],
     );
   }

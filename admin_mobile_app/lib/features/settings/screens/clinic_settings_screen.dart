@@ -1,167 +1,134 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:dio/dio.dart';
-import '../../../core/api/dio_client.dart';
-import '../../../core/api/api_endpoints.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../auth/providers/auth_provider.dart';
 
-class ClinicSettingsScreen extends StatefulWidget {
+class ClinicSettingsScreen extends ConsumerWidget {
   const ClinicSettingsScreen({super.key});
 
-  @override
-  State<ClinicSettingsScreen> createState() => _ClinicSettingsScreenState();
-}
-
-class _ClinicSettingsScreenState extends State<ClinicSettingsScreen> {
-  final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
-  final _phoneController = TextEditingController();
-  final _addressController = TextEditingController();
-  final _primaryColorController = TextEditingController();
-  bool _isLoading = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _fetchSettings();
-  }
-
-  Future<void> _fetchSettings() async {
-    try {
-      final dio = DioClient().dio;
-      final response = await dio.get(ApiEndpoints.settings);
-      if (response.data['success']) {
-        final data = response.data['data'] ?? {};
-        if (mounted) {
-          setState(() {
-            _emailController.text = data['email'] ?? '';
-            _phoneController.text = data['phone'] ?? '';
-            _addressController.text = data['address'] ?? '';
-            _primaryColorController.text = data['primaryColor'] ?? '';
-          });
-        }
-      }
-    } catch (e) {
-      // Silently fail if settings endpoint doesn't exist
+  String _toEnglishNumbers(String input) {
+    const english = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+    const arabic = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+    String result = input;
+    for (int i = 0; i < arabic.length; i++) {
+      result = result.replaceAll(arabic[i], english[i]);
     }
+    return result;
   }
 
   @override
-  void dispose() {
-    _emailController.dispose();
-    _phoneController.dispose();
-    _addressController.dispose();
-    _primaryColorController.dispose();
-    super.dispose();
-  }
+  Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authStateProvider);
+    final clinic = authState.clinic;
 
-  Future<void> _save() async {
-    if (!_formKey.currentState!.validate()) return;
-    setState(() => _isLoading = true);
-    
-    try {
-      final dio = DioClient().dio;
-      final response = await dio.put(
-        ApiEndpoints.settings,
-        data: {
-          'email': _emailController.text,
-          'phone': _phoneController.text,
-          'address': _addressController.text,
-          'primaryColor': _primaryColorController.text,
-        },
-      );
-      
-      if (response.data['success']) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('تم الحفظ بنجاح')),
-        );
-      } else {
-        throw Exception(response.data['error'] ?? 'فشل الحفظ');
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('حدث خطأ: ${e.toString()}')),
-      );
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
-    }
-  }
+    final name = clinic?['name']?.toString() ?? '';
+    final address = clinic?['address']?.toString() ?? '';
+    final phone = _toEnglishNumbers(clinic?['phone']?.toString() ?? '');
+    final taxNumber = _toEnglishNumbers(clinic?['taxNumber']?.toString() ?? '');
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: Scaffold(
         backgroundColor: Colors.white,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        title: Text(
-          'إعدادات العيادة',
-          style: GoogleFonts.ibmPlexSansArabic(
-            color: const Color(0xFF1E293B),
-            fontWeight: FontWeight.bold,
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          scrolledUnderElevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios, color: Color(0xFF0F172A)),
+            onPressed: () => Navigator.pop(context),
+          ),
+          title: const Text(
+            'إعدادات العيادة',
+            style: TextStyle(
+              fontFamily: 'IBMPlexSansArabic',
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF0F172A),
+            ),
+          ),
+          centerTitle: true,
+        ),
+        body: SafeArea(
+          child: ListView(
+            padding: const EdgeInsets.all(20.0),
+            children: [
+              _buildTextField(label: 'اسم العيادة', initialValue: name),
+              const SizedBox(height: 16),
+              _buildTextField(label: 'العنوان', initialValue: address),
+              const SizedBox(height: 16),
+              _buildTextField(label: 'رقم هاتف العيادة', initialValue: phone, isNumber: true),
+              const SizedBox(height: 16),
+              _buildTextField(label: 'الرقم الضريبي', initialValue: taxNumber, isNumber: true),
+              const SizedBox(height: 32),
+              ElevatedButton(
+                onPressed: () {},
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF2563EB),
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(50),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                ),
+                child: const Text(
+                  'حفظ التغييرات',
+                  style: TextStyle(
+                    fontFamily: 'IBMPlexSansArabic',
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
-        iconTheme: const IconThemeData(color: Color(0xFF1E293B)),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1.0),
-          child: Container(color: const Color(0xFFE2E8F0), height: 1.0),
-        ),
       ),
-      body: Form(
-              key: _formKey,
-              child: ListView(
-                padding: const EdgeInsets.all(16),
-                children: [
-                  TextFormField(
-                    controller: _emailController,
-                    decoration: InputDecoration(
-                      labelText: 'البريد الإلكتروني للعيادة',
-                      border: const OutlineInputBorder(),
-                      labelStyle: GoogleFonts.ibmPlexSansArabic(),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _phoneController,
-                    decoration: InputDecoration(
-                      labelText: 'رقم الهاتف الأساسي',
-                      border: const OutlineInputBorder(),
-                      labelStyle: GoogleFonts.ibmPlexSansArabic(),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _addressController,
-                    decoration: InputDecoration(
-                      labelText: 'العنوان',
-                      border: const OutlineInputBorder(),
-                      labelStyle: GoogleFonts.ibmPlexSansArabic(),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _primaryColorController,
-                    decoration: InputDecoration(
-                      labelText: 'اللون الأساسي (مثال: #2563EB)',
-                      border: const OutlineInputBorder(),
-                      labelStyle: GoogleFonts.ibmPlexSansArabic(),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  ElevatedButton(
-                    onPressed: _isLoading ? null : _save,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                    ),
-                    child: _isLoading 
-                        ? const CircularProgressIndicator(color: Colors.white)
-                        : Text('حفظ التغييرات', style: GoogleFonts.ibmPlexSansArabic(color: Colors.white)),
-                  ),
-                ],
-              ),
+    );
+  }
+
+  Widget _buildTextField({required String label, required String initialValue, bool isNumber = false}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontFamily: 'IBMPlexSansArabic',
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF475569),
+          ),
+        ),
+        const SizedBox(height: 8),
+        TextFormField(
+          initialValue: initialValue,
+          textDirection: isNumber ? TextDirection.ltr : TextDirection.rtl,
+          keyboardType: isNumber ? TextInputType.number : TextInputType.text,
+          style: const TextStyle(
+            fontFamily: 'IBMPlexSansArabic',
+            fontSize: 16,
+            color: Color(0xFF0F172A),
+          ),
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: Colors.white,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
             ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: const BorderSide(color: Color(0xFF2563EB)),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
-

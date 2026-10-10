@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'otp_verification_screen.dart';
 
-import 'package:google_fonts/google_fonts.dart';
 import 'package:dio/dio.dart';
 import '../../../core/api/dio_client.dart';
 import '../../../core/api/api_endpoints.dart';
@@ -70,7 +69,7 @@ class _RegisterClinicScreenState extends State<RegisterClinicScreen> {
     setState(() => _isLoading = true);
     try {
       final dio = DioClient().dio;
-      final response = await dio.post(ApiEndpoints.baseUrl + '/auth/register', data: {
+      final response = await dio.post('${ApiEndpoints.baseUrl}/auth/register', data: {
         'fullName': _adminName.text,
         'email': _email.text,
         'phone': _phone.text,
@@ -112,9 +111,9 @@ class _RegisterClinicScreenState extends State<RegisterClinicScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('تسجيل عيادة جديدة', style: GoogleFonts.ibmPlexSansArabic(fontSize: 28, fontWeight: FontWeight.bold, color: const Color(0xFF1E293B))),
+              Text('تسجيل عيادة جديدة', style: TextStyle(fontFamily: 'IBMPlexSansArabic', fontSize: 28, fontWeight: FontWeight.bold, color: const Color(0xFF1E293B))),
               const SizedBox(height: 8),
-              Text('أدخل بيانات عيادتك للبدء في استخدام النظام', style: GoogleFonts.ibmPlexSansArabic(fontSize: 16, color: const Color(0xFF64748B))),
+              Text('أدخل بيانات عيادتك للبدء في استخدام النظام', style: TextStyle(fontFamily: 'IBMPlexSansArabic', fontSize: 16, color: const Color(0xFF64748B))),
               const SizedBox(height: 32),
               
               _buildTextField('اسم العيادة', Icons.local_hospital_outlined, _clinicName),
@@ -141,14 +140,14 @@ class _RegisterClinicScreenState extends State<RegisterClinicScreen> {
                   onPressed: _isLoading ? null : _register,
                   child: _isLoading
                       ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                      : Text('إنشاء الحساب', style: GoogleFonts.ibmPlexSansArabic(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                      : Text('إنشاء الحساب', style: TextStyle(fontFamily: 'IBMPlexSansArabic', fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
                 ),
               ),
               const SizedBox(height: 24),
               Center(
                 child: TextButton(
                   onPressed: () => Navigator.pushReplacementNamed(context, '/login'),
-                  child: Text('هل لديك حساب بالفعل؟ تسجيل الدخول', style: GoogleFonts.ibmPlexSansArabic(fontSize: 16, color: const Color(0xFF2563EB), fontWeight: FontWeight.bold)),
+                  child: Text('هل لديك حساب بالفعل؟ تسجيل الدخول', style: TextStyle(fontFamily: 'IBMPlexSansArabic', fontSize: 16, color: const Color(0xFF2563EB), fontWeight: FontWeight.bold)),
                 ),
               ),
             ],
@@ -166,7 +165,7 @@ class _RegisterClinicScreenState extends State<RegisterClinicScreen> {
       autofillHints: autofillHints,
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: GoogleFonts.ibmPlexSansArabic(),
+        labelStyle: TextStyle(fontFamily: 'IBMPlexSansArabic'),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         prefixIcon: Icon(icon),
         fillColor: readOnly ? const Color(0xFFF1F5F9) : Colors.white,

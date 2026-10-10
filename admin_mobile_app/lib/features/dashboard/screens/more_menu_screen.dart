@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../settings/screens/settings_screen.dart';
 import '../../services/screens/services_screen.dart';
 import '../../team/screens/team_screen.dart';
 import '../../crm/screens/leads_screen.dart';
+import '../../settings/screens/account_settings_screen.dart';
+import '../../settings/screens/security_settings_screen.dart';
+import '../../settings/screens/clinic_settings_screen.dart';
+import '../../settings/screens/notifications_settings_screen.dart';
+import '../../settings/screens/website_settings_screen.dart';
+import '../../team/screens/doctors_screen.dart';
 import '../../inventory/screens/inventory_screen.dart';
 import '../../auth/providers/auth_provider.dart';
 
@@ -13,60 +18,31 @@ class MoreMenuScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        Text(
-          'أقسام العيادة',
-          style: GoogleFonts.ibmPlexSansArabic(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: const Color(0xFF0F172A),
-          ),
-        ),
-        const SizedBox(height: 16),
-        _buildMenuGrid(context),
-        const SizedBox(height: 32),
-
-        _buildSettingsList(context),
-        const SizedBox(height: 32),
-        // Logout Button
-        SizedBox(
-          height: 48,
-          child: TextButton(
-            style: TextButton.styleFrom(
-              backgroundColor: const Color(0xFFFEE2E2), // Light red background
-              foregroundColor: const Color(0xFFEF4444), // Red text/icon
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-                side: BorderSide.none,
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          children: [
+            const Text(
+              'أقسام العيادة',
+              style: TextStyle(
+                fontFamily: 'IBMPlexSansArabic',
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF0F172A),
               ),
             ),
-            onPressed: () async {
-              await ref.read(authStateProvider.notifier).logout();
-              if (context.mounted) {
-                Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
-              }
-            },
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.logout, size: 20),
-                const SizedBox(width: 8),
-                Text(
-                  'تسجيل الخروج',
-                  style: GoogleFonts.ibmPlexSansArabic(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-          ),
+            const SizedBox(height: 16),
+            _buildMenuGrid(context),
+            const SizedBox(height: 32),
+            _buildSettingsList(context),
+            const SizedBox(height: 32),
+            _buildLogoutButton(context, ref),
+            const SizedBox(height: 24),
+          ],
         ),
-        const SizedBox(height: 24),
-      ],
+      ),
     );
   }
 
@@ -74,20 +50,20 @@ class MoreMenuScreen extends ConsumerWidget {
     final items = [
       {'title': 'المخازن', 'icon': Icons.inventory_2_outlined, 'screen': const InventoryScreen()},
       {'title': 'الخدمات', 'icon': Icons.medical_services_outlined, 'screen': const ServicesScreen()},
-      {'title': 'الأطباء', 'icon': Icons.medical_information_outlined, 'screen': const Scaffold(body: Center(child: Text('الأطباء')))},
+      {'title': 'الأطباء', 'icon': Icons.medical_information_outlined, 'screen': const DoctorsScreen()},
       {'title': 'فريق العمل', 'icon': Icons.groups_outlined, 'screen': const TeamScreen()},
       {'title': 'علاقات المرضى', 'icon': Icons.group_add_outlined, 'screen': const LeadsScreen()},
-      {'title': 'الموقع الإلكتروني', 'icon': Icons.language_outlined, 'screen': const Scaffold(body: Center(child: Text('الموقع الإلكتروني')))},
+      {'title': 'الموقع الإلكتروني', 'icon': Icons.language_outlined, 'screen': const WebsiteSettingsScreen()},
     ];
 
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        childAspectRatio: 1.5,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
+        crossAxisCount: 3,
+        childAspectRatio: 1.0,
+        crossAxisSpacing: 16,
+        mainAxisSpacing: 16,
       ),
       itemCount: items.length,
       itemBuilder: (context, index) {
@@ -96,12 +72,12 @@ class MoreMenuScreen extends ConsumerWidget {
           onTap: () {
             Navigator.push(context, MaterialPageRoute(builder: (_) => item['screen'] as Widget));
           },
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           child: Container(
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFFE2E8F0)),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFE2E8F0), width: 1),
             ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -110,10 +86,11 @@ class MoreMenuScreen extends ConsumerWidget {
                 const SizedBox(height: 8),
                 Text(
                   item['title'] as String,
-                  style: GoogleFonts.ibmPlexSansArabic(
+                  style: const TextStyle(
+                    fontFamily: 'IBMPlexSansArabic',
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xFF334155),
+                    color: Color(0xFF0F172A),
                   ),
                 ),
               ],
@@ -125,45 +102,100 @@ class MoreMenuScreen extends ConsumerWidget {
   }
 
   Widget _buildSettingsList(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
-      child: Column(
-        children: [
-          _buildSettingsTile(context, 'جميع الإعدادات', Icons.settings),
-        ],
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const Text(
+          'الإعدادات',
+          style: TextStyle(
+            fontFamily: 'IBMPlexSansArabic',
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF0F172A),
+          ),
+        ),
+        const SizedBox(height: 16),
+        _buildSettingsTile(context, 'إعدادات الحساب', Icons.person_outline, const AccountSettingsScreen()),
+        const SizedBox(height: 12),
+        _buildSettingsTile(context, 'الأمان والخصوصية', Icons.security_outlined, const SecuritySettingsScreen()),
+        const SizedBox(height: 12),
+        _buildSettingsTile(context, 'إعدادات العيادة', Icons.local_hospital_outlined, const ClinicSettingsScreen()),
+        const SizedBox(height: 12),
+        _buildSettingsTile(context, 'الإشعارات', Icons.notifications_outlined, const NotificationsSettingsScreen()),
+      ],
+    );
+  }
+
+  Widget _buildSettingsTile(BuildContext context, String title, IconData icon, Widget targetScreen) {
+    return InkWell(
+      onTap: () {
+        Navigator.push(context, MaterialPageRoute(builder: (_) => targetScreen));
+      },
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFE2E8F0), width: 1),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: const Color(0xFF475569), size: 24),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Text(
+                title,
+                style: const TextStyle(
+                  fontFamily: 'IBMPlexSansArabic',
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: Color(0xFF0F172A),
+                ),
+              ),
+            ),
+            const Icon(Icons.arrow_back_ios_new, size: 16, color: Color(0xFF94A3B8)),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildSettingsTile(BuildContext context, String title, IconData icon) {
-    return ListTile(
-      leading: Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: const Color(0xFFF1F5F9),
-          borderRadius: BorderRadius.circular(8),
+  Widget _buildLogoutButton(BuildContext context, WidgetRef ref) {
+    return SizedBox(
+      height: 48,
+      child: TextButton(
+        style: TextButton.styleFrom(
+          backgroundColor: const Color(0xFFFEF2F2),
+          foregroundColor: const Color(0xFFEF4444),
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(50),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 20),
         ),
-        child: Icon(icon, color: const Color(0xFF475569), size: 20),
-      ),
-      title: Text(
-        title,
-        style: GoogleFonts.ibmPlexSansArabic(
-          fontSize: 15,
-          fontWeight: FontWeight.w500,
-          color: const Color(0xFF0F172A),
+        onPressed: () async {
+          await ref.read(authStateProvider.notifier).logout();
+          if (context.mounted) {
+            Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+          }
+        },
+        child: const Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.logout_outlined, size: 20),
+            SizedBox(width: 8),
+            Text(
+              'تسجيل الخروج',
+              style: TextStyle(
+                fontFamily: 'IBMPlexSansArabic',
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
         ),
       ),
-      trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Color(0xFF94A3B8)),
-      onTap: () {
-        Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsScreen()));
-      },
     );
   }
 }
-
-
-

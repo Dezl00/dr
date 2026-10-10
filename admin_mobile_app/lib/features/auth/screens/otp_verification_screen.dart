@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:dio/dio.dart';
 import 'package:pinput/pinput.dart';
 import '../../../core/api/dio_client.dart';
@@ -71,7 +70,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     setState(() => _isLoading = true);
     try {
       final dio = DioClient().dio;
-      final response = await dio.post(ApiEndpoints.baseUrl + '/auth/verify-otp', data: {
+      final response = await dio.post('${ApiEndpoints.baseUrl}/auth/verify-otp', data: {
         'token': widget.token,
         'code': _codeController.text,
       });
@@ -97,8 +96,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     final defaultPinTheme = PinTheme(
       width: 56,
       height: 60,
-      textStyle: GoogleFonts.ibmPlexSansArabic(
-        fontSize: 24,
+      textStyle: TextStyle(fontFamily: 'IBMPlexSansArabic', fontSize: 24,
         color: const Color(0xFF1E293B),
         fontWeight: FontWeight.w600,
       ),
@@ -136,9 +134,9 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
               const SizedBox(height: 32),
               const Icon(Icons.mark_email_read_outlined, size: 80, color: Color(0xFF2563EB)),
               const SizedBox(height: 24),
-              Text('التحقق من رقم الهاتف', style: GoogleFonts.ibmPlexSansArabic(fontSize: 24, fontWeight: FontWeight.bold, color: const Color(0xFF1E293B))),
+              Text('التحقق من رقم الهاتف', style: TextStyle(fontFamily: 'IBMPlexSansArabic', fontSize: 24, fontWeight: FontWeight.bold, color: const Color(0xFF1E293B))),
               const SizedBox(height: 8),
-              Text('تم إرسال رمز تحقق (OTP) مكون من 6 أرقام\nالرجاء إدخاله هنا:', textAlign: TextAlign.center, style: GoogleFonts.ibmPlexSansArabic(fontSize: 16, color: const Color(0xFF64748B))),
+              Text('تم إرسال رمز تحقق (OTP) مكون من 6 أرقام\nالرجاء إدخاله هنا:', textAlign: TextAlign.center, style: TextStyle(fontFamily: 'IBMPlexSansArabic', fontSize: 16, color: const Color(0xFF64748B))),
               const SizedBox(height: 40),
               Directionality(
                 textDirection: TextDirection.ltr,
@@ -164,7 +162,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                   ),
                   child: _isLoading
                       ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                      : Text('تحقق', style: GoogleFonts.ibmPlexSansArabic(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold)),
+                      : Text('تحقق', style: TextStyle(fontFamily: 'IBMPlexSansArabic', fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold)),
                 ),
               ),
               const SizedBox(height: 24),
@@ -173,14 +171,13 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                 children: [
                   Text(
                     'لم يصلك الرمز؟',
-                    style: GoogleFonts.ibmPlexSansArabic(color: const Color(0xFF64748B), fontSize: 16),
+                    style: TextStyle(fontFamily: 'IBMPlexSansArabic', color: const Color(0xFF64748B), fontSize: 16),
                   ),
                   TextButton(
                     onPressed: _canResend ? _resendOtp : null,
                     child: Text(
                       _canResend ? 'إعادة الإرسال' : 'إعادة الإرسال بعد $_secondsRemaining ثانية',
-                      style: GoogleFonts.ibmPlexSansArabic(
-                        color: _canResend ? const Color(0xFF2563EB) : const Color(0xFF94A3B8),
+                      style: TextStyle(fontFamily: 'IBMPlexSansArabic', color: _canResend ? const Color(0xFF2563EB) : const Color(0xFF94A3B8),
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:dio/dio.dart';
 import 'package:pinput/pinput.dart';
 import '../../../core/api/dio_client.dart';
@@ -85,9 +84,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('تعيين كلمة مرور جديدة', style: GoogleFonts.ibmPlexSansArabic(fontSize: 28, fontWeight: FontWeight.bold, color: const Color(0xFF1E293B))),
+              Text('تعيين كلمة مرور جديدة', style: TextStyle(fontFamily: 'IBMPlexSansArabic', fontSize: 28, fontWeight: FontWeight.bold, color: const Color(0xFF1E293B))),
               const SizedBox(height: 8),
-              Text('أدخل الرمز المرسل إلى ${widget.phone} وكلمة المرور الجديدة', style: GoogleFonts.ibmPlexSansArabic(fontSize: 16, color: const Color(0xFF64748B))),
+              Text('أدخل الرمز المرسل إلى ${widget.phone} وكلمة المرور الجديدة', style: TextStyle(fontFamily: 'IBMPlexSansArabic', fontSize: 16, color: const Color(0xFF64748B))),
               const SizedBox(height: 32),
               Center(
                 child: Directionality(
@@ -108,7 +107,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 obscureText: _obscurePassword,
                 decoration: InputDecoration(
                   labelText: 'كلمة المرور الجديدة',
-                  labelStyle: GoogleFonts.ibmPlexSansArabic(),
+                  labelStyle: TextStyle(fontFamily: 'IBMPlexSansArabic'),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   prefixIcon: const Icon(Icons.lock_outline),
                   suffixIcon: IconButton(
@@ -123,7 +122,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 obscureText: _obscurePassword,
                 decoration: InputDecoration(
                   labelText: 'تأكيد كلمة المرور',
-                  labelStyle: GoogleFonts.ibmPlexSansArabic(),
+                  labelStyle: TextStyle(fontFamily: 'IBMPlexSansArabic'),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   prefixIcon: const Icon(Icons.lock_outline),
                 ),
@@ -140,7 +139,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                   onPressed: _isLoading ? null : _submit,
                   child: _isLoading
                       ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                      : Text('إعادة تعيين', style: GoogleFonts.ibmPlexSansArabic(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                      : Text('إعادة تعيين', style: TextStyle(fontFamily: 'IBMPlexSansArabic', fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
                 ),
               ),
             ],

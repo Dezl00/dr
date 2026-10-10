@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter/foundation.dart';
@@ -12,10 +13,16 @@ class NotificationService {
   factory NotificationService() => _instance;
   NotificationService._internal();
 
-  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
+  late final FirebaseMessaging _firebaseMessaging;
   final FlutterLocalNotificationsPlugin _localNotifications = FlutterLocalNotificationsPlugin();
 
+  final _onNotificationReceived = StreamController<RemoteMessage>.broadcast();
+  Stream<RemoteMessage> get onNotificationReceived => _onNotificationReceived.stream;
+
   Future<void> initialize() async {
+    if (kIsWeb) return; // Disable notifications on Web for now
+
+    _firebaseMessaging = FirebaseMessaging.instance;
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
     // Request permissions
@@ -45,6 +52,8 @@ class NotificationService {
 
     // Foreground listener
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      _onNotificationReceived.add(message); // Broadcast to listeners
+      
       RemoteNotification? notification = message.notification;
       AndroidNotification? android = message.notification?.android;
 
@@ -67,6 +76,7 @@ class NotificationService {
   }
 
   Future<String?> getToken() async {
+    if (kIsWeb) return null;
     try {
       return await _firebaseMessaging.getToken();
     } catch (e) {
@@ -76,6 +86,7 @@ class NotificationService {
   }
 
   Future<bool> checkPermission() async {
+    if (kIsWeb) return true;
     final settings = await _firebaseMessaging.getNotificationSettings();
     if (settings.authorizationStatus == AuthorizationStatus.authorized || settings.authorizationStatus == AuthorizationStatus.provisional) {
       return true;

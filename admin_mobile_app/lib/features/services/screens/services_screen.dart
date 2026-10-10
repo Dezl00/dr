@@ -22,8 +22,8 @@ class ServicesScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('الخدمات الطبية')),
       body: servicesAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(child: Text('خطأ: $err')),
+        loading: () => const SizedBox(),
+        error: (err, stack) => Center(child: Text('خطأ: $err', style: const TextStyle(fontFamily: 'IBMPlexSansArabic'))),
         data: (services) {
           if (services.isEmpty) return const Center(child: Text('لا توجد خدمات مسجلة'));
           return RefreshIndicator(
@@ -63,11 +63,11 @@ class ServicesScreen extends ConsumerWidget {
       builder: (context) {
         return AlertDialog(
           title: const Text('إضافة خدمة طبية جديدة'),
-          content: Column(
+          content: const Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              TextField(decoration: const InputDecoration(labelText: 'اسم الخدمة (مثال: تنظيف وتلميع)')),
-              TextField(decoration: const InputDecoration(labelText: 'السعر (ج.م)'), keyboardType: TextInputType.number),
+              TextField(decoration: InputDecoration(labelText: 'اسم الخدمة (مثال: تنظيف وتلميع)')),
+              TextField(decoration: InputDecoration(labelText: 'السعر (ج.م)'), keyboardType: TextInputType.number),
             ],
           ),
           actions: [

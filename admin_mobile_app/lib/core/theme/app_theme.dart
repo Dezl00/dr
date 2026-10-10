@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-
 class AppTheme {
   static ThemeData get lightTheme {
     return ThemeData(
@@ -10,17 +8,19 @@ class AppTheme {
         primary: const Color(0xFF2563EB),
         secondary: const Color(0xFFF1F5F9), // Tailwind Slate-100
         surface: const Color(0xFFFFFFFF), // White
-        background: const Color(0xFFFFFFFF), // White
         error: const Color(0xFFEF4444), // Tailwind Red-500
         outline: const Color(0xFFE2E8F0), // Tailwind Slate-200
       ),
       scaffoldBackgroundColor: const Color(0xFFFFFFFF),
+      splashColor: Colors.transparent,
+      highlightColor: Colors.transparent,
       // Web uses IBM Plex Sans Arabic
-      textTheme: GoogleFonts.ibmPlexSansArabicTextTheme().copyWith(
-        titleLarge: GoogleFonts.ibmPlexSansArabic(fontWeight: FontWeight.bold, color: const Color(0xFF171717)),
-        titleMedium: GoogleFonts.ibmPlexSansArabic(fontWeight: FontWeight.w600, color: const Color(0xFF171717)),
-        bodyLarge: GoogleFonts.ibmPlexSansArabic(color: const Color(0xFF171717)),
-        bodyMedium: GoogleFonts.ibmPlexSansArabic(color: const Color(0xFF171717)),
+      fontFamily: 'IBMPlexSansArabic',
+      textTheme: const TextTheme(
+        titleLarge: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF171717)),
+        titleMedium: TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF171717)),
+        bodyLarge: TextStyle(color: Color(0xFF171717)),
+        bodyMedium: TextStyle(color: Color(0xFF171717)),
       ),
       pageTransitionsTheme: const PageTransitionsTheme(
         builders: <TargetPlatform, PageTransitionsBuilder>{
@@ -28,16 +28,17 @@ class AppTheme {
           TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
         },
       ),
-      appBarTheme: AppBarTheme(
-        backgroundColor: const Color(0xFFFFFFFF),
-        foregroundColor: const Color(0xFF171717),
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Color(0xFFFFFFFF),
+        foregroundColor: Color(0xFF171717),
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: true,
-        titleTextStyle: GoogleFonts.ibmPlexSansArabic(
-          color: const Color(0xFF171717),
+        titleTextStyle: TextStyle(
+          color: Color(0xFF171717),
           fontSize: 20,
           fontWeight: FontWeight.bold,
+          fontFamily: 'IBMPlexSansArabic',
         ),
         iconTheme: const IconThemeData(color: Color(0xFF171717)),
       ),
@@ -60,7 +61,7 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12), // 0.75rem
           ),
-          textStyle: GoogleFonts.ibmPlexSansArabic(fontWeight: FontWeight.bold, fontSize: 16),
+          textStyle: TextStyle(fontFamily: 'IBMPlexSansArabic', fontWeight: FontWeight.bold, fontSize: 16),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
@@ -79,7 +80,7 @@ class AppTheme {
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: Color(0xFF2563EB), width: 2),
         ),
-        labelStyle: GoogleFonts.ibmPlexSansArabic(color: Colors.grey.shade600),
+        labelStyle: TextStyle(fontFamily: 'IBMPlexSansArabic', color: Colors.grey.shade600),
       ),
       floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: const Color(0xFF2563EB),
@@ -93,8 +94,8 @@ class AppTheme {
         backgroundColor: const Color(0xFFFFFFFF),
         indicatorColor: const Color(0xFFEFF6FF), // Tailwind Blue-50
         elevation: 0,
-        labelTextStyle: MaterialStateProperty.all(
-          GoogleFonts.ibmPlexSansArabic(fontSize: 12, fontWeight: FontWeight.w600),
+        labelTextStyle: WidgetStateProperty.all(
+          TextStyle(fontFamily: 'IBMPlexSansArabic', fontSize: 12, fontWeight: FontWeight.w600),
         ),
       ),
     );

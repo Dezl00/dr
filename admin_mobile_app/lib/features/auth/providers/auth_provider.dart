@@ -22,6 +22,8 @@ class AuthState {
   final List<dynamic> availableClinics;
   final String? tempEmail;
   final String? tempPassword;
+  final Map<String, dynamic>? user;
+  final Map<String, dynamic>? clinic;
 
   AuthState({
     this.isCheckingAuth = true,
@@ -32,6 +34,8 @@ class AuthState {
     this.availableClinics = const [],
     this.tempEmail,
     this.tempPassword,
+    this.user,
+    this.clinic,
   });
 
   AuthState copyWith({
@@ -43,6 +47,8 @@ class AuthState {
     List<dynamic>? availableClinics,
     String? tempEmail,
     String? tempPassword,
+    Map<String, dynamic>? user,
+    Map<String, dynamic>? clinic,
   }) {
     return AuthState(
       isCheckingAuth: isCheckingAuth ?? this.isCheckingAuth,
@@ -53,6 +59,8 @@ class AuthState {
       availableClinics: availableClinics ?? this.availableClinics,
       tempEmail: tempEmail ?? this.tempEmail,
       tempPassword: tempPassword ?? this.tempPassword,
+      user: user ?? this.user,
+      clinic: clinic ?? this.clinic,
     );
   }
 }

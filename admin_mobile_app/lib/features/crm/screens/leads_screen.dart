@@ -22,8 +22,8 @@ class LeadsScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('التسويق (العملاء المحتملين)')),
       body: leadsAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(child: Text('خطأ: $err')),
+        loading: () => const SizedBox(),
+        error: (err, stack) => Center(child: Text('خطأ: $err', style: const TextStyle(fontFamily: 'IBMPlexSansArabic'))),
         data: (leads) {
           if (leads.isEmpty) return const Center(child: Text('لا يوجد طلبات تسويقية حالياً'));
           return RefreshIndicator(

@@ -22,8 +22,8 @@ class TeamScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('فريق العمل')),
       body: teamAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(child: Text('خطأ: $err')),
+        loading: () => const SizedBox(),
+        error: (err, stack) => Center(child: Text('خطأ: $err', style: const TextStyle(fontFamily: 'IBMPlexSansArabic'))),
         data: (team) {
           if (team.isEmpty) return const Center(child: Text('لا يوجد أعضاء في الفريق'));
           return RefreshIndicator(
@@ -66,12 +66,12 @@ class TeamScreen extends ConsumerWidget {
       builder: (context) {
         return AlertDialog(
           title: const Text('إضافة موظف / طبيب جديد'),
-          content: Column(
+          content: const Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              TextField(decoration: const InputDecoration(labelText: 'الاسم بالكامل')),
-              TextField(decoration: const InputDecoration(labelText: 'البريد الإلكتروني')),
-              TextField(decoration: const InputDecoration(labelText: 'الدور (مثال: طبيب، استقبال)')),
+              TextField(decoration: InputDecoration(labelText: 'الاسم بالكامل')),
+              TextField(decoration: InputDecoration(labelText: 'البريد الإلكتروني')),
+              TextField(decoration: InputDecoration(labelText: 'الدور (مثال: طبيب، استقبال)')),
             ],
           ),
           actions: [

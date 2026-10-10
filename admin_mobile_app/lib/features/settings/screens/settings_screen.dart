@@ -1,157 +1,126 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
-import '../../auth/providers/auth_provider.dart';
 import 'account_settings_screen.dart';
 import 'security_settings_screen.dart';
 import 'clinic_settings_screen.dart';
 import 'notifications_settings_screen.dart';
 
-class SettingsScreen extends ConsumerWidget {
+class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
-  Widget _buildSettingsItem(BuildContext context, {required IconData icon, required String title, required String subtitle, required VoidCallback onTap}) {
+  @override
+  Widget build(BuildContext context) {
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        body: SafeArea(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Padding(
+                padding: EdgeInsets.all(20.0),
+                child: Text(
+                  'الإعدادات',
+                  style: TextStyle(
+                    fontFamily: 'IBMPlexSansArabic',
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF0F172A),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                  children: [
+                    _buildSettingsTile(
+                      context: context,
+                      title: 'إعدادات الحساب',
+                      icon: Icons.person_outline,
+                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AccountSettingsScreen())),
+                    ),
+                    const SizedBox(height: 16),
+                    _buildSettingsTile(
+                      context: context,
+                      title: 'إعدادات العيادة',
+                      icon: Icons.local_hospital_outlined,
+                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ClinicSettingsScreen())),
+                    ),
+                    const SizedBox(height: 16),
+                    _buildSettingsTile(
+                      context: context,
+                      title: 'الأمان والخصوصية',
+                      icon: Icons.security_outlined,
+                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SecuritySettingsScreen())),
+                    ),
+                    const SizedBox(height: 16),
+                    _buildSettingsTile(
+                      context: context,
+                      title: 'الإشعارات',
+                      icon: Icons.notifications_none_outlined,
+                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationsSettingsScreen())),
+                    ),
+                    const SizedBox(height: 16),
+                    _buildSettingsTile(
+                      context: context,
+                      title: 'تسجيل الخروج',
+                      icon: Icons.logout_outlined,
+                      isDestructive: true,
+                      onTap: () {
+                        // Logout logic
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSettingsTile({
+    required BuildContext context,
+    required String title,
+    required IconData icon,
+    required VoidCallback onTap,
+    bool isDestructive = false,
+  }) {
+    final color = isDestructive ? Colors.red : const Color(0xFF0F172A);
     return InkWell(
       onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: const BoxDecoration(
-          border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0))),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFE2E8F0)),
         ),
         child: Row(
           children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF1F5F9),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Icon(icon, color: const Color(0xFF64748B), size: 20),
-            ),
+            Icon(icon, color: color, size: 24),
             const SizedBox(width: 16),
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: GoogleFonts.ibmPlexSansArabic(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF1E293B),
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    subtitle,
-                    style: GoogleFonts.ibmPlexSansArabic(
-                      fontSize: 13,
-                      color: const Color(0xFF64748B),
-                    ),
-                  ),
-                ],
+              child: Text(
+                title,
+                style: TextStyle(
+                  fontFamily: 'IBMPlexSansArabic',
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: color,
+                ),
               ),
             ),
-            const Icon(Icons.arrow_forward_ios, size: 16, color: Color(0xFFCBD5E1)),
+            Icon(
+              Icons.arrow_forward_ios,
+              color: isDestructive ? Colors.red.withOpacity(0.5) : const Color(0xFF94A3B8),
+              size: 16,
+            ),
           ],
         ),
       ),
     );
   }
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        title: Text(
-          'الإعدادات',
-          style: GoogleFonts.ibmPlexSansArabic(
-            color: const Color(0xFF1E293B),
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        iconTheme: const IconThemeData(color: Color(0xFF1E293B)),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1.0),
-          child: Container(color: const Color(0xFFE2E8F0), height: 1.0),
-        ),
-      ),
-      body: ListView(
-        children: [
-          const SizedBox(height: 16),
-          Container(
-            color: Colors.white,
-            child: Column(
-              children: [
-                _buildSettingsItem(
-                  context,
-                  icon: Icons.person_outline,
-                  title: 'الحساب',
-                  subtitle: 'إدارة معلوماتك الشخصية',
-                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AccountSettingsScreen())),
-                ),
-                _buildSettingsItem(
-                  context,
-                  icon: Icons.security_outlined,
-                  title: 'الأمان',
-                  subtitle: 'تغيير كلمة المرور وإعدادات الدخول',
-                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SecuritySettingsScreen())),
-                ),
-                _buildSettingsItem(
-                  context,
-                  icon: Icons.local_hospital_outlined,
-                  title: 'إعدادات العيادة',
-                  subtitle: 'الاسم، الشعار، أوقات العمل',
-                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ClinicSettingsScreen())),
-                ),
-                _buildSettingsItem(
-                  context,
-                  icon: Icons.notifications_none,
-                  title: 'الإشعارات',
-                  subtitle: 'تفضيلات التنبيهات والرسائل',
-                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationsSettingsScreen())),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 24),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: TextButton.icon(
-              onPressed: () async {
-                await ref.read(authStateProvider.notifier).logout();
-                if (context.mounted) {
-                  Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
-                }
-              },
-              icon: const Icon(Icons.logout, color: Color(0xFFEF4444)),
-              label: Text(
-                'تسجيل الخروج',
-                style: GoogleFonts.ibmPlexSansArabic(
-                  color: const Color(0xFFEF4444),
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                ),
-              ),
-              style: TextButton.styleFrom(
-                backgroundColor: const Color(0xFFFEE2E2),
-                elevation: 0,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  side: BorderSide.none,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 24),
-        ],
-      ),
-    );
-  }
 }
-

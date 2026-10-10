@@ -14,7 +14,7 @@ class _MedicalHistoryTabState extends State<MedicalHistoryTab> {
   final _chronicDiseasesController = TextEditingController();
   final _medicationsController = TextEditingController();
   final _bloodTypeController = TextEditingController();
-  bool _isLoading = false; // Will connect to provider later
+  final bool _isLoading = false; // Will connect to provider later
 
   @override
   Widget build(BuildContext context) {

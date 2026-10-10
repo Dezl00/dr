@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../providers/auth_provider.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -39,16 +38,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               children: [
                 const Icon(Icons.monitor_heart_outlined, color: Color(0xFF2563EB), size: 64),
                 const SizedBox(height: 16),
-                Text('تسجيل الدخول', style: GoogleFonts.ibmPlexSansArabic(fontSize: 28, fontWeight: FontWeight.bold, color: const Color(0xFF1E293B))),
+                Text('تسجيل الدخول', style: TextStyle(fontFamily: 'IBMPlexSansArabic', fontSize: 28, fontWeight: FontWeight.bold, color: const Color(0xFF1E293B))),
                 const SizedBox(height: 8),
-                Text('قم بتسجيل الدخول لإدارة عيادتك', style: GoogleFonts.ibmPlexSansArabic(fontSize: 16, color: const Color(0xFF64748B))),
+                Text('قم بتسجيل الدخول لإدارة عيادتك', style: TextStyle(fontFamily: 'IBMPlexSansArabic', fontSize: 16, color: const Color(0xFF64748B))),
                 const SizedBox(height: 32),
                 TextField(
                   controller: _emailController,
                   autofillHints: const [AutofillHints.email],
                   decoration: InputDecoration(
                     labelText: 'البريد الإلكتروني',
-                    labelStyle: GoogleFonts.ibmPlexSansArabic(),
+                    labelStyle: TextStyle(fontFamily: 'IBMPlexSansArabic'),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                     prefixIcon: const Icon(Icons.email_outlined),
                   ),
@@ -60,7 +59,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   autofillHints: const [AutofillHints.password],
                   decoration: InputDecoration(
                     labelText: 'كلمة المرور',
-                    labelStyle: GoogleFonts.ibmPlexSansArabic(),
+                    labelStyle: TextStyle(fontFamily: 'IBMPlexSansArabic'),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                     prefixIcon: const Icon(Icons.lock_outline),
                     suffixIcon: IconButton(
@@ -81,7 +80,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     },
                     child: Text(
                       'نسيت كلمة المرور؟',
-                      style: GoogleFonts.ibmPlexSansArabic(color: const Color(0xFF64748B)),
+                      style: TextStyle(fontFamily: 'IBMPlexSansArabic', color: const Color(0xFF64748B)),
                     ),
                   ),
                 ),
@@ -104,13 +103,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           },
                     child: authState.isLoading
                         ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                        : Text('دخول', style: GoogleFonts.ibmPlexSansArabic(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                        : Text('دخول', style: TextStyle(fontFamily: 'IBMPlexSansArabic', fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
                   ),
                 ),
                 const SizedBox(height: 24),
                 TextButton(
                   onPressed: () => Navigator.pushNamed(context, '/register'),
-                  child: Text('إنشاء عيادة جديدة', style: GoogleFonts.ibmPlexSansArabic(fontSize: 16, color: const Color(0xFF2563EB), fontWeight: FontWeight.bold)),
+                  child: Text('إنشاء عيادة جديدة', style: TextStyle(fontFamily: 'IBMPlexSansArabic', fontSize: 16, color: const Color(0xFF2563EB), fontWeight: FontWeight.bold)),
                 ),
               ],
             ),
