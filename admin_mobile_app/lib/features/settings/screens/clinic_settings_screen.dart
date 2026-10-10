@@ -1,7 +1,9 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../../core/api/api_endpoints.dart';
+import '../../../core/offline/hive_service.dart';
 
 class ClinicSettingsScreen extends ConsumerStatefulWidget {
   const ClinicSettingsScreen({super.key});
@@ -16,12 +18,23 @@ class _ClinicSettingsScreenState extends ConsumerState<ClinicSettingsScreen> {
   final _phoneController = TextEditingController();
   final _taxNumberController = TextEditingController();
 
-  bool _isLoading = true;
   bool _isSaving = false;
 
   @override
   void initState() {
     super.initState();
+    final cachedDataString = HiveService.getSettingsBox().get('clinic');
+    if (cachedDataString != null) {
+      try {
+        final data = jsonDecode(cachedDataString);
+        _nameController.text = data['name']?.toString() ?? '';
+        _addressController.text = data['address']?.toString() ?? '';
+        _phoneController.text = _toEnglishNumbers(data['phone']?.toString() ?? '');
+        _taxNumberController.text = _toEnglishNumbers(data['taxNumber']?.toString() ?? '');
+      } catch (e) {
+        // Ignore JSON errors
+      }
+    }
     _fetchData();
   }
 
@@ -49,7 +62,7 @@ class _ClinicSettingsScreenState extends ConsumerState<ClinicSettingsScreen> {
       final dio = ref.read(dioProvider);
       
       final authState = ref.read(authStateProvider);
-      if (authState.clinic != null) {
+      if (_nameController.text.isEmpty && authState.clinic != null) {
         _nameController.text = authState.clinic!['name']?.toString() ?? '';
       }
 
@@ -57,20 +70,19 @@ class _ClinicSettingsScreenState extends ConsumerState<ClinicSettingsScreen> {
       
       if (response.statusCode == 200) {
         final data = response.data['data'] ?? response.data;
+        HiveService.getSettingsBox().put('clinic', jsonEncode(data));
+        
         if (mounted) {
           setState(() {
             _nameController.text = data['name']?.toString() ?? _nameController.text;
             _addressController.text = data['address']?.toString() ?? '';
             _phoneController.text = _toEnglishNumbers(data['phone']?.toString() ?? '');
             _taxNumberController.text = _toEnglishNumbers(data['taxNumber']?.toString() ?? '');
-            _isLoading = false;
           });
         }
-      } else {
-        if (mounted) setState(() => _isLoading = false);
       }
     } catch (e) {
-      if (mounted) setState(() => _isLoading = false);
+      // Ignore network errors, keep cached data
     }
   }
 
@@ -139,50 +151,48 @@ class _ClinicSettingsScreenState extends ConsumerState<ClinicSettingsScreen> {
           centerTitle: true,
         ),
         body: SafeArea(
-          child: _isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : ListView(
-                  padding: const EdgeInsets.all(20.0),
-                  children: [
-                    _buildTextField(label: 'اسم العيادة', controller: _nameController),
-                    const SizedBox(height: 16),
-                    _buildTextField(label: 'العنوان', controller: _addressController),
-                    const SizedBox(height: 16),
-                    _buildTextField(label: 'رقم هاتف العيادة', controller: _phoneController, isNumber: true),
-                    const SizedBox(height: 16),
-                    _buildTextField(label: 'الرقم الضريبي', controller: _taxNumberController, isNumber: true),
-                    const SizedBox(height: 32),
-                    ElevatedButton(
-                      onPressed: _isSaving ? null : _saveSettings,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF2563EB),
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(50),
-                        ),
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                      ),
-                      child: _isSaving
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                              ),
-                            )
-                          : const Text(
-                              'حفظ التغييرات',
-                              style: TextStyle(
-                                fontFamily: 'IBMPlexSansArabic',
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                    ),
-                  ],
+          child: ListView(
+            padding: const EdgeInsets.all(20.0),
+            children: [
+              _buildTextField(label: 'اسم العيادة', controller: _nameController),
+              const SizedBox(height: 16),
+              _buildTextField(label: 'العنوان', controller: _addressController),
+              const SizedBox(height: 16),
+              _buildTextField(label: 'رقم هاتف العيادة', controller: _phoneController, isNumber: true),
+              const SizedBox(height: 16),
+              _buildTextField(label: 'الرقم الضريبي', controller: _taxNumberController, isNumber: true),
+              const SizedBox(height: 32),
+              ElevatedButton(
+                onPressed: _isSaving ? null : _saveSettings,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF2563EB),
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(50),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
+                child: _isSaving
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      )
+                    : const Text(
+                        'حفظ التغييرات',
+                        style: TextStyle(
+                          fontFamily: 'IBMPlexSansArabic',
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+              ),
+            ],
+          ),
         ),
       ),
     );

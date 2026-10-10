@@ -1,7 +1,9 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../../core/api/api_endpoints.dart';
+import '../../../core/offline/hive_service.dart';
 
 class AccountSettingsScreen extends ConsumerStatefulWidget {
   const AccountSettingsScreen({super.key});
@@ -15,13 +17,34 @@ class _AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
   final _phoneController = TextEditingController();
   final _emailController = TextEditingController();
   
-  bool _isLoading = true;
   bool _isSaving = false;
 
   @override
   void initState() {
     super.initState();
+    _loadCachedData();
     _fetchData();
+  }
+
+  void _loadCachedData() {
+    final cachedProfile = HiveService.getSettingsBox().get('profile');
+    if (cachedProfile != null) {
+      try {
+        final data = jsonDecode(cachedProfile);
+        _nameController.text = data['fullName']?.toString() ?? '';
+        _emailController.text = data['email']?.toString() ?? '';
+        _phoneController.text = _toEnglishNumbers(data['phone']?.toString() ?? '');
+      } catch (e) {
+        // Handle json decode error if necessary
+      }
+    } else {
+      // Optional: fallback to auth state if no cached profile
+      final authState = ref.read(authStateProvider);
+      if (authState.user != null) {
+        _nameController.text = authState.user!['fullName']?.toString() ?? '';
+        _emailController.text = authState.user!['email']?.toString() ?? '';
+      }
+    }
   }
 
   @override
@@ -45,31 +68,21 @@ class _AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
   Future<void> _fetchData() async {
     try {
       final dio = ref.read(dioProvider);
-      
-      // Populate initials from authState
-      final authState = ref.read(authStateProvider);
-      if (authState.user != null) {
-        _nameController.text = authState.user!['fullName']?.toString() ?? '';
-        _emailController.text = authState.user!['email']?.toString() ?? '';
-      }
-
       final response = await dio.get(ApiEndpoints.profileSettings);
       
       if (response.statusCode == 200) {
         final data = response.data['data'] ?? response.data;
+        HiveService.getSettingsBox().put('profile', jsonEncode(data));
         if (mounted) {
           setState(() {
             _nameController.text = data['fullName']?.toString() ?? _nameController.text;
             _emailController.text = data['email']?.toString() ?? _emailController.text;
             _phoneController.text = _toEnglishNumbers(data['phone']?.toString() ?? '');
-            _isLoading = false;
           });
         }
-      } else {
-        if (mounted) setState(() => _isLoading = false);
       }
     } catch (e) {
-      if (mounted) setState(() => _isLoading = false);
+      // Keep silent on error, UI is already populated from cache
     }
   }
 
@@ -130,48 +143,46 @@ class _AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
           centerTitle: true,
         ),
         body: SafeArea(
-          child: _isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : ListView(
-                  padding: const EdgeInsets.all(20.0),
-                  children: [
-                    _buildTextField(label: 'الاسم الكامل', controller: _nameController),
-                    const SizedBox(height: 16),
-                    _buildTextField(label: 'رقم الهاتف', controller: _phoneController, isNumber: true),
-                    const SizedBox(height: 16),
-                    _buildTextField(label: 'البريد الإلكتروني', controller: _emailController, enabled: false),
-                    const SizedBox(height: 32),
-                    ElevatedButton(
-                      onPressed: _isSaving ? null : _saveSettings,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF2563EB),
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(50),
-                        ),
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                      ),
-                      child: _isSaving
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                              ),
-                            )
-                          : const Text(
-                              'حفظ التغييرات',
-                              style: TextStyle(
-                                fontFamily: 'IBMPlexSansArabic',
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                    ),
-                  ],
+          child: ListView(
+            padding: const EdgeInsets.all(20.0),
+            children: [
+              _buildTextField(label: 'الاسم الكامل', controller: _nameController),
+              const SizedBox(height: 16),
+              _buildTextField(label: 'رقم الهاتف', controller: _phoneController, isNumber: true),
+              const SizedBox(height: 16),
+              _buildTextField(label: 'البريد الإلكتروني', controller: _emailController, enabled: false),
+              const SizedBox(height: 32),
+              ElevatedButton(
+                onPressed: _isSaving ? null : _saveSettings,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF2563EB),
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(50),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
+                child: _isSaving
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      )
+                    : const Text(
+                        'حفظ التغييرات',
+                        style: TextStyle(
+                          fontFamily: 'IBMPlexSansArabic',
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+              ),
+            ],
+          ),
         ),
       ),
     );

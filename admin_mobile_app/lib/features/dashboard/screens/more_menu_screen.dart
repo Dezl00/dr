@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -5,6 +6,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 
+import '../../core/offline/hive_service.dart';
 import '../../settings/screens/settings_screen.dart';
 import '../../services/screens/services_screen.dart';
 import '../../team/screens/team_screen.dart';
@@ -97,7 +99,24 @@ class MoreMenuScreen extends ConsumerWidget {
   }
 
   Widget _buildWebsiteActions(BuildContext context, Map<String, dynamic>? clinic) {
-    final slug = clinic?['slug'] as String? ?? '';
+    String slug = '';
+    
+    try {
+      final clinicDataStr = HiveService.getSettingsBox().get('clinic');
+      if (clinicDataStr != null) {
+        final Map<String, dynamic> clinicData = jsonDecode(clinicDataStr);
+        slug = clinicData['slug'] as String? ?? '';
+      } else {
+        slug = clinic?['slug'] as String? ?? '';
+      }
+    } catch (e) {
+      slug = clinic?['slug'] as String? ?? '';
+    }
+
+    if (slug.isEmpty) {
+      return const SizedBox();
+    }
+
     final url = 'https://$slug.beyoondgroup.com';
 
     return Row(
@@ -277,11 +296,60 @@ class MoreMenuScreen extends ConsumerWidget {
           ),
           padding: const EdgeInsets.symmetric(horizontal: 20),
         ),
-        onPressed: () async {
-          await ref.read(authStateProvider.notifier).logout();
-          if (context.mounted) {
-            Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
-          }
+        onPressed: () {
+          showDialog(
+            context: context,
+            builder: (BuildContext dialogContext) {
+              return AlertDialog(
+                backgroundColor: Colors.white,
+                title: const Text(
+                  'تسجيل الخروج',
+                  style: TextStyle(
+                    fontFamily: 'IBMPlexSansArabic',
+                    color: Color(0xFF0F172A),
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                content: const Text(
+                  'هل أنت متأكد من تسجيل الخروج؟',
+                  style: TextStyle(
+                    fontFamily: 'IBMPlexSansArabic',
+                    color: Color(0xFF475569),
+                  ),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(dialogContext),
+                    child: const Text(
+                      'إلغاء',
+                      style: TextStyle(
+                        fontFamily: 'IBMPlexSansArabic',
+                        color: Color(0xFF475569),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () async {
+                      Navigator.pop(dialogContext);
+                      await ref.read(authStateProvider.notifier).logout();
+                      if (context.mounted) {
+                        Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+                      }
+                    },
+                    child: const Text(
+                      'تسجيل الخروج',
+                      style: TextStyle(
+                        fontFamily: 'IBMPlexSansArabic',
+                        color: Color(0xFFEF4444),
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
+          );
         },
         child: const Row(
           mainAxisAlignment: MainAxisAlignment.center,

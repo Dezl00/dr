@@ -1,10 +1,12 @@
 import 'dart:ui';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dio/dio.dart';
 import '../../../core/api/api_endpoints.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../../core/offline/hive_service.dart';
 
 class WebsiteSection {
   final String id;
@@ -22,7 +24,6 @@ class WebsiteSettingsScreen extends ConsumerStatefulWidget {
 }
 
 class _WebsiteSettingsScreenState extends ConsumerState<WebsiteSettingsScreen> {
-  bool _isLoading = false;
   bool _isSaving = false;
 
   final TextEditingController _domainController = TextEditingController();
@@ -48,6 +49,9 @@ class _WebsiteSettingsScreenState extends ConsumerState<WebsiteSettingsScreen> {
       WebsiteSection(id: 'contact', title: 'اتصل بنا', isEnabled: true),
       WebsiteSection(id: 'booking', title: 'حجز موعد', isEnabled: true),
     ];
+    
+    _initFromCache();
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initFromState();
       _fetchSettings();
@@ -62,6 +66,25 @@ class _WebsiteSettingsScreenState extends ConsumerState<WebsiteSettingsScreen> {
     _twitterController.dispose();
     _whatsappController.dispose();
     super.dispose();
+  }
+  
+  void _initFromCache() {
+    final cachedData = HiveService.getSettingsBox().get('website');
+    if (cachedData != null) {
+      try {
+        final data = jsonDecode(cachedData);
+        final settings = data['data'] ?? data['settings'] ?? data;
+        if (settings != null) {
+          _domainController.text = settings['domain'] ?? settings['slug'] ?? _domainController.text;
+          _facebookController.text = settings['socialFacebook'] ?? _facebookController.text;
+          _instagramController.text = settings['socialInstagram'] ?? _instagramController.text;
+          _twitterController.text = settings['socialTwitter'] ?? _twitterController.text;
+          _whatsappController.text = settings['socialWhatsapp'] ?? _whatsappController.text;
+        }
+      } catch (e) {
+        // Handle parsing error quietly
+      }
+    }
   }
 
   void _initFromState() {
@@ -80,33 +103,29 @@ class _WebsiteSettingsScreenState extends ConsumerState<WebsiteSettingsScreen> {
   }
 
   Future<void> _fetchSettings() async {
-    setState(() {
-      _isLoading = true;
-    });
     try {
       final dio = ref.read(dioProvider);
       final response = await dio.get(ApiEndpoints.settings);
       if (response.statusCode == 200) {
         final data = response.data;
+        
+        HiveService.getSettingsBox().put('website', jsonEncode(data));
+        
         final settings = data['data'] ?? data['settings'] ?? data;
         if (settings != null) {
-          setState(() {
-            _domainController.text = settings['domain'] ?? settings['slug'] ?? _domainController.text;
-            _facebookController.text = settings['socialFacebook'] ?? _facebookController.text;
-            _instagramController.text = settings['socialInstagram'] ?? _instagramController.text;
-            _twitterController.text = settings['socialTwitter'] ?? _twitterController.text;
-            _whatsappController.text = settings['socialWhatsapp'] ?? _whatsappController.text;
-          });
+          if (mounted) {
+            setState(() {
+              _domainController.text = settings['domain'] ?? settings['slug'] ?? _domainController.text;
+              _facebookController.text = settings['socialFacebook'] ?? _facebookController.text;
+              _instagramController.text = settings['socialInstagram'] ?? _instagramController.text;
+              _twitterController.text = settings['socialTwitter'] ?? _twitterController.text;
+              _whatsappController.text = settings['socialWhatsapp'] ?? _whatsappController.text;
+            });
+          }
         }
       }
     } catch (e) {
       // Keep existing data on error
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
     }
   }
 
@@ -125,7 +144,6 @@ class _WebsiteSettingsScreenState extends ConsumerState<WebsiteSettingsScreen> {
       
       await dio.put(ApiEndpoints.settings, data: settingsData);
       await dio.put('${ApiEndpoints.settings}/clinic', data: { 'slug': _domainController.text });
-      
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -184,102 +202,100 @@ class _WebsiteSettingsScreenState extends ConsumerState<WebsiteSettingsScreen> {
           ),
           centerTitle: true,
         ),
-        body: _isLoading
-            ? const Center(child: CircularProgressIndicator(color: Color(0xFF2563EB)))
-            : SafeArea(
-                child: ListView(
-                  padding: const EdgeInsets.all(20.0),
-                  children: [
-                    _buildSectionTitle('المعلومات الأساسية'),
-                    const SizedBox(height: 16),
-                    _buildSubdomainField(),
-                    const SizedBox(height: 16),
-                    _buildLogoUpload(),
-                    
-                    const SizedBox(height: 32),
-                    _buildSectionTitle('أقسام الموقع الإلكتروني'),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'قم بسحب وإفلات الأقسام لترتيبها، أو تفعيلها وتعطيلها.',
-                      style: TextStyle(
-                        fontFamily: 'IBMPlexSansArabic',
-                        fontSize: 15,
-                        color: Color(0xFF64748B),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    ReorderableListView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: _sections.length,
-                      proxyDecorator: (Widget child, int index, Animation<double> animation) {
-                        return Opacity(
-                          opacity: 0.7,
-                          child: child,
-                        );
-                      },
-                      onReorder: (oldIndex, newIndex) {
-                        setState(() {
-                          if (oldIndex < newIndex) {
-                            newIndex -= 1;
-                          }
-                          final item = _sections.removeAt(oldIndex);
-                          _sections.insert(newIndex, item);
-                        });
-                      },
-                      itemBuilder: (context, index) {
-                        final section = _sections[index];
-                        return Container(
-                          key: ValueKey(section.id),
-                          margin: const EdgeInsets.only(bottom: 12),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: const Color(0xFFE2E8F0)),
-                          ),
-                          child: _buildToggleRow(
-                            title: section.title,
-                            value: section.isEnabled,
-                            onChanged: (v) {
-                              setState(() {
-                                section.isEnabled = v;
-                              });
-                            },
-                            onEdit: () => _showEditSectionModal(section),
-                          ),
-                        );
-                      },
-                    ),
-                    
-                    const SizedBox(height: 32),
-                    _buildSectionTitle('روابط التواصل الاجتماعي'),
-                    const SizedBox(height: 16),
-                    _buildTextField(
-                      label: 'فيسبوك',
-                      controller: _facebookController,
-                      isEnglish: true,
-                    ),
-                    const SizedBox(height: 16),
-                    _buildTextField(
-                      label: 'إنستغرام',
-                      controller: _instagramController,
-                      isEnglish: true,
-                    ),
-                    const SizedBox(height: 16),
-                    _buildTextField(
-                      label: 'تويتر',
-                      controller: _twitterController,
-                      isEnglish: true,
-                    ),
-                    const SizedBox(height: 16),
-                    _buildTextField(
-                      label: 'واتساب',
-                      controller: _whatsappController,
-                      isEnglish: true,
-                    ),
-                  ],
+        body: SafeArea(
+          child: ListView(
+            padding: const EdgeInsets.all(20.0),
+            children: [
+              _buildSectionTitle('المعلومات الأساسية'),
+              const SizedBox(height: 16),
+              _buildSubdomainField(),
+              const SizedBox(height: 16),
+              _buildLogoUpload(),
+              
+              const SizedBox(height: 32),
+              _buildSectionTitle('أقسام الموقع الإلكتروني'),
+              const SizedBox(height: 8),
+              const Text(
+                'قم بسحب وإفلات الأقسام لترتيبها، أو تفعيلها وتعطيلها.',
+                style: TextStyle(
+                  fontFamily: 'IBMPlexSansArabic',
+                  fontSize: 15,
+                  color: Color(0xFF64748B),
                 ),
               ),
+              const SizedBox(height: 16),
+              ReorderableListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: _sections.length,
+                proxyDecorator: (Widget child, int index, Animation<double> animation) {
+                  return Opacity(
+                    opacity: 0.7,
+                    child: child,
+                  );
+                },
+                onReorder: (oldIndex, newIndex) {
+                  setState(() {
+                    if (oldIndex < newIndex) {
+                      newIndex -= 1;
+                    }
+                    final item = _sections.removeAt(oldIndex);
+                    _sections.insert(newIndex, item);
+                  });
+                },
+                itemBuilder: (context, index) {
+                  final section = _sections[index];
+                  return Container(
+                    key: ValueKey(section.id),
+                    margin: const EdgeInsets.only(bottom: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                    ),
+                    child: _buildToggleRow(
+                      title: section.title,
+                      value: section.isEnabled,
+                      onChanged: (v) {
+                        setState(() {
+                          section.isEnabled = v;
+                        });
+                      },
+                      onEdit: () => _showEditSectionModal(section),
+                    ),
+                  );
+                },
+              ),
+              
+              const SizedBox(height: 32),
+              _buildSectionTitle('روابط التواصل الاجتماعي'),
+              const SizedBox(height: 16),
+              _buildTextField(
+                label: 'فيسبوك',
+                controller: _facebookController,
+                isEnglish: true,
+              ),
+              const SizedBox(height: 16),
+              _buildTextField(
+                label: 'إنستغرام',
+                controller: _instagramController,
+                isEnglish: true,
+              ),
+              const SizedBox(height: 16),
+              _buildTextField(
+                label: 'تويتر',
+                controller: _twitterController,
+                isEnglish: true,
+              ),
+              const SizedBox(height: 16),
+              _buildTextField(
+                label: 'واتساب',
+                controller: _whatsappController,
+                isEnglish: true,
+              ),
+            ],
+          ),
+        ),
         bottomNavigationBar: Container(
           padding: const EdgeInsets.all(20),
           decoration: const BoxDecoration(
@@ -290,7 +306,7 @@ class _WebsiteSettingsScreenState extends ConsumerState<WebsiteSettingsScreen> {
           ),
           child: SafeArea(
             child: ElevatedButton(
-              onPressed: _isSaving || _isLoading ? null : _saveSettings,
+              onPressed: _isSaving ? null : _saveSettings,
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF2563EB),
                 elevation: 0,

@@ -100,7 +100,7 @@ class LeadsScreen extends ConsumerWidget {
             style: TextStyle(
               fontFamily: 'IBMPlexSansArabic',
               color: Colors.black54,
-              fontSize: 16,
+              fontSize: 14,
             ),
           ),
         ],
@@ -140,8 +140,8 @@ class LeadsScreen extends ConsumerWidget {
                   style: const TextStyle(
                     fontFamily: 'IBMPlexSansArabic',
                     color: Colors.black,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    fontSize: 14,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -168,7 +168,7 @@ class LeadsScreen extends ConsumerWidget {
                 fontFamily: 'IBMPlexSansArabic',
                 color: Colors.blue,
                 fontSize: 12,
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ),

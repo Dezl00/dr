@@ -19,6 +19,8 @@ class HiveService {
   static const String leadsBoxName = 'leadsBox';
   static const String inventoryBoxName = 'inventoryBox';
 
+  static const String settingsBoxName = 'settingsBox';
+
   static Future<void> init() async {
     await Hive.initFlutter();
     
@@ -66,45 +68,18 @@ class HiveService {
     await openEncryptedBox<String>(doctorsBoxName);
     await openEncryptedBox<String>(leadsBoxName);
     await openEncryptedBox<String>(inventoryBoxName);
+    await openEncryptedBox<String>(settingsBoxName);
   }
   
-  static Box<Patient> getPatientsBox() {
-    return Hive.box<Patient>(patientsBoxName);
-  }
-
-  static Box<PendingAction> getPendingActionsBox() {
-    return Hive.box<PendingAction>(pendingActionsBoxName);
-  }
-
-  static Box<Appointment> getAppointmentsBox() {
-    return Hive.box<Appointment>(appointmentsBoxName);
-  }
-
-  static Box<Invoice> getInvoicesBox() {
-    return Hive.box<Invoice>(invoicesBoxName);
-  }
-
-  static Box<Expense> getExpensesBox() {
-    return Hive.box<Expense>(expensesBoxName);
-  }
-
-  static Box<String> getTeamBox() {
-    return Hive.box<String>(teamBoxName);
-  }
-
-  static Box<String> getServicesBox() {
-    return Hive.box<String>(servicesBoxName);
-  }
-
-  static Box<String> getDoctorsBox() {
-    return Hive.box<String>(doctorsBoxName);
-  }
-
-  static Box<String> getLeadsBox() {
-    return Hive.box<String>(leadsBoxName);
-  }
-
-  static Box<String> getInventoryBox() {
-    return Hive.box<String>(inventoryBoxName);
-  }
+  static Box<Patient> getPatientsBox() => Hive.box<Patient>(patientsBoxName);
+  static Box<PendingAction> getPendingActionsBox() => Hive.box<PendingAction>(pendingActionsBoxName);
+  static Box<Appointment> getAppointmentsBox() => Hive.box<Appointment>(appointmentsBoxName);
+  static Box<Invoice> getInvoicesBox() => Hive.box<Invoice>(invoicesBoxName);
+  static Box<Expense> getExpensesBox() => Hive.box<Expense>(expensesBoxName);
+  static Box<String> getTeamBox() => Hive.box<String>(teamBoxName);
+  static Box<String> getServicesBox() => Hive.box<String>(servicesBoxName);
+  static Box<String> getDoctorsBox() => Hive.box<String>(doctorsBoxName);
+  static Box<String> getLeadsBox() => Hive.box<String>(leadsBoxName);
+  static Box<String> getInventoryBox() => Hive.box<String>(inventoryBoxName);
+  static Box<String> getSettingsBox() => Hive.box<String>(settingsBoxName);
 }

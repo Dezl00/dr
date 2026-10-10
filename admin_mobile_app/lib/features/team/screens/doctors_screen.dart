@@ -100,7 +100,7 @@ class DoctorsScreen extends ConsumerWidget {
             style: TextStyle(
               fontFamily: 'IBMPlexSansArabic',
               color: Colors.black54,
-              fontSize: 16,
+              fontSize: 14,
             ),
           ),
         ],
@@ -143,8 +143,8 @@ class DoctorsScreen extends ConsumerWidget {
                   style: const TextStyle(
                     fontFamily: 'IBMPlexSansArabic',
                     color: Colors.black,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    fontSize: 14,
                   ),
                 ),
                 const SizedBox(height: 4),
