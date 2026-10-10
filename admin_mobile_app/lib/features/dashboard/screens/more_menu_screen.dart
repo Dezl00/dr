@@ -6,7 +6,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 
-import '../../core/offline/hive_service.dart';
+import '../../../core/offline/hive_service.dart';
 import '../../settings/screens/settings_screen.dart';
 import '../../services/screens/services_screen.dart';
 import '../../team/screens/team_screen.dart';

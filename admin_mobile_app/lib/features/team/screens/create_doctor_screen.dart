@@ -34,7 +34,7 @@ class _CreateDoctorScreenState extends ConsumerState<CreateDoctorScreen> {
     try {
       final dio = DioClient().dio;
       await dio.post(ApiEndpoints.doctors, data: {
-        'name': _nameController.text,
+        'fullName': _nameController.text,
         'specialty': _specialtyController.text,
         'phone': _phoneController.text,
       });

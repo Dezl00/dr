@@ -38,7 +38,7 @@ class _CreateInventoryScreenState extends ConsumerState<CreateInventoryScreen> {
     try {
       final dio = ref.read(dioProvider);
       
-      final data = {
+      final Map<String, dynamic> data = {
         'name': _nameController.text.trim(),
       };
       
