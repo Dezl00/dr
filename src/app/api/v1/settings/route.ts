@@ -8,7 +8,15 @@ export async function GET(req: Request) {
     const settings = await prisma.clinicSettings.findUnique({
       where: { clinicId: clinic.id }
     });
-    return NextResponse.json({ success: true, data: settings });
+    return NextResponse.json({ 
+      success: true, 
+      data: {
+        ...settings,
+        name: clinic.name,
+        slug: clinic.slug,
+        domain: clinic.slug
+      } 
+    });
   } catch (error: any) {
     if (error.message?.includes('Unauthorized')) return NextResponse.json({ success: false, error: error.message }, { status: 401 });
     return NextResponse.json({ success: false, error: "حدث خطأ" }, { status: 500 });

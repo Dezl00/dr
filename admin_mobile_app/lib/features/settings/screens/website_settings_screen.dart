@@ -67,13 +67,15 @@ class _WebsiteSettingsScreenState extends ConsumerState<WebsiteSettingsScreen> {
   void _initFromState() {
     final authState = ref.read(authStateProvider);
     final clinic = authState.clinic;
-    if (clinic != null && clinic['settings'] != null) {
-      final settings = clinic['settings'];
-      _domainController.text = settings['domain'] ?? '';
-      _facebookController.text = settings['socialFacebook'] ?? '';
-      _instagramController.text = settings['socialInstagram'] ?? '';
-      _twitterController.text = settings['socialTwitter'] ?? '';
-      _whatsappController.text = settings['socialWhatsapp'] ?? '';
+    if (clinic != null) {
+      _domainController.text = clinic['slug'] ?? '';
+      if (clinic['settings'] != null) {
+        final settings = clinic['settings'];
+        _facebookController.text = settings['socialFacebook'] ?? '';
+        _instagramController.text = settings['socialInstagram'] ?? '';
+        _twitterController.text = settings['socialTwitter'] ?? '';
+        _whatsappController.text = settings['socialWhatsapp'] ?? '';
+      }
     }
   }
 
@@ -89,7 +91,7 @@ class _WebsiteSettingsScreenState extends ConsumerState<WebsiteSettingsScreen> {
         final settings = data['data'] ?? data['settings'] ?? data;
         if (settings != null) {
           setState(() {
-            _domainController.text = settings['domain'] ?? _domainController.text;
+            _domainController.text = settings['domain'] ?? settings['slug'] ?? _domainController.text;
             _facebookController.text = settings['socialFacebook'] ?? _facebookController.text;
             _instagramController.text = settings['socialInstagram'] ?? _instagramController.text;
             _twitterController.text = settings['socialTwitter'] ?? _twitterController.text;
@@ -429,10 +431,13 @@ class _WebsiteSettingsScreenState extends ConsumerState<WebsiteSettingsScreen> {
                 constraints: const BoxConstraints(),
               ),
               const SizedBox(width: 12),
-              CupertinoSwitch(
+              Switch(
                 value: value,
                 onChanged: onChanged,
-                activeColor: const Color(0xFF2563EB),
+                activeColor: Colors.white,
+                activeTrackColor: const Color(0xFF2563EB),
+                inactiveThumbColor: Colors.white,
+                inactiveTrackColor: const Color(0xFFCBD5E1),
               ),
             ],
           ),

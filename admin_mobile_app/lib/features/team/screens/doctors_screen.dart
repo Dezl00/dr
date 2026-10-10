@@ -109,7 +109,7 @@ class DoctorsScreen extends ConsumerWidget {
   }
 
   Widget _buildDoctorCard(dynamic doctor) {
-    final name = doctor['name'] ?? 'اسم الطبيب';
+    final name = doctor['fullName'] ?? 'اسم الطبيب';
     final specialty = doctor['specialty'] ?? 'التخصص';
     
     return Container(
