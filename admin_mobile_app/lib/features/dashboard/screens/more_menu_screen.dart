@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../settings/screens/settings_screen.dart';
 import '../../services/screens/services_screen.dart';
@@ -32,7 +34,7 @@ class MoreMenuScreen extends ConsumerWidget {
           children: [
             _buildClinicHeader(clinic),
             const SizedBox(height: 24),
-            _buildWebsiteActions(clinic),
+            _buildWebsiteActions(context, clinic),
             const SizedBox(height: 32),
             const Text(
               'أقسام العيادة',
@@ -94,7 +96,7 @@ class MoreMenuScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildWebsiteActions(Map<String, dynamic>? clinic) {
+  Widget _buildWebsiteActions(BuildContext context, Map<String, dynamic>? clinic) {
     final slug = clinic?['slug'] as String? ?? '';
     final url = 'https://$slug.beyoondgroup.com';
 
@@ -104,8 +106,10 @@ class MoreMenuScreen extends ConsumerWidget {
           child: ElevatedButton.icon(
             onPressed: () async {
               final uri = Uri.parse(url);
-              if (await canLaunchUrl(uri)) {
-                await launchUrl(uri);
+              try {
+                await launchUrl(uri, mode: LaunchMode.externalApplication);
+              } catch (e) {
+                // Fallback
               }
             },
             icon: const Icon(Icons.open_in_new, size: 20),
@@ -123,7 +127,17 @@ class MoreMenuScreen extends ConsumerWidget {
         Expanded(
           child: OutlinedButton.icon(
             onPressed: () {
-              Share.share(url);
+              try {
+                if (kIsWeb) {
+                  Clipboard.setData(ClipboardData(text: url));
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم نسخ الرابط!')));
+                } else {
+                  Share.share(url);
+                }
+              } catch (e) {
+                Clipboard.setData(ClipboardData(text: url));
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم نسخ الرابط!')));
+              }
             },
             icon: const Icon(Icons.share_outlined, size: 20),
             label: const Text('مشاركة الموقع', style: TextStyle(fontFamily: 'IBMPlexSansArabic', fontWeight: FontWeight.bold)),

@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dio/dio.dart';
 import '../../../core/api/api_endpoints.dart';
@@ -36,16 +37,16 @@ class _WebsiteSettingsScreenState extends ConsumerState<WebsiteSettingsScreen> {
   void initState() {
     super.initState();
     _sections = [
-      WebsiteSection(id: 'hero', title: 'القسم الرئيسي (Hero)', isEnabled: true),
-      WebsiteSection(id: 'about', title: 'من نحن (About)', isEnabled: true),
-      WebsiteSection(id: 'services', title: 'الخدمات (Services)', isEnabled: true),
-      WebsiteSection(id: 'doctors', title: 'الأطباء (Doctors)', isEnabled: true),
-      WebsiteSection(id: 'why_choose_us', title: 'لماذا نحن (Why Choose Us)', isEnabled: true),
-      WebsiteSection(id: 'gallery', title: 'معرض الصور (Gallery)', isEnabled: true),
-      WebsiteSection(id: 'testimonials', title: 'آراء العملاء (Testimonials)', isEnabled: true),
-      WebsiteSection(id: 'faq', title: 'الأسئلة الشائعة (FAQ)', isEnabled: true),
-      WebsiteSection(id: 'contact', title: 'اتصل بنا (Contact)', isEnabled: true),
-      WebsiteSection(id: 'booking', title: 'حجز موعد (Booking)', isEnabled: true),
+      WebsiteSection(id: 'hero', title: 'القسم الرئيسي', isEnabled: true),
+      WebsiteSection(id: 'about', title: 'من نحن', isEnabled: true),
+      WebsiteSection(id: 'services', title: 'الخدمات', isEnabled: true),
+      WebsiteSection(id: 'doctors', title: 'الأطباء', isEnabled: true),
+      WebsiteSection(id: 'why_choose_us', title: 'لماذا نحن', isEnabled: true),
+      WebsiteSection(id: 'gallery', title: 'معرض الصور', isEnabled: true),
+      WebsiteSection(id: 'testimonials', title: 'آراء العملاء', isEnabled: true),
+      WebsiteSection(id: 'faq', title: 'الأسئلة الشائعة', isEnabled: true),
+      WebsiteSection(id: 'contact', title: 'اتصل بنا', isEnabled: true),
+      WebsiteSection(id: 'booking', title: 'حجز موعد', isEnabled: true),
     ];
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initFromState();
@@ -167,15 +168,15 @@ class _WebsiteSettingsScreenState extends ConsumerState<WebsiteSettingsScreen> {
           elevation: 0,
           scrolledUnderElevation: 0,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios, color: Color(0xFF0F172A)),
+            icon: const Icon(Icons.arrow_back_ios, color: Color(0xFF0F172A), size: 20),
             onPressed: () => Navigator.pop(context),
           ),
           title: const Text(
             'إعدادات الموقع الإلكتروني',
             style: TextStyle(
               fontFamily: 'IBMPlexSansArabic',
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
               color: Color(0xFF0F172A),
             ),
           ),
@@ -189,29 +190,7 @@ class _WebsiteSettingsScreenState extends ConsumerState<WebsiteSettingsScreen> {
                   children: [
                     _buildSectionTitle('المعلومات الأساسية'),
                     const SizedBox(height: 16),
-                    _buildTextField(
-                      label: 'رابط الموقع (Domain)',
-                      controller: _domainController,
-                      isEnglish: true,
-                      suffixWidget: Padding(
-                        padding: const EdgeInsets.only(right: 12.0, left: 16.0),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          mainAxisSize: MainAxisSize.min,
-                          children: const [
-                            Text(
-                              '.beyoondgroup.com',
-                              textDirection: TextDirection.ltr,
-                              style: TextStyle(
-                                fontFamily: 'IBMPlexSansArabic',
-                                fontSize: 16,
-                                color: Color(0xFF64748B),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
+                    _buildSubdomainField(),
                     const SizedBox(height: 16),
                     _buildLogoUpload(),
                     
@@ -222,76 +201,52 @@ class _WebsiteSettingsScreenState extends ConsumerState<WebsiteSettingsScreen> {
                       'قم بسحب وإفلات الأقسام لترتيبها، أو تفعيلها وتعطيلها.',
                       style: TextStyle(
                         fontFamily: 'IBMPlexSansArabic',
-                        fontSize: 14,
+                        fontSize: 12,
                         color: Color(0xFF64748B),
                       ),
                     ),
                     const SizedBox(height: 16),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: const Color(0xFFE2E8F0)),
-                      ),
-                      clipBehavior: Clip.antiAlias,
-                      child: ReorderableListView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: _sections.length,
-                        proxyDecorator: (Widget child, int index, Animation<double> animation) {
-                          return AnimatedBuilder(
-                            animation: animation,
-                            builder: (BuildContext context, Widget? child) {
-                              final double animValue = Curves.easeInOut.transform(animation.value);
-                              final double elevation = lerpDouble(0, 8, animValue)!;
-                              final double scale = lerpDouble(1, 1.02, animValue)!;
-                              return Transform.scale(
-                                scale: scale,
-                                child: Card(
-                                  elevation: elevation,
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                  margin: EdgeInsets.zero,
-                                  color: Colors.white,
-                                  child: child,
-                                ),
-                              );
-                            },
-                            child: child,
-                          );
-                        },
-                        onReorder: (oldIndex, newIndex) {
-                          setState(() {
-                            if (oldIndex < newIndex) {
-                              newIndex -= 1;
-                            }
-                            final item = _sections.removeAt(oldIndex);
-                            _sections.insert(newIndex, item);
-                          });
-                        },
-                        itemBuilder: (context, index) {
-                          final section = _sections[index];
-                          return Container(
-                            key: ValueKey(section.id),
+                    ReorderableListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: _sections.length,
+                      proxyDecorator: (Widget child, int index, Animation<double> animation) {
+                        return Opacity(
+                          opacity: 0.7,
+                          child: child,
+                        );
+                      },
+                      onReorder: (oldIndex, newIndex) {
+                        setState(() {
+                          if (oldIndex < newIndex) {
+                            newIndex -= 1;
+                          }
+                          final item = _sections.removeAt(oldIndex);
+                          _sections.insert(newIndex, item);
+                        });
+                      },
+                      itemBuilder: (context, index) {
+                        final section = _sections[index];
+                        return Container(
+                          key: ValueKey(section.id),
+                          margin: const EdgeInsets.only(bottom: 12),
+                          decoration: BoxDecoration(
                             color: Colors.white,
-                            child: Column(
-                              children: [
-                                _buildToggleRow(
-                                  title: section.title,
-                                  value: section.isEnabled,
-                                  onChanged: (v) {
-                                    setState(() {
-                                      section.isEnabled = v;
-                                    });
-                                  },
-                                  onEdit: () => _showEditSectionModal(section),
-                                ),
-                                if (index < _sections.length - 1)
-                                  _buildDivider(),
-                              ],
-                            ),
-                          );
-                        },
-                      ),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: const Color(0xFFE2E8F0)),
+                          ),
+                          child: _buildToggleRow(
+                            title: section.title,
+                            value: section.isEnabled,
+                            onChanged: (v) {
+                              setState(() {
+                                section.isEnabled = v;
+                              });
+                            },
+                            onEdit: () => _showEditSectionModal(section),
+                          ),
+                        );
+                      },
                     ),
                     
                     const SizedBox(height: 32),
@@ -310,7 +265,7 @@ class _WebsiteSettingsScreenState extends ConsumerState<WebsiteSettingsScreen> {
                     ),
                     const SizedBox(height: 16),
                     _buildTextField(
-                      label: 'تويتر (X)',
+                      label: 'تويتر',
                       controller: _twitterController,
                       isEnglish: true,
                     ),
@@ -352,8 +307,8 @@ class _WebsiteSettingsScreenState extends ConsumerState<WebsiteSettingsScreen> {
                       'حفظ التغييرات',
                       style: TextStyle(
                         fontFamily: 'IBMPlexSansArabic',
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
                         color: Colors.white,
                       ),
                     ),
@@ -369,10 +324,73 @@ class _WebsiteSettingsScreenState extends ConsumerState<WebsiteSettingsScreen> {
       title,
       style: const TextStyle(
         fontFamily: 'IBMPlexSansArabic',
-        fontSize: 16,
-        fontWeight: FontWeight.bold,
+        fontSize: 14,
+        fontWeight: FontWeight.w500,
         color: Color(0xFF0F172A),
       ),
+    );
+  }
+
+  Widget _buildSubdomainField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'رابط الموقع',
+          style: TextStyle(
+            fontFamily: 'IBMPlexSansArabic',
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+            color: Color(0xFF475569),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
+          ),
+          child: Row(
+            textDirection: TextDirection.ltr,
+            children: [
+              Expanded(
+                child: TextFormField(
+                  controller: _domainController,
+                  textDirection: TextDirection.ltr,
+                  keyboardType: TextInputType.text,
+                  style: const TextStyle(
+                    fontFamily: 'IBMPlexSansArabic',
+                    fontSize: 14,
+                    color: Color(0xFF0F172A),
+                  ),
+                  decoration: const InputDecoration(
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  ),
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: const BoxDecoration(
+                  color: Color(0xFFF8FAFC),
+                  borderRadius: BorderRadius.horizontal(right: Radius.circular(12)),
+                  border: Border(left: BorderSide(color: Color(0xFFE2E8F0))),
+                ),
+                child: const Text(
+                  '.beyoondgroup.com',
+                  textDirection: TextDirection.ltr,
+                  style: TextStyle(
+                    fontFamily: 'IBMPlexSansArabic',
+                    fontSize: 14,
+                    color: Color(0xFF64748B),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -383,20 +401,20 @@ class _WebsiteSettingsScreenState extends ConsumerState<WebsiteSettingsScreen> {
     required VoidCallback onEdit,
   }) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Row(
             children: [
-              const Icon(Icons.drag_indicator, color: Color(0xFF94A3B8)),
-              const SizedBox(width: 12),
+              const Icon(Icons.drag_indicator, color: Color(0xFF94A3B8), size: 20),
+              const SizedBox(width: 8),
               Text(
                 title,
                 style: const TextStyle(
                   fontFamily: 'IBMPlexSansArabic',
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
                   color: Color(0xFF0F172A),
                 ),
               ),
@@ -405,15 +423,16 @@ class _WebsiteSettingsScreenState extends ConsumerState<WebsiteSettingsScreen> {
           Row(
             children: [
               IconButton(
-                icon: const Icon(Icons.edit_outlined, color: Color(0xFF2563EB)),
+                icon: const Icon(Icons.edit_outlined, color: Color(0xFF2563EB), size: 20),
                 onPressed: onEdit,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
               ),
-              Switch(
+              const SizedBox(width: 12),
+              CupertinoSwitch(
                 value: value,
                 onChanged: onChanged,
                 activeColor: const Color(0xFF2563EB),
-                inactiveThumbColor: Colors.white,
-                inactiveTrackColor: const Color(0xFFE2E8F0),
               ),
             ],
           ),
@@ -422,15 +441,10 @@ class _WebsiteSettingsScreenState extends ConsumerState<WebsiteSettingsScreen> {
     );
   }
 
-  Widget _buildDivider() {
-    return const Divider(height: 1, color: Color(0xFFE2E8F0));
-  }
-
   Widget _buildTextField({
     required String label,
     required TextEditingController controller,
     bool isEnglish = false,
-    Widget? suffixWidget,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -439,8 +453,8 @@ class _WebsiteSettingsScreenState extends ConsumerState<WebsiteSettingsScreen> {
           label,
           style: const TextStyle(
             fontFamily: 'IBMPlexSansArabic',
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
             color: Color(0xFF475569),
           ),
         ),
@@ -451,24 +465,23 @@ class _WebsiteSettingsScreenState extends ConsumerState<WebsiteSettingsScreen> {
           keyboardType: TextInputType.text,
           style: const TextStyle(
             fontFamily: 'IBMPlexSansArabic',
-            fontSize: 16,
+            fontSize: 14,
             color: Color(0xFF0F172A),
           ),
           decoration: InputDecoration(
             filled: true,
             fillColor: Colors.white,
-            suffixIcon: suffixWidget,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(12),
               borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(12),
               borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(12),
               borderSide: const BorderSide(color: Color(0xFF2563EB)),
             ),
           ),
@@ -485,18 +498,18 @@ class _WebsiteSettingsScreenState extends ConsumerState<WebsiteSettingsScreen> {
           'شعار العيادة',
           style: TextStyle(
             fontFamily: 'IBMPlexSansArabic',
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
             color: Color(0xFF475569),
           ),
         ),
         const SizedBox(height: 8),
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             color: const Color(0xFFF8FAFC),
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: const Color(0xFFE2E8F0),
               style: BorderStyle.solid,
@@ -504,14 +517,14 @@ class _WebsiteSettingsScreenState extends ConsumerState<WebsiteSettingsScreen> {
           ),
           child: Column(
             children: [
-              const Icon(Icons.cloud_upload_outlined, size: 48, color: Color(0xFF94A3B8)),
-              const SizedBox(height: 12),
+              const Icon(Icons.cloud_upload_outlined, size: 36, color: Color(0xFF94A3B8)),
+              const SizedBox(height: 8),
               const Text(
                 'اضغط لرفع شعار جديد',
                 style: TextStyle(
                   fontFamily: 'IBMPlexSansArabic',
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
                   color: Color(0xFF0F172A),
                 ),
               ),
@@ -521,7 +534,7 @@ class _WebsiteSettingsScreenState extends ConsumerState<WebsiteSettingsScreen> {
                 textDirection: TextDirection.ltr,
                 style: TextStyle(
                   fontFamily: 'IBMPlexSansArabic',
-                  fontSize: 12,
+                  fontSize: 10,
                   color: Color(0xFF64748B),
                 ),
               ),
@@ -538,7 +551,7 @@ class _WebsiteSettingsScreenState extends ConsumerState<WebsiteSettingsScreen> {
       isScrollControlled: true,
       backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
         return Padding(
@@ -548,7 +561,7 @@ class _WebsiteSettingsScreenState extends ConsumerState<WebsiteSettingsScreen> {
           child: Directionality(
             textDirection: TextDirection.rtl,
             child: Container(
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.all(20),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -560,49 +573,52 @@ class _WebsiteSettingsScreenState extends ConsumerState<WebsiteSettingsScreen> {
                         'تعديل ${section.title}',
                         style: const TextStyle(
                           fontFamily: 'IBMPlexSansArabic',
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
                           color: Color(0xFF0F172A),
                         ),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.close, color: Color(0xFF64748B)),
+                        icon: const Icon(Icons.close, color: Color(0xFF64748B), size: 20),
                         onPressed: () => Navigator.pop(context),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 20),
                   if (section.id == 'hero') ...[
-                    _buildModalTextField('العنوان الرئيسي (Title)'),
-                    const SizedBox(height: 16),
-                    _buildModalTextField('النص الفرعي (Subtitle)'),
-                    const SizedBox(height: 16),
-                    _buildModalTextField('نص الزر (Button Text)'),
+                    _buildModalTextField('العنوان الرئيسي'),
+                    const SizedBox(height: 12),
+                    _buildModalTextField('النص الفرعي'),
+                    const SizedBox(height: 12),
+                    _buildModalTextField('نص الزر'),
                   ] else if (section.id == 'about') ...[
-                    _buildModalTextField('النص (Text)'),
-                    const SizedBox(height: 16),
-                    _buildModalTextField('رابط الصورة (Image URL)'),
+                    _buildModalTextField('النص'),
+                    const SizedBox(height: 12),
+                    _buildModalTextField('رابط الصورة'),
                   ] else ...[
-                    _buildModalTextField('محتوى القسم (Content)'),
+                    _buildModalTextField('محتوى القسم'),
                   ],
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 24),
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: () => Navigator.pop(context),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF2563EB),
-                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        elevation: 0,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(12),
                         ),
                       ),
                       child: const Text(
                         'حفظ',
                         style: TextStyle(
                           fontFamily: 'IBMPlexSansArabic',
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
                           color: Colors.white,
                         ),
                       ),
@@ -625,32 +641,32 @@ class _WebsiteSettingsScreenState extends ConsumerState<WebsiteSettingsScreen> {
           label,
           style: const TextStyle(
             fontFamily: 'IBMPlexSansArabic',
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
             color: Color(0xFF475569),
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 6),
         TextFormField(
           style: const TextStyle(
             fontFamily: 'IBMPlexSansArabic',
-            fontSize: 14,
+            fontSize: 13,
             color: Color(0xFF0F172A),
           ),
           decoration: InputDecoration(
             filled: true,
             fillColor: const Color(0xFFF8FAFC),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(10),
               borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(10),
               borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(10),
               borderSide: const BorderSide(color: Color(0xFF2563EB)),
             ),
           ),
@@ -659,4 +675,3 @@ class _WebsiteSettingsScreenState extends ConsumerState<WebsiteSettingsScreen> {
     );
   }
 }
-
