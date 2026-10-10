@@ -2,12 +2,12 @@ import * as admin from 'firebase-admin';
 import * as fs from 'fs';
 import * as path from 'path';
 
-let firebaseAdminApp: admin.app.App;
+let firebaseAdminApp: any;
 
 export function getFirebaseAdminApp() {
   if (!firebaseAdminApp) {
     if (admin.apps.length > 0) {
-      firebaseAdminApp = admin.apps[0] as admin.app.App;
+      firebaseAdminApp = admin.apps[0] as any;
     } else {
       try {
         let serviceAccount: any;
@@ -28,7 +28,7 @@ export function getFirebaseAdminApp() {
             serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
           } else {
             console.warn('Firebase Service Account not found. Push notifications will not work.');
-            return admin.apps[0] as admin.app.App; // return undefined safely if no app
+            return admin.apps[0] as any; // return undefined safely if no app
           }
         }
 
