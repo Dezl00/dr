@@ -1,7 +1,21 @@
-﻿import { NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { requireApiAuth } from "@/lib/auth/api-auth";
 import { verifyPassword, hashPassword } from "@/lib/auth/password";
+
+export async function GET(req: Request) {
+  try {
+    const { user } = await requireApiAuth(req);
+    const fullUser = await prisma.user.findUnique({
+      where: { id: user.id },
+      select: { id: true, fullName: true, email: true, phone: true, avatarUrl: true }
+    });
+    return NextResponse.json({ success: true, data: fullUser });
+  } catch (error: any) {
+    if (error.message?.includes('Unauthorized')) return NextResponse.json({ success: false, error: error.message }, { status: 401 });
+    return NextResponse.json({ success: false, error: "حدث خطأ داخلي" }, { status: 500 });
+  }
+}
 
 export async function PUT(req: Request) {
   try {
