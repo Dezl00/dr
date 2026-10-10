@@ -722,13 +722,13 @@ class _AppointmentDetailsSheet extends ConsumerWidget {
               width: double.infinity,
               height: 48,
               child: ElevatedButton.icon(
-                onPressed: () => _openWhatsApp(appointment.patientPhone),
+                onPressed: () => _sendReminder(context),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF25D366),
                   elevation: 0,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
                 ),
-                icon: const Icon(Icons.chat_outlined, color: Colors.white),
+                icon: const Icon(Icons.sms_outlined, color: Colors.white),
                 label: const Text(
                   'تذكير عبر واتساب',
                   style: TextStyle(
