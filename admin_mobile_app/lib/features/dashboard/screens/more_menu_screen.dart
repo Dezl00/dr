@@ -113,12 +113,12 @@ class MoreMenuScreen extends ConsumerWidget {
               }
             },
             icon: const Icon(Icons.open_in_new, size: 20),
-            label: const Text('زيارة الموقع', style: TextStyle(fontFamily: 'IBMPlexSansArabic', fontWeight: FontWeight.bold)),
+            label: const Text('زيارة الموقع', style: TextStyle(fontFamily: 'IBMPlexSansArabic', fontWeight: FontWeight.w500)),
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF2563EB),
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 12),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
               elevation: 0,
             ),
           ),
@@ -128,24 +128,19 @@ class MoreMenuScreen extends ConsumerWidget {
           child: OutlinedButton.icon(
             onPressed: () {
               try {
-                if (kIsWeb) {
-                  Clipboard.setData(ClipboardData(text: url));
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم نسخ الرابط!')));
-                } else {
-                  Share.share(url);
-                }
+                Share.share(url);
               } catch (e) {
                 Clipboard.setData(ClipboardData(text: url));
                 ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم نسخ الرابط!')));
               }
             },
             icon: const Icon(Icons.share_outlined, size: 20),
-            label: const Text('مشاركة الموقع', style: TextStyle(fontFamily: 'IBMPlexSansArabic', fontWeight: FontWeight.bold)),
+            label: const Text('مشاركة الموقع', style: TextStyle(fontFamily: 'IBMPlexSansArabic', fontWeight: FontWeight.w500)),
             style: OutlinedButton.styleFrom(
               foregroundColor: const Color(0xFF2563EB),
-              side: const BorderSide(color: Color(0xFF2563EB)),
+              side: const BorderSide(color: Color(0xFFE2E8F0)),
               padding: const EdgeInsets.symmetric(vertical: 12),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
             ),
           ),
         ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/providers/inventory_provider.dart';
+import 'create_inventory_screen.dart';
 
 class InventoryScreen extends ConsumerWidget {
   const InventoryScreen({super.key});
@@ -43,7 +44,9 @@ class InventoryScreen extends ConsumerWidget {
                     ),
                     const Spacer(),
                     ElevatedButton.icon(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (_) => const CreateInventoryScreen()));
+                      },
                       icon: const Icon(Icons.add, size: 18),
                       label: const Text(
                         'إضافة عنصر',

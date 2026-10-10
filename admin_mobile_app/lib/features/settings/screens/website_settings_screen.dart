@@ -114,16 +114,16 @@ class _WebsiteSettingsScreenState extends ConsumerState<WebsiteSettingsScreen> {
     });
     try {
       final dio = ref.read(dioProvider);
-      final data = {
-        'domain': _domainController.text,
+      final settingsData = {
         'socialFacebook': _facebookController.text,
         'socialInstagram': _instagramController.text,
         'socialTwitter': _twitterController.text,
         'socialWhatsapp': _whatsappController.text,
-        'sections': _sections.map((s) => {'id': s.id, 'isEnabled': s.isEnabled}).toList(),
       };
       
-      await dio.put(ApiEndpoints.settings, data: data);
+      await dio.put(ApiEndpoints.settings, data: settingsData);
+      await dio.put('${ApiEndpoints.settings}/clinic', data: { 'slug': _domainController.text });
+      
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -201,7 +201,7 @@ class _WebsiteSettingsScreenState extends ConsumerState<WebsiteSettingsScreen> {
                       'قم بسحب وإفلات الأقسام لترتيبها، أو تفعيلها وتعطيلها.',
                       style: TextStyle(
                         fontFamily: 'IBMPlexSansArabic',
-                        fontSize: 12,
+                        fontSize: 15,
                         color: Color(0xFF64748B),
                       ),
                     ),
@@ -307,7 +307,7 @@ class _WebsiteSettingsScreenState extends ConsumerState<WebsiteSettingsScreen> {
                       'حفظ التغييرات',
                       style: TextStyle(
                         fontFamily: 'IBMPlexSansArabic',
-                        fontSize: 14,
+                        fontSize: 15,
                         fontWeight: FontWeight.w500,
                         color: Colors.white,
                       ),
@@ -324,7 +324,7 @@ class _WebsiteSettingsScreenState extends ConsumerState<WebsiteSettingsScreen> {
       title,
       style: const TextStyle(
         fontFamily: 'IBMPlexSansArabic',
-        fontSize: 14,
+        fontSize: 15,
         fontWeight: FontWeight.w500,
         color: Color(0xFF0F172A),
       ),
@@ -339,7 +339,7 @@ class _WebsiteSettingsScreenState extends ConsumerState<WebsiteSettingsScreen> {
           'رابط الموقع',
           style: TextStyle(
             fontFamily: 'IBMPlexSansArabic',
-            fontSize: 12,
+            fontSize: 15,
             fontWeight: FontWeight.w500,
             color: Color(0xFF475569),
           ),
@@ -361,7 +361,7 @@ class _WebsiteSettingsScreenState extends ConsumerState<WebsiteSettingsScreen> {
                   keyboardType: TextInputType.text,
                   style: const TextStyle(
                     fontFamily: 'IBMPlexSansArabic',
-                    fontSize: 14,
+                    fontSize: 15,
                     color: Color(0xFF0F172A),
                   ),
                   decoration: const InputDecoration(
@@ -382,7 +382,7 @@ class _WebsiteSettingsScreenState extends ConsumerState<WebsiteSettingsScreen> {
                   textDirection: TextDirection.ltr,
                   style: TextStyle(
                     fontFamily: 'IBMPlexSansArabic',
-                    fontSize: 14,
+                    fontSize: 15,
                     color: Color(0xFF64748B),
                   ),
                 ),
@@ -453,7 +453,7 @@ class _WebsiteSettingsScreenState extends ConsumerState<WebsiteSettingsScreen> {
           label,
           style: const TextStyle(
             fontFamily: 'IBMPlexSansArabic',
-            fontSize: 12,
+            fontSize: 15,
             fontWeight: FontWeight.w500,
             color: Color(0xFF475569),
           ),
@@ -465,7 +465,7 @@ class _WebsiteSettingsScreenState extends ConsumerState<WebsiteSettingsScreen> {
           keyboardType: TextInputType.text,
           style: const TextStyle(
             fontFamily: 'IBMPlexSansArabic',
-            fontSize: 14,
+            fontSize: 15,
             color: Color(0xFF0F172A),
           ),
           decoration: InputDecoration(
@@ -498,7 +498,7 @@ class _WebsiteSettingsScreenState extends ConsumerState<WebsiteSettingsScreen> {
           'شعار العيادة',
           style: TextStyle(
             fontFamily: 'IBMPlexSansArabic',
-            fontSize: 12,
+            fontSize: 15,
             fontWeight: FontWeight.w500,
             color: Color(0xFF475569),
           ),
@@ -523,7 +523,7 @@ class _WebsiteSettingsScreenState extends ConsumerState<WebsiteSettingsScreen> {
                 'اضغط لرفع شعار جديد',
                 style: TextStyle(
                   fontFamily: 'IBMPlexSansArabic',
-                  fontSize: 12,
+                  fontSize: 15,
                   fontWeight: FontWeight.w500,
                   color: Color(0xFF0F172A),
                 ),
@@ -617,7 +617,7 @@ class _WebsiteSettingsScreenState extends ConsumerState<WebsiteSettingsScreen> {
                         'حفظ',
                         style: TextStyle(
                           fontFamily: 'IBMPlexSansArabic',
-                          fontSize: 14,
+                          fontSize: 15,
                           fontWeight: FontWeight.w500,
                           color: Colors.white,
                         ),
@@ -641,7 +641,7 @@ class _WebsiteSettingsScreenState extends ConsumerState<WebsiteSettingsScreen> {
           label,
           style: const TextStyle(
             fontFamily: 'IBMPlexSansArabic',
-            fontSize: 12,
+            fontSize: 15,
             fontWeight: FontWeight.w500,
             color: Color(0xFF475569),
           ),

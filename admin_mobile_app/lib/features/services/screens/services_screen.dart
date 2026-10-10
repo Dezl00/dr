@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/providers/services_provider.dart';
+import 'create_service_screen.dart';
 
 class ServicesScreen extends ConsumerWidget {
   const ServicesScreen({super.key});
@@ -43,7 +44,9 @@ class ServicesScreen extends ConsumerWidget {
                     ),
                     const Spacer(),
                     ElevatedButton.icon(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (_) => const CreateServiceScreen()));
+                      },
                       icon: const Icon(Icons.add, size: 18),
                       label: const Text(
                         'إضافة خدمة',

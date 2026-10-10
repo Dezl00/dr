@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/providers/doctors_provider.dart';
+import 'create_doctor_screen.dart';
 
 class DoctorsScreen extends ConsumerWidget {
   const DoctorsScreen({super.key});
@@ -43,7 +44,9 @@ class DoctorsScreen extends ConsumerWidget {
                     ),
                     const Spacer(),
                     ElevatedButton.icon(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (_) => const CreateDoctorScreen()));
+                      },
                       icon: const Icon(Icons.add, size: 18),
                       label: const Text(
                         'إضافة طبيب',

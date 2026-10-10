@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 // Assuming the offline provider is defined in the core providers folder
 import '../../../core/providers/team_provider.dart';
+import 'create_team_screen.dart';
 
 class TeamScreen extends ConsumerWidget {
   const TeamScreen({super.key});
@@ -44,7 +45,9 @@ class TeamScreen extends ConsumerWidget {
                     ),
                     const Spacer(),
                     ElevatedButton.icon(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (_) => const CreateTeamScreen()));
+                      },
                       icon: const Icon(Icons.add, size: 18),
                       label: const Text(
                         'إضافة موظف',
@@ -107,9 +110,11 @@ class TeamScreen extends ConsumerWidget {
   }
 
   Widget _buildTeamCard(dynamic member) {
-    // English numerals conversion if needed: member['id'].toString().replaceAll(RegExp(r'[٠-٩]'), (m) => String.fromCharCode(m.group(0)!.codeUnitAt(0) - 1584)) (example)
-    final name = member['name'] ?? 'اسم الموظف';
-    final role = member['role'] ?? 'المنصب';
+    final user = member['user'] as Map<String, dynamic>?;
+    final roleObj = member['role'] as Map<String, dynamic>?;
+    final name = user?['fullName'] ?? 'اسم الموظف';
+    final role = roleObj?['nameAr'] ?? roleObj?['name'] ?? 'المنصب';
+
     
     return Container(
       decoration: BoxDecoration(
