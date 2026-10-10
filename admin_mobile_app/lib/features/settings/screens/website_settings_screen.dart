@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dio/dio.dart';
@@ -237,6 +238,27 @@ class _WebsiteSettingsScreenState extends ConsumerState<WebsiteSettingsScreen> {
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         itemCount: _sections.length,
+                        proxyDecorator: (Widget child, int index, Animation<double> animation) {
+                          return AnimatedBuilder(
+                            animation: animation,
+                            builder: (BuildContext context, Widget? child) {
+                              final double animValue = Curves.easeInOut.transform(animation.value);
+                              final double elevation = lerpDouble(0, 8, animValue)!;
+                              final double scale = lerpDouble(1, 1.02, animValue)!;
+                              return Transform.scale(
+                                scale: scale,
+                                child: Card(
+                                  elevation: elevation,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                  margin: EdgeInsets.zero,
+                                  color: Colors.white,
+                                  child: child,
+                                ),
+                              );
+                            },
+                            child: child,
+                          );
+                        },
                         onReorder: (oldIndex, newIndex) {
                           setState(() {
                             if (oldIndex < newIndex) {
@@ -261,6 +283,7 @@ class _WebsiteSettingsScreenState extends ConsumerState<WebsiteSettingsScreen> {
                                       section.isEnabled = v;
                                     });
                                   },
+                                  onEdit: () => _showEditSectionModal(section),
                                 ),
                                 if (index < _sections.length - 1)
                                   _buildDivider(),
@@ -357,6 +380,7 @@ class _WebsiteSettingsScreenState extends ConsumerState<WebsiteSettingsScreen> {
     required String title,
     required bool value,
     required ValueChanged<bool> onChanged,
+    required VoidCallback onEdit,
   }) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -378,12 +402,20 @@ class _WebsiteSettingsScreenState extends ConsumerState<WebsiteSettingsScreen> {
               ),
             ],
           ),
-          Switch(
-            value: value,
-            onChanged: onChanged,
-            activeColor: const Color(0xFF2563EB),
-            inactiveThumbColor: Colors.white,
-            inactiveTrackColor: const Color(0xFFE2E8F0),
+          Row(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.edit_outlined, color: Color(0xFF2563EB)),
+                onPressed: onEdit,
+              ),
+              Switch(
+                value: value,
+                onChanged: onChanged,
+                activeColor: const Color(0xFF2563EB),
+                inactiveThumbColor: Colors.white,
+                inactiveTrackColor: const Color(0xFFE2E8F0),
+              ),
+            ],
           ),
         ],
       ),
@@ -499,4 +531,132 @@ class _WebsiteSettingsScreenState extends ConsumerState<WebsiteSettingsScreen> {
       ],
     );
   }
+
+  void _showEditSectionModal(WebsiteSection section) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+          ),
+          child: Directionality(
+            textDirection: TextDirection.rtl,
+            child: Container(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'تعديل ${section.title}',
+                        style: const TextStyle(
+                          fontFamily: 'IBMPlexSansArabic',
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF0F172A),
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close, color: Color(0xFF64748B)),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  if (section.id == 'hero') ...[
+                    _buildModalTextField('العنوان الرئيسي (Title)'),
+                    const SizedBox(height: 16),
+                    _buildModalTextField('النص الفرعي (Subtitle)'),
+                    const SizedBox(height: 16),
+                    _buildModalTextField('نص الزر (Button Text)'),
+                  ] else if (section.id == 'about') ...[
+                    _buildModalTextField('النص (Text)'),
+                    const SizedBox(height: 16),
+                    _buildModalTextField('رابط الصورة (Image URL)'),
+                  ] else ...[
+                    _buildModalTextField('محتوى القسم (Content)'),
+                  ],
+                  const SizedBox(height: 32),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF2563EB),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      child: const Text(
+                        'حفظ',
+                        style: TextStyle(
+                          fontFamily: 'IBMPlexSansArabic',
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildModalTextField(String label) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontFamily: 'IBMPlexSansArabic',
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF475569),
+          ),
+        ),
+        const SizedBox(height: 8),
+        TextFormField(
+          style: const TextStyle(
+            fontFamily: 'IBMPlexSansArabic',
+            fontSize: 14,
+            color: Color(0xFF0F172A),
+          ),
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: const Color(0xFFF8FAFC),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFF2563EB)),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 }
+

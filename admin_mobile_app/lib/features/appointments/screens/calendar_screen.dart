@@ -160,19 +160,23 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
   Widget _buildHeader(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          const Text(
-            'المواعيد',
-            style: TextStyle(
-              fontFamily: 'IBMPlexSansArabic',
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF0F172A),
+      child: SizedBox(
+        height: 48,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            const Text(
+              'المواعيد',
+              style: TextStyle(
+                fontFamily: 'IBMPlexSansArabic',
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF0F172A),
+                height: 1.2,
+              ),
             ),
-          ),
-          ElevatedButton.icon(
+            ElevatedButton.icon(
             onPressed: () {
               Navigator.push(
                 context,
@@ -197,6 +201,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
             ),
           ),
         ],
+      ),
       ),
     );
   }
