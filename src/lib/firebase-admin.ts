@@ -1,4 +1,5 @@
-import * as admin from 'firebase-admin';
+import { initializeApp, cert, getApps, getApp } from 'firebase-admin/app';
+import { getMessaging } from 'firebase-admin/messaging';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -6,8 +7,8 @@ let firebaseAdminApp: any;
 
 export function getFirebaseAdminApp() {
   if (!firebaseAdminApp) {
-    if (admin.apps.length > 0) {
-      firebaseAdminApp = admin.apps[0] as any;
+    if (getApps().length > 0) {
+      firebaseAdminApp = getApp();
     } else {
       try {
         let serviceAccount: any;
@@ -28,12 +29,12 @@ export function getFirebaseAdminApp() {
             serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
           } else {
             console.warn('Firebase Service Account not found. Push notifications will not work.');
-            return admin.apps[0] as any; // return undefined safely if no app
+            return null; // Return null if not configured
           }
         }
 
-        firebaseAdminApp = admin.initializeApp({
-          credential: admin.credential.cert(serviceAccount),
+        firebaseAdminApp = initializeApp({
+          credential: cert(serviceAccount),
         });
       } catch (error) {
         console.error('Firebase Admin initialization error:', error);
@@ -41,4 +42,10 @@ export function getFirebaseAdminApp() {
     }
   }
   return firebaseAdminApp;
+}
+
+export function getAdminMessaging() {
+  const app = getFirebaseAdminApp();
+  if (!app) return null;
+  return getMessaging(app);
 }

@@ -105,15 +105,17 @@ export async function POST(req: Request) {
       const uniqueTokens = Array.from(new Set(tokens));
 
       if (uniqueTokens.length > 0) {
-        const { getFirebaseAdminApp } = await import("@/lib/firebase-admin");
-        const firebaseAdmin = getFirebaseAdminApp();
-        await firebaseAdmin.messaging().sendEachForMulticast({
-          notification: {
-            title: "حجز موعد جديد 📅",
-            body: `تم حجز موعد للمريض ${newAppointment.patient?.fullName} الساعة ${validatedData.startTime}`,
-          },
-          tokens: uniqueTokens,
-        });
+        const { getAdminMessaging } = await import("@/lib/firebase-admin");
+        const messaging = getAdminMessaging();
+        if (messaging) {
+          await messaging.sendEachForMulticast({
+            notification: {
+              title: "حجز موعد جديد 📅",
+              body: `تم حجز موعد للمريض ${newAppointment.patient?.fullName} الساعة ${validatedData.startTime}`,
+            },
+            tokens: uniqueTokens,
+          });
+        }
       }
     } catch (pushErr) {
       console.error("Failed to send push notification:", pushErr);
