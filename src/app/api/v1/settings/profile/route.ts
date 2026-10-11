@@ -28,6 +28,9 @@ export async function PUT(req: Request) {
     
     // Password update
     if (body.currentPassword && body.newPassword) {
+      if (typeof body.newPassword !== 'string' || body.newPassword.length < 8) {
+        return NextResponse.json({ success: false, error: "كلمة المرور الجديدة يجب أن تتكون من 8 أحرف على الأقل" }, { status: 400 });
+      }
       const fullUser = await prisma.user.findUnique({ where: { id: user.id } });
       if (!fullUser || !fullUser.passwordHash) {
          return NextResponse.json({ success: false, error: "لا توجد كلمة مرور حالية" }, { status: 400 });

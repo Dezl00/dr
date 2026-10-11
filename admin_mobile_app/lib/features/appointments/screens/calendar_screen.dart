@@ -11,10 +11,10 @@ import '../providers/appointment_provider.dart';
 import '../models/appointment.dart';
 import 'create_appointment_screen.dart';
 import '../../search/screens/search_screen.dart';
-import '../../../core/api/dio_client.dart';
 import '../../../core/api/api_endpoints.dart';
 import '../../../core/services/notification_service.dart';
 import '../../../core/utils/toast_util.dart';
+import '../../auth/providers/auth_provider.dart';
 
 final statusFilterProvider = StateProvider<String>((ref) => 'الكل');
 final optimisticStatusProvider = StateProvider.family<String?, String>((ref, id) => null);
@@ -810,7 +810,7 @@ class _AppointmentDetailsSheetState extends ConsumerState<_AppointmentDetailsShe
   Future<void> _updateStatus(BuildContext context, WidgetRef ref, String newStatus) async {
     ref.read(optimisticStatusProvider(widget.appointment.id).notifier).state = newStatus;
     try {
-      final dio = DioClient().dio;
+      final dio = ref.read(dioProvider);
       await dio.patch('${ApiEndpoints.appointments}/${widget.appointment.id}/status', data: {'status': newStatus});
       
       if (!context.mounted) return;
@@ -845,7 +845,7 @@ class _AppointmentDetailsSheetState extends ConsumerState<_AppointmentDetailsShe
     });
 
     try {
-      final dio = DioClient().dio;
+      final dio = ref.read(dioProvider);
       final response = await dio.post('${ApiEndpoints.appointments}/${widget.appointment.id}/remind');
       if (context.mounted) {
         if (response.data != null && response.data['success'] == true) {

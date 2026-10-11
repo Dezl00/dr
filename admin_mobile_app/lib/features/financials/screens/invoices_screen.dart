@@ -6,6 +6,7 @@ import '../../../core/providers/base_offline_provider.dart';
 import '../models/invoice.dart';
 import '../providers/invoice_provider.dart';
 import 'invoice_details_screen.dart';
+import 'create_invoice_screen.dart';
 
 class InvoicesScreen extends ConsumerStatefulWidget {
   const InvoicesScreen({super.key});
@@ -64,7 +65,10 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
             ],
           ),
           ElevatedButton.icon(
-            onPressed: () => _showAddInvoiceDialog(context, ref),
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const CreateInvoiceScreen()),
+            ),
             icon: const Icon(Icons.add, color: Colors.white, size: 20),
             label: const Text(
               'إضافة فاتورة',
@@ -243,7 +247,10 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
     }
 
     return GestureDetector(
-      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => InvoiceDetailsScreen(invoice: invoice))),
+      onTap: () async {
+        await Navigator.push(context, MaterialPageRoute(builder: (_) => InvoiceDetailsScreen(invoice: invoice)));
+        if (context.mounted) ref.read(invoiceStateProvider.notifier).fetchData();
+      },
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
         decoration: BoxDecoration(
@@ -254,7 +261,10 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
         child: ListTile(
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           title: Text(invoice.patientName, style: const TextStyle(fontFamily: 'IBMPlexSansArabic', fontWeight: FontWeight.w600, color: Color(0xFF0F172A), fontSize: 16)),
-          subtitle: const Text('التاريخ: \-\-', style: TextStyle(fontFamily: 'IBMPlexSansArabic', color: Color(0xFF94A3B8), fontSize: 14)),
+          subtitle: Text(
+            'تاريخ الإصدار: ${invoice.issueDate.year}/${invoice.issueDate.month.toString().padLeft(2, '0')}/${invoice.issueDate.day.toString().padLeft(2, '0')}',
+            style: const TextStyle(fontFamily: 'IBMPlexSansArabic', color: Color(0xFF94A3B8), fontSize: 14),
+          ),
           trailing: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.end,

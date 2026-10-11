@@ -1,155 +1,112 @@
-export async function sendOtpSms(phone: string, code: string) {
-  // Format phone number for Egypt (default)
-  let formattedPhone = phone.trim();
-  
-  if (formattedPhone.startsWith('01') && formattedPhone.length === 11) {
-    formattedPhone = `+20${formattedPhone.substring(1)}`; // e.g. +2010xxxxxxxx
-  } else if (formattedPhone.startsWith('20') && formattedPhone.length === 12) {
-    formattedPhone = `+${formattedPhone}`; // add + if missing
-  } else if (!formattedPhone.startsWith('+')) {
-    // If it doesn't have a country code, we can assume Egypt or just add +
-    formattedPhone = `+${formattedPhone}`;
+const whySmsEndpoint = 'https://bulk.whysms.com/api/http/sms/send'
+
+type SmsType = 'otp' | 'plain' | 'unicode'
+
+export type SmsResult =
+  | { success: true; providerResponse: unknown }
+  | { success: false; error: string }
+
+/** Convert Egyptian local numbers and valid E.164 numbers to one canonical form. */
+export function formatSmsPhone(phone: string): string | null {
+  let value = phone.trim().replace(/[\s()-]/g, '')
+  if (value.startsWith('00')) value = `+${value.slice(2)}`
+
+  const digits = value.replace(/^\+/, '')
+  if (/^01[0125]\d{8}$/.test(digits)) return `+20${digits.slice(1)}`
+  if (/^201[0125]\d{8}$/.test(digits)) return `+${digits}`
+  if (/^[1-9]\d{7,14}$/.test(digits)) return `+${digits}`
+  return null
+}
+
+/** Forms accepted by existing records while new records use the E.164 form. */
+export function phoneLookupVariants(phone: string): string[] {
+  const raw = phone.trim()
+  const compact = raw.replace(/[\s()-]/g, '')
+  const canonical = formatSmsPhone(raw)
+  const variants = new Set([raw, compact])
+
+  if (canonical) {
+    variants.add(canonical)
+    variants.add(canonical.slice(1))
+    if (canonical.startsWith('+20')) variants.add(`0${canonical.slice(3)}`)
   }
 
-  // WhySMS API configuration
+  return [...variants].filter(Boolean)
+}
+
+function readProviderError(payload: unknown): string | null {
+  if (!payload || typeof payload !== 'object') return null
+  const data = payload as Record<string, unknown>
+  if (data.success === false || data.status === 'error' || data.status === false) {
+    return typeof data.message === 'string' ? data.message : 'The SMS provider rejected the request'
+  }
+  return null
+}
+
+async function sendThroughWhySms(phone: string, message: string, type: SmsType): Promise<SmsResult> {
   const apiKey = process.env.WHYSMS_API_KEY
-  let senderId = process.env.WHYSMS_SENDER_ID || 'VERIFYX'
-  if (senderId === 'WhySMS Test') senderId = 'VERIFYX'
+  const configuredSender = process.env.WHYSMS_SENDER_ID?.trim()
+  const senderId = configuredSender && configuredSender !== 'WhySMS Test' ? configuredSender : 'VERIFYX'
+  const recipient = formatSmsPhone(phone)
 
-  if (!apiKey) {
-    console.warn('WHYSMS_API_KEY is not set. SMS sending skipped. OTP is:', code)
-    // For development, we return success if no API key is present
-    return { success: true, dummy: true }
-  }
+  if (!apiKey) return { success: false, error: 'SMS service is not configured' }
+  if (!recipient) return { success: false, error: 'Invalid recipient phone number' }
 
-  const message = `رمز التحقق الخاص بك لمنصة DRS هو: ${code}`
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 12_000)
 
   try {
-    // Official WhySMS HTTP API Endpoint
-    const response = await fetch('https://bulk.whysms.com/api/http/sms/send', {
+    const response = await fetch(whySmsEndpoint, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
       body: JSON.stringify({
         api_token: apiKey,
-        recipient: formattedPhone,
+        recipient,
         sender_id: senderId,
-        type: 'otp',
-        message: message,
+        type,
+        message,
       }),
+      signal: controller.signal,
     })
 
-    if (!response.ok) {
-      const errorText = await response.text()
-      console.error('WhySMS API Error:', errorText)
-      return { success: false, error: 'Failed to send SMS via WhySMS' }
+    const raw = await response.text()
+    let payload: unknown = raw
+    try {
+      payload = raw ? JSON.parse(raw) : null
+    } catch {
+      // A non-JSON provider response is still validated by the HTTP status.
     }
 
-    const data = await response.json()
-    return { success: true, data }
+    if (!response.ok || readProviderError(payload)) {
+      console.error('WhySMS rejected a request', { status: response.status, type })
+      return { success: false, error: 'SMS provider rejected the request' }
+    }
+
+    return { success: true, providerResponse: payload }
   } catch (error) {
-    console.error('WhySMS Network Error:', error)
-    return { success: false, error: 'Network error connecting to WhySMS' }
+    const reason = error instanceof Error && error.name === 'AbortError'
+      ? 'SMS provider timed out'
+      : 'Unable to reach SMS provider'
+    console.error('WhySMS request failed', { reason, type })
+    return { success: false, error: reason }
+  } finally {
+    clearTimeout(timeout)
   }
 }
 
-export async function sendSms(phone: string, message: string) {
-  let formattedPhone = phone.trim()
-  
-  if (formattedPhone.startsWith('01') && formattedPhone.length === 11) {
-    formattedPhone = `+20${formattedPhone.substring(1)}`
-  } else if (formattedPhone.startsWith('20') && formattedPhone.length === 12) {
-    formattedPhone = `+${formattedPhone}`
-  } else if (!formattedPhone.startsWith('+')) {
-    formattedPhone = `+${formattedPhone}`
+export async function sendOtpSms(phone: string, code: string): Promise<SmsResult> {
+  if (!/^\d{6}$/.test(code)) return { success: false, error: 'Invalid OTP code' }
+  return sendThroughWhySms(phone, `رمز التحقق الخاص بك لمنصة DRS هو: ${code}`, 'otp')
+}
+
+export async function sendSms(phone: string, message: string): Promise<SmsResult> {
+  const type: SmsType = /[\u0600-\u06FF]/.test(message) ? 'unicode' : 'plain'
+  const result = await sendThroughWhySms(phone, message, type)
+
+  // VERIFYX accounts are commonly provisioned as OTP-only accounts. Retry once
+  // with that channel without duplicating a successful transactional message.
+  if (!result.success && (process.env.WHYSMS_SENDER_ID?.trim() || 'VERIFYX') === 'VERIFYX') {
+    return sendThroughWhySms(phone, message, 'otp')
   }
-
-  const apiKey = process.env.WHYSMS_API_KEY
-  let senderId = process.env.WHYSMS_SENDER_ID || 'VERIFYX'
-  if (senderId === 'WhySMS Test') senderId = 'VERIFYX'
-
-  if (!apiKey) {
-    console.warn('WHYSMS_API_KEY is not set. SMS sending skipped. Message:', message)
-    return { success: true, dummy: true, error: 'API KEY MISSING IN ENV' }
-  }
-
-  const isArabic = /[\u0600-\u06FF]/.test(message);
-  const primaryType = isArabic ? 'unicode' : 'plain';
-
-  try {
-    let response = await fetch('https://bulk.whysms.com/api/http/sms/send', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-      body: JSON.stringify({
-        api_token: apiKey,
-        recipient: formattedPhone,
-        sender_id: senderId,
-        type: primaryType,
-        message: message,
-      }),
-    });
-
-    // If unicode/plain failed and senderId is VERIFYX, retry with type 'otp'
-    if (!response.ok && senderId === 'VERIFYX') {
-      console.warn(`WhySMS ${primaryType} failed with ${response.status}, retrying with otp type...`);
-      response = await fetch('https://bulk.whysms.com/api/http/sms/send', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: JSON.stringify({
-          api_token: apiKey,
-          recipient: formattedPhone,
-          sender_id: senderId,
-          type: 'otp',
-          message: message,
-        }),
-      });
-    }
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('WhySMS API Error:', errorText);
-      return { success: false, error: `WhySMS Error: ${response.status} - ${errorText}` };
-    }
-
-    const data = await response.json();
-    if (data.status === 'error') {
-      // Retry with otp if senderId is VERIFYX
-      if (senderId === 'VERIFYX') {
-        const retryRes = await fetch('https://bulk.whysms.com/api/http/sms/send', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-          },
-          body: JSON.stringify({
-            api_token: apiKey,
-            recipient: formattedPhone,
-            sender_id: senderId,
-            type: 'otp',
-            message: message,
-          }),
-        });
-        if (retryRes.ok) {
-          const retryData = await retryRes.json();
-          if (retryData.status !== 'error') {
-            return { success: true, data: retryData };
-          }
-        }
-      }
-      return { success: false, error: `WhySMS API Error: ${data.message}` };
-    }
-    
-    return { success: true, data };
-  } catch (error: any) {
-    console.error('WhySMS Network Error:', error);
-    return { success: false, error: `Network Error: ${error.message}` };
-  }
+  return result
 }

@@ -3,6 +3,7 @@ import '../models/patient.dart';
 import 'tabs/medical_history_tab.dart';
 import 'tabs/prescriptions_tab.dart';
 import 'tabs/dental_chart_tab.dart';
+import 'tabs/patient_invoices_tab.dart';
 import 'edit_patient_screen.dart';
 
 class PatientProfileScreen extends StatelessWidget {
@@ -137,12 +138,7 @@ class PatientProfileScreen extends StatelessWidget {
                     MedicalHistoryTab(patientId: patient.id),
                     DentalChartTab(patientId: patient.id),
                     PrescriptionsTab(patientId: patient.id),
-                    const Center(
-                      child: Text(
-                        'سجل الفواتير (قريباً)',
-                        style: TextStyle(fontFamily: 'IBMPlexSansArabic', color: Color(0xFF475569)),
-                      ),
-                    ),
+                    PatientInvoicesTab(patientId: patient.id),
                   ],
                 ),
               ),

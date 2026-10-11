@@ -47,6 +47,11 @@ class DrsAdminApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // Initialize global providers
     ref.watch(syncManagerProvider);
+    ref.listen<int>(authInvalidatedProvider, (previous, next) {
+      if (next > (previous ?? 0)) {
+        ref.read(authStateProvider.notifier).logout();
+      }
+    });
 
     return MaterialApp(
       title: 'DRS Admin',

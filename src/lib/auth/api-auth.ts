@@ -1,8 +1,13 @@
 import { SignJWT, jwtVerify, type JWTPayload } from 'jose'
 import { prisma } from '@/lib/db/prisma'
 
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret_change_in_production_for_drs_app'
-const secretKey = new TextEncoder().encode(JWT_SECRET)
+function getSecretKey() {
+  const secret = process.env.JWT_SECRET
+  if (!secret) {
+    throw new Error('Server configuration error: JWT_SECRET is required')
+  }
+  return new TextEncoder().encode(secret)
+}
 
 export interface MobileJwtPayload extends JWTPayload {
   userId: string
@@ -18,13 +23,16 @@ export async function signMobileToken(payload: Omit<MobileJwtPayload, 'iat' | 'e
   return await new SignJWT(payload as any)
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
-    .setExpirationTime('30d') // Long-lived token for mobile apps
-    .sign(secretKey)
+    .setExpirationTime('7d')
+    .sign(getSecretKey())
 }
 
 export interface RegistrationJwtPayload extends JWTPayload {
-  registrationData: any;
-  otpHash: string;
+  /** Pending registration record used by the mobile signup flow. */
+  pendingRegistrationId?: string;
+  /** Kept temporarily so registrations started before this update can finish. */
+  registrationData?: any;
+  otpHash?: string;
 }
 
 export async function signRegistrationToken(payload: Omit<RegistrationJwtPayload, 'iat' | 'exp'>) {
@@ -32,12 +40,12 @@ export async function signRegistrationToken(payload: Omit<RegistrationJwtPayload
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
     .setExpirationTime('15m')
-    .sign(secretKey)
+    .sign(getSecretKey())
 }
 
 export async function verifyRegistrationToken(token: string): Promise<RegistrationJwtPayload | null> {
   try {
-    const { payload } = await jwtVerify(token, secretKey)
+    const { payload } = await jwtVerify(token, getSecretKey())
     return payload as RegistrationJwtPayload
   } catch (error) {
     return null
@@ -49,7 +57,7 @@ export async function verifyRegistrationToken(token: string): Promise<Registrati
  */
 export async function verifyMobileToken(token: string): Promise<MobileJwtPayload | null> {
   try {
-    const { payload } = await jwtVerify(token, secretKey)
+    const { payload } = await jwtVerify(token, getSecretKey())
     return payload as MobileJwtPayload
   } catch (error) {
     return null
@@ -76,7 +84,15 @@ export async function requireApiAuth(req: Request) {
   // Ensure user exists and is active
   const user = await prisma.user.findUnique({
     where: { id: payload.userId, status: 'ACTIVE' },
-    select: { id: true, email: true, fullName: true, status: true, phoneVerified: true }
+    select: {
+      id: true,
+      email: true,
+      fullName: true,
+      status: true,
+      phoneVerified: true,
+      isAdmin: true,
+      isSuperAdmin: true,
+    }
   })
 
   if (!user) {
@@ -104,6 +120,30 @@ export async function requireApiAuth(req: Request) {
   }
 
   return { user, clinic: membership.clinic, role: membership.role }
+}
+
+/**
+ * Authenticate a mobile request and require at least one role permission.
+ * This deliberately uses the membership embedded in the mobile token instead
+ * of the cookie based permission helper used by the web dashboard.
+ */
+export async function requireApiPermission(req: Request, permissions: string | string[]) {
+  const auth = await requireApiAuth(req)
+
+  if (auth.user.isAdmin || auth.user.isSuperAdmin) return auth
+
+  const required = Array.isArray(permissions) ? permissions : [permissions]
+  const role = await prisma.role.findUnique({
+    where: { id: auth.role.id },
+    include: { permissions: { include: { permission: true } } },
+  })
+
+  const granted = new Set(role?.permissions.map((entry) => entry.permission.key) ?? [])
+  if (!required.some((permission) => granted.has(permission))) {
+    throw new Error('Forbidden: Insufficient permission')
+  }
+
+  return auth
 }
 
 /**

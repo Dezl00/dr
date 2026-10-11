@@ -1,41 +1,27 @@
-import { NextResponse } from "next/server";
-import { prisma } from "@/lib/db/prisma";
-import { requireApiAuth } from "@/lib/auth/api-auth";
+import { NextResponse } from "next/server"
+import { z } from "zod"
+import { prisma } from "@/lib/db/prisma"
+import { requireApiPermission } from "@/lib/auth/api-auth"
+
+const clinicSchema = z.object({
+  name: z.string().trim().min(2).max(150).optional(),
+  slug: z.string().trim().regex(/^[a-z0-9-]+$/).min(2).max(63).optional(),
+}).refine((data) => Object.keys(data).length > 0, "أرسل قيمة واحدة على الأقل للتحديث")
 
 export async function PUT(req: Request) {
   try {
-    const { clinic } = await requireApiAuth(req);
-    const body = await req.json();
-    
-    const updateData: any = {};
-    if (body.name !== undefined) updateData.name = body.name;
-    if (body.slug !== undefined) updateData.slug = body.slug;
-    if (body.phone !== undefined) updateData.phone = body.phone;
-    if (body.address !== undefined) updateData.address = body.address;
-    if (body.taxNumber !== undefined) updateData.taxNumber = body.taxNumber;
-    if (body.logo !== undefined) updateData.logo = body.logo;
-
-    if (Object.keys(updateData).length === 0) {
-      return NextResponse.json({ success: true, data: clinic });
+    const { clinic } = await requireApiPermission(req, "settings.manage")
+    const data = clinicSchema.parse(await req.json())
+    if (data.slug && data.slug !== clinic.slug) {
+      const existing = await prisma.clinic.findUnique({ where: { slug: data.slug }, select: { id: true } })
+      if (existing && existing.id !== clinic.id) return NextResponse.json({ success: false, error: "هذا الرابط مستخدم بالفعل" }, { status: 409 })
     }
-
-    // Check slug uniqueness
-    if (updateData.slug && updateData.slug !== clinic.slug) {
-      const existing = await prisma.clinic.findUnique({ where: { slug: updateData.slug } });
-      if (existing) {
-        return NextResponse.json({ success: false, error: "هذا الرابط مستخدم بالفعل" }, { status: 400 });
-      }
-    }
-
-    const updatedClinic = await prisma.clinic.update({
-      where: { id: clinic.id },
-      data: updateData,
-    });
-
-    return NextResponse.json({ success: true, data: updatedClinic });
-  } catch (error: any) {
-    if (error.message?.includes('Unauthorized')) return NextResponse.json({ success: false, error: error.message }, { status: 401 });
-    console.error('Clinic update error:', error);
-    return NextResponse.json({ success: false, error: "حدث خطأ" }, { status: 500 });
+    const updated = await prisma.clinic.update({ where: { id: clinic.id }, data, select: { id: true, name: true, slug: true, timezone: true } })
+    return NextResponse.json({ success: true, data: updated })
+  } catch (error) {
+    if (error instanceof z.ZodError) return NextResponse.json({ success: false, error: error.errors[0]?.message ?? "بيانات العيادة غير صحيحة" }, { status: 400 })
+    const message = error instanceof Error ? error.message : "حدث خطأ غير متوقع"
+    const status = message.includes("Unauthorized") ? 401 : message.includes("Forbidden") ? 403 : 500
+    return NextResponse.json({ success: false, error: status === 500 ? "تعذر حفظ إعدادات العيادة" : message }, { status })
   }
 }

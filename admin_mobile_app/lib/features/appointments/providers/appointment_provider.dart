@@ -12,11 +12,6 @@ final appointmentRepositoryProvider = Provider((ref) {
   return AppointmentRepository(dio);
 });
 
-final selectedDateProvider = StateProvider<DateTime>((ref) {
-  final now = DateTime.now();
-  return DateTime(now.year, now.month, now.day);
-});
-
 final appointmentStateProvider = StateNotifierProvider<AppointmentNotifier, OfflineState<Appointment>>((ref) {
   return AppointmentNotifier(ref.read(appointmentRepositoryProvider));
 });
@@ -48,8 +43,7 @@ class AppointmentNotifier extends BaseOfflineNotifier<Appointment> {
 
   @override
   Future<Appointment> updateApi(String id, Map<String, dynamic> data) async {
-    // Note: If update is not yet implemented in repository, throw unhandled
-    throw UnimplementedError('Update appointment not implemented in API');
+    return _repository.updateAppointment(id, data);
   }
 
   @override
@@ -73,7 +67,21 @@ class AppointmentNotifier extends BaseOfflineNotifier<Appointment> {
 
   @override
   Appointment updateOfflineModel(Appointment currentItem, Map<String, dynamic> data) {
-    throw UnimplementedError('Update appointment not implemented offline');
+    return Appointment(
+      id: currentItem.id,
+      patientId: data['patientId']?.toString() ?? currentItem.patientId,
+      patientName: data['patientName']?.toString() ?? currentItem.patientName,
+      patientPhone: data['patientPhone']?.toString() ?? currentItem.patientPhone,
+      doctorId: data['doctorId']?.toString() ?? currentItem.doctorId,
+      doctorName: data['doctorName']?.toString() ?? currentItem.doctorName,
+      serviceId: data['serviceId']?.toString() ?? currentItem.serviceId,
+      serviceName: data['serviceName']?.toString() ?? currentItem.serviceName,
+      date: data['date'] != null ? DateTime.tryParse(data['date'].toString()) ?? currentItem.date : currentItem.date,
+      startTime: data['startTime']?.toString() ?? currentItem.startTime,
+      endTime: data.containsKey('endTime') ? data['endTime']?.toString() : currentItem.endTime,
+      status: data['status']?.toString() ?? currentItem.status,
+      notes: data.containsKey('notes') ? data['notes']?.toString() : currentItem.notes,
+    );
   }
 
   @override

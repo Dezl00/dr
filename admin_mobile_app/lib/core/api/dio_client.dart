@@ -5,8 +5,9 @@ import 'api_endpoints.dart';
 class DioClient {
   late Dio _dio;
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
+  final Future<void> Function()? onUnauthorized;
 
-  DioClient() {
+  DioClient({this.onUnauthorized}) {
     _dio = Dio(BaseOptions(
       baseUrl: ApiEndpoints.baseUrl,
       connectTimeout: const Duration(seconds: 10),
@@ -28,9 +29,9 @@ class DioClient {
       },
       onError: (DioException e, handler) async {
         // Handle 401 Unauthorized globally (e.g. redirect to login)
-        if (e.response?.statusCode == 401) {
+        if (e.response?.statusCode == 401 && e.requestOptions.headers['Authorization'] != null) {
           await _storage.delete(key: 'jwt_token');
-          // TODO: Trigger logout state
+          await onUnauthorized?.call();
         }
         return handler.next(e);
       },

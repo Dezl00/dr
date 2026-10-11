@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/api/dio_client.dart';
 import '../../../core/api/api_endpoints.dart';
 import '../../../core/providers/doctors_provider.dart';
+import '../../auth/providers/auth_provider.dart';
 import '../../../core/utils/toast_util.dart';
 
 class CreateDoctorScreen extends ConsumerStatefulWidget {
@@ -33,7 +33,7 @@ class _CreateDoctorScreenState extends ConsumerState<CreateDoctorScreen> {
     setState(() => _isLoading = true);
     
     try {
-      final dio = DioClient().dio;
+      final dio = ref.read(dioProvider);
       await dio.post(ApiEndpoints.doctors, data: {
         'fullName': _nameController.text,
         'specialty': _specialtyController.text,

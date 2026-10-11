@@ -82,4 +82,21 @@ class HiveService {
   static Box<String> getLeadsBox() => Hive.box<String>(leadsBoxName);
   static Box<String> getInventoryBox() => Hive.box<String>(inventoryBoxName);
   static Box<String> getSettingsBox() => Hive.box<String>(settingsBoxName);
+
+  /// Cached clinic data must never be shown to the next signed-in user.
+  static Future<void> clearUserData() async {
+    await Future.wait([
+      getPatientsBox().clear(),
+      getAppointmentsBox().clear(),
+      getInvoicesBox().clear(),
+      getExpensesBox().clear(),
+      getPendingActionsBox().clear(),
+      getTeamBox().clear(),
+      getServicesBox().clear(),
+      getDoctorsBox().clear(),
+      getLeadsBox().clear(),
+      getInventoryBox().clear(),
+      getSettingsBox().clear(),
+    ]);
+  }
 }

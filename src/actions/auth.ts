@@ -15,7 +15,8 @@ import { createVerificationToken } from '@/lib/auth/tokens'
 import { writeAuditLog } from '@/lib/security/audit'
 import { loginSchema, signupSchema } from '@/lib/validators/auth'
 import { validateSlug, isReservedSlug } from '@/lib/slug/arabic'
-import { sendOtpSms } from '@/lib/whysms'
+import { consumeOtpForUser, issueOtpForUser } from '@/lib/otp'
+import { formatSmsPhone, phoneLookupVariants } from '@/lib/whysms'
 
 // ─── HELPERS ───
 
@@ -107,7 +108,12 @@ export async function signupAction(_prev: unknown, formData: FormData) {
     }
   }
 
-  const { fullName, email, phone, password, clinicName, slug } = result.data
+  const { fullName, email, phone: submittedPhone, password, clinicName, slug } = result.data
+  const phone = formatSmsPhone(submittedPhone)
+  if (!phone) {
+    return { error: 'رقم الهاتف غير صالح.' }
+  }
+  const phoneVariants = phoneLookupVariants(submittedPhone)
   const { ip, userAgent } = await getRequestMeta()
 
   // Validate slug format
@@ -121,9 +127,15 @@ export async function signupAction(_prev: unknown, formData: FormData) {
     return { error: 'هذا العنوان محجوز. يرجى اختيار عنوان آخر.' }
   }
 
-  // Check email uniqueness
-  const existingUser = await prisma.user.findUnique({
-    where: { email: email.toLowerCase().trim() },
+  // Legacy accounts can still use the local Egyptian phone-number form, so
+  // compare the safe equivalent forms before creating a new account.
+  const existingUser = await prisma.user.findFirst({
+    where: {
+      OR: [
+        { email: email.toLowerCase().trim() },
+        { phone: { in: phoneVariants } },
+      ],
+    },
   })
   if (existingUser) {
     return { error: 'هذا البريد الإلكتروني مستخدم بالفعل.' }
@@ -268,20 +280,10 @@ export async function signupAction(_prev: unknown, formData: FormData) {
   // Create email verification token
   createVerificationToken(user.id, user.email).catch(console.error)
 
-  // Generate OTP and save to DB
-  const otpCode = Math.floor(100000 + Math.random() * 900000).toString()
-  const expiresAt = new Date(Date.now() + 10 * 60 * 1000) // 10 minutes from now
-  await prisma.phoneOtp.create({
-    data: {
-      userId: user.id,
-      phone,
-      code: otpCode,
-      expiresAt,
-    }
-  })
-
-  // Send OTP SMS
-  await sendOtpSms(phone, otpCode)
+  const otpResult = await issueOtpForUser(user.id, phone)
+  if (!otpResult.success) {
+    return { error: 'تعذر إرسال رمز التحقق. تحقق من إعدادات SMS ثم أعد المحاولة.' }
+  }
 
   // Audit
   await writeAuditLog({
@@ -373,34 +375,13 @@ export async function verifyOtpAction(_prev: unknown, formData: FormData) {
     redirect('/login')
   }
 
-  // Find OTP record
-  const otpRecord = await prisma.phoneOtp.findFirst({
-    where: {
-      userId: user.id,
-      code,
-      usedAt: null,
-      expiresAt: {
-        gt: new Date()
-      }
-    },
-    orderBy: { createdAt: 'desc' }
-  })
+  const verified = await consumeOtpForUser(user.id, code)
 
-  if (!otpRecord) {
+  if (!verified) {
     return { error: 'الرمز غير صحيح أو منتهي الصلاحية.' }
   }
 
-  // Mark as used and update user
-  await prisma.$transaction([
-    prisma.phoneOtp.update({
-      where: { id: otpRecord.id },
-      data: { usedAt: new Date() }
-    }),
-    prisma.user.update({
-      where: { id: user.id },
-      data: { phoneVerified: true }
-    })
-  ])
+  await prisma.user.update({ where: { id: user.id }, data: { phoneVerified: true } })
 
   redirect('/dashboard')
 }
@@ -413,20 +394,8 @@ export async function resendOtpAction() {
     return { error: 'حدث خطأ غير متوقع' }
   }
 
-  // Generate OTP and save to DB
-  const otpCode = Math.floor(100000 + Math.random() * 900000).toString()
-  const expiresAt = new Date(Date.now() + 10 * 60 * 1000) // 10 minutes from now
-  await prisma.phoneOtp.create({
-    data: {
-      userId: user.id,
-      phone: user.phone,
-      code: otpCode,
-      expiresAt,
-    }
-  })
-
-  // Send OTP SMS
-  await sendOtpSms(user.phone, otpCode)
+  const otpResult = await issueOtpForUser(user.id, user.phone)
+  if (!otpResult.success) return { error: otpResult.error }
 
   return { success: 'تم إرسال رمز جديد بنجاح' }
 }
@@ -441,27 +410,15 @@ export async function forgotPasswordAction(_prev: unknown, formData: FormData) {
   }
 
   const user = await prisma.user.findFirst({
-    where: { phone }
+    where: { phone: { in: phoneLookupVariants(phone) } },
   })
 
   if (!user || !user.phone) {
     return { error: 'رقم الهاتف غير مسجل لدينا' }
   }
 
-  const otpCode = Math.floor(100000 + Math.random() * 900000).toString()
-  const expiresAt = new Date(Date.now() + 10 * 60 * 1000)
-
-  await prisma.phoneOtp.create({
-    data: {
-      userId: user.id,
-      phone: user.phone,
-      code: otpCode,
-      expiresAt,
-    }
-  })
-
-  const { sendOtpSms } = await import('@/lib/whysms')
-  await sendOtpSms(user.phone, otpCode)
+  const otpResult = await issueOtpForUser(user.id, user.phone)
+  if (!otpResult.success) return { error: otpResult.error }
 
   redirect(`/reset-password?phone=${encodeURIComponent(user.phone)}`)
 }
@@ -482,45 +439,28 @@ export async function resetPasswordAction(_prev: unknown, formData: FormData) {
     return { error: 'كلمتا المرور غير متطابقتين' }
   }
 
-  if (newPassword.length < 6) {
+  if (newPassword.length < 8) {
     return { error: 'يجب أن تتكون كلمة المرور من 6 أحرف على الأقل' }
   }
 
   const user = await prisma.user.findFirst({
-    where: { phone }
+    where: { phone: { in: phoneLookupVariants(phone) } },
   })
 
   if (!user) {
     return { error: 'المستخدم غير موجود' }
   }
 
-  const otpRecord = await prisma.phoneOtp.findFirst({
-    where: {
-      userId: user.id,
-      code,
-      usedAt: null,
-      expiresAt: { gt: new Date() }
-    },
-    orderBy: { createdAt: 'desc' }
-  })
+  const verified = await consumeOtpForUser(user.id, code)
 
-  if (!otpRecord) {
+  if (!verified) {
     return { error: 'رمز التحقق غير صحيح أو منتهي الصلاحية' }
   }
 
   const { hashPassword } = await import('@/lib/auth/password')
   const passwordHash = await hashPassword(newPassword)
 
-  await prisma.$transaction([
-    prisma.phoneOtp.update({
-      where: { id: otpRecord.id },
-      data: { usedAt: new Date() }
-    }),
-    prisma.user.update({
-      where: { id: user.id },
-      data: { passwordHash }
-    })
-  ])
+  await prisma.user.update({ where: { id: user.id }, data: { passwordHash } })
 
   redirect('/login?reset=success')
 }

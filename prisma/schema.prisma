@@ -441,6 +441,7 @@ model Appointment {
   endTime   String? // "09:30" format
   status    AppointmentStatus @default(SCHEDULED)
   notes     String?
+  reminderSentAt DateTime?
   createdAt DateTime          @default(now())
   updatedAt DateTime          @updatedAt
 

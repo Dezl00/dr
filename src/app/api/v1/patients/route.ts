@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
-import { requireApiAuth } from "@/lib/auth/api-auth";
+import { requireApiPermission } from "@/lib/auth/api-auth";
 import { z } from "zod";
 
 // Zod schema for patient creation validation
@@ -10,12 +10,13 @@ const patientSchema = z.object({
   email: z.string().email("البريد الإلكتروني غير صحيح").optional().or(z.literal("")),
   gender: z.enum(["MALE", "FEMALE"]).optional(),
   dateOfBirth: z.string().optional(), // Expected ISO string
+  address: z.string().optional(),
   notes: z.string().optional(),
 });
 
 export async function GET(req: Request) {
   try {
-    const { clinic } = await requireApiAuth(req);
+    const { clinic } = await requireApiPermission(req, 'patients.view');
     
     // Parse query params for search and pagination
     const url = new URL(req.url);
@@ -77,7 +78,7 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    const { clinic } = await requireApiAuth(req);
+    const { clinic } = await requireApiPermission(req, 'patients.create');
     const body = await req.json();
 
     const validatedData = patientSchema.parse(body);
@@ -90,6 +91,7 @@ export async function POST(req: Request) {
         email: validatedData.email || null,
         gender: validatedData.gender,
         dateOfBirth: validatedData.dateOfBirth ? new Date(validatedData.dateOfBirth) : null,
+        address: validatedData.address || null,
         notes: validatedData.notes,
       },
     });

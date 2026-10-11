@@ -38,12 +38,25 @@ class InvoiceNotifier extends BaseOfflineNotifier<Invoice> {
 
   @override
   Future<Invoice> createApi(Map<String, dynamic> data) async {
-    throw UnimplementedError('createInvoice not implemented in API');
+    return _repository.createInvoice(data);
   }
 
   @override
   Future<Invoice> updateApi(String id, Map<String, dynamic> data) async {
-    throw UnimplementedError('updateInvoice not implemented in API');
+    return _repository.updateInvoice(id, data);
+  }
+
+  @override
+  Future<bool> createItem(Map<String, dynamic> data) async {
+    try {
+      final invoice = await createApi(data);
+      await box.add(invoice);
+      state = state.copyWith(items: [invoice, ...state.items]);
+      return true;
+    } catch (error) {
+      state = state.copyWith(error: error.toString());
+      return false;
+    }
   }
 
   @override
@@ -61,7 +74,18 @@ class InvoiceNotifier extends BaseOfflineNotifier<Invoice> {
 
   @override
   Invoice updateOfflineModel(Invoice currentItem, Map<String, dynamic> data) {
-    throw UnimplementedError('Update invoice not implemented offline');
+    return Invoice(
+      id: currentItem.id,
+      invoiceNumber: currentItem.invoiceNumber,
+      patientName: data['patientName']?.toString() ?? currentItem.patientName,
+      status: data['status']?.toString() ?? currentItem.status,
+      total: double.tryParse(data['total']?.toString() ?? '') ?? currentItem.total,
+      subtotal: currentItem.subtotal,
+      discount: double.tryParse(data['discount']?.toString() ?? '') ?? currentItem.discount,
+      tax: double.tryParse(data['tax']?.toString() ?? '') ?? currentItem.tax,
+      issueDate: currentItem.issueDate,
+      dueDate: data.containsKey('dueDate') ? DateTime.tryParse(data['dueDate']?.toString() ?? '') : currentItem.dueDate,
+    );
   }
 
   @override

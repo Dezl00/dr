@@ -1,53 +1,34 @@
-import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/db/prisma';
-import { hashPassword } from '@/lib/auth/password';
+import { NextResponse } from 'next/server'
+
+import { prisma } from '@/lib/db/prisma'
+import { hashPassword } from '@/lib/auth/password'
+import { consumeOtpForUser } from '@/lib/otp'
+import { phoneLookupVariants } from '@/lib/whysms'
 
 export async function POST(req: Request) {
   try {
-    const { phone, code, newPassword } = await req.json();
-
-    if (!phone || !code || !newPassword) {
-      return NextResponse.json({ success: false, error: 'بيانات غير مكتملة' }, { status: 400 });
+    const { phone, code, newPassword } = await req.json()
+    if (typeof phone !== 'string' || typeof code !== 'string' || typeof newPassword !== 'string') {
+      return NextResponse.json({ success: false, error: 'البيانات غير مكتملة' }, { status: 400 })
+    }
+    if (newPassword.length < 8 || newPassword.length > 128) {
+      return NextResponse.json({ success: false, error: 'كلمة المرور يجب أن تتكون من 8 أحرف على الأقل' }, { status: 400 })
     }
 
     const user = await prisma.user.findFirst({
-      where: { phone }
-    });
+      where: { phone: { in: phoneLookupVariants(phone) } },
+      select: { id: true },
+    })
+    if (!user) return NextResponse.json({ success: false, error: 'المستخدم غير موجود' }, { status: 404 })
 
-    if (!user) {
-      return NextResponse.json({ success: false, error: 'المستخدم غير موجود' }, { status: 404 });
-    }
+    const verified = await consumeOtpForUser(user.id, code)
+    if (!verified) return NextResponse.json({ success: false, error: 'رمز التحقق غير صحيح أو منتهي الصلاحية' }, { status: 400 })
 
-    const otpRecord = await prisma.phoneOtp.findFirst({
-      where: {
-        userId: user.id,
-        code,
-        usedAt: null,
-        expiresAt: { gt: new Date() }
-      },
-      orderBy: { createdAt: 'desc' }
-    });
-
-    if (!otpRecord) {
-      return NextResponse.json({ success: false, error: 'الرمز غير صحيح أو منتهي الصلاحية' }, { status: 400 });
-    }
-
-    const passwordHash = await hashPassword(newPassword);
-
-    await prisma.$transaction([
-      prisma.phoneOtp.update({
-        where: { id: otpRecord.id },
-        data: { usedAt: new Date() }
-      }),
-      prisma.user.update({
-        where: { id: user.id },
-        data: { passwordHash }
-      })
-    ]);
-
-    return NextResponse.json({ success: true, message: 'تم إعادة تعيين كلمة المرور بنجاح' });
-  } catch (error: any) {
-    console.error('Reset Password API Error:', error);
-    return NextResponse.json({ success: false, error: 'حدث خطأ داخلي' }, { status: 500 });
+    const passwordHash = await hashPassword(newPassword)
+    await prisma.user.update({ where: { id: user.id }, data: { passwordHash } })
+    return NextResponse.json({ success: true, message: 'تمت إعادة تعيين كلمة المرور بنجاح' })
+  } catch (error) {
+    console.error('Reset-password error:', error)
+    return NextResponse.json({ success: false, error: 'تعذر إعادة تعيين كلمة المرور' }, { status: 500 })
   }
 }

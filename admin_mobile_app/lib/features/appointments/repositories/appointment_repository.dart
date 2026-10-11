@@ -52,5 +52,15 @@ class AppointmentRepository {
       throw Exception(e.response?.data?['error'] ?? e.message ?? 'Network error occurred');
     }
   }
+
+  Future<Appointment> updateAppointment(String id, Map<String, dynamic> data) async {
+    try {
+      final response = await _dio.patch('${ApiEndpoints.appointments}/$id', data: data);
+      if (response.statusCode == 200 && response.data['success'] == true) return Appointment.fromJson(response.data['data']);
+      throw Exception(response.data['error'] ?? 'Failed to update appointment');
+    } on DioException catch (e) {
+      throw Exception(e.response?.data?['error'] ?? e.message ?? 'Network error occurred');
+    }
+  }
 }
 

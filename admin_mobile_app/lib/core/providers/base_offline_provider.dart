@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import '../offline/hive_service.dart';
 import '../offline/pending_action.dart';
 
@@ -71,6 +72,11 @@ abstract class BaseOfflineNotifier<T> extends StateNotifier<OfflineState<T>> {
   String getId(T item);
   // ---------------------------------------------------
 
+  Future<bool> _isOffline() async {
+    final connections = await Connectivity().checkConnectivity();
+    return connections.isEmpty || connections.every((result) => result == ConnectivityResult.none);
+  }
+
   Future<void> fetchData({String? query, bool isRefresh = false}) async {
     final searchQuery = query ?? state.searchQuery;
     
@@ -137,6 +143,10 @@ abstract class BaseOfflineNotifier<T> extends StateNotifier<OfflineState<T>> {
       state = state.copyWith(items: [newItem, ...state.items]);
       return true;
     } catch (e) {
+      if (!await _isOffline()) {
+        state = state.copyWith(error: e.toString());
+        return false;
+      }
       final offlineId = 'offline_${DateTime.now().millisecondsSinceEpoch}';
       final offlineItem = createOfflineModel(offlineId, data);
       
@@ -146,7 +156,7 @@ abstract class BaseOfflineNotifier<T> extends StateNotifier<OfflineState<T>> {
       final pendingAction = PendingAction(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         type: 'CREATE_$actionPrefix',
-        data: data,
+        data: {...data, '_offlineId': offlineId},
       );
       await pendingBox.add(pendingAction);
 
@@ -170,8 +180,13 @@ abstract class BaseOfflineNotifier<T> extends StateNotifier<OfflineState<T>> {
       );
       return true;
     } catch (e) {
+      if (!await _isOffline()) {
+        state = state.copyWith(error: e.toString());
+        return false;
+      }
       final key = box.keys.firstWhere((k) => getId(box.get(k)!) == id, orElse: () => null);
-      final currentItem = key != null ? box.get(key) : state.items.firstWhere((i) => getId(i) == id);
+      T? currentItem = key != null ? box.get(key) : null;
+      currentItem ??= state.items.cast<T?>().firstWhere((item) => item != null && getId(item) == id, orElse: () => null);
       
       if (currentItem != null) {
         final offlineItem = updateOfflineModel(currentItem, data);
@@ -193,7 +208,7 @@ abstract class BaseOfflineNotifier<T> extends StateNotifier<OfflineState<T>> {
           items: state.items.map((i) => getId(i) == id ? offlineItem : i).toList(),
         );
       }
-      return true;
+      return currentItem != null;
     }
   }
 }

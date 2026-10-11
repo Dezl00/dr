@@ -38,7 +38,7 @@ class Appointment {
       patientName: json['patient']?['fullName']?.toString() ?? 'بدون اسم',
       patientPhone: json['patient']?['phone']?.toString() ?? 'بدون هاتف',
       doctorId: json['doctorId']?.toString() ?? '',
-      doctorName: json['doctor']?['user']?['fullName']?.toString() ?? 'طبيب غير محدد',
+      doctorName: json['doctor']?['fullName']?.toString() ?? json['doctor']?['user']?['fullName']?.toString() ?? 'طبيب غير محدد',
       serviceId: json['serviceId']?.toString(),
       serviceName: json['service']?['name']?.toString(),
       date: json['date'] != null ? DateTime.tryParse(json['date'].toString()) ?? DateTime.now() : DateTime.now(),

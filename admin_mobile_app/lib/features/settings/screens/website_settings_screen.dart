@@ -1,21 +1,10 @@
-import 'dart:ui';
 import 'dart:convert';
+
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:dio/dio.dart';
+
 import '../../../core/api/api_endpoints.dart';
 import '../../auth/providers/auth_provider.dart';
-import '../../../core/offline/hive_service.dart';
-import '../../../core/utils/toast_util.dart';
-
-class WebsiteSection {
-  final String id;
-  final String title;
-  bool isEnabled;
-
-  WebsiteSection({required this.id, required this.title, required this.isEnabled});
-}
 
 class WebsiteSettingsScreen extends ConsumerStatefulWidget {
   const WebsiteSettingsScreen({super.key});
@@ -25,725 +14,221 @@ class WebsiteSettingsScreen extends ConsumerStatefulWidget {
 }
 
 class _WebsiteSettingsScreenState extends ConsumerState<WebsiteSettingsScreen> {
-  bool _isSaving = false;
-
-  final TextEditingController _domainController = TextEditingController();
-  final TextEditingController _facebookController = TextEditingController();
-  final TextEditingController _instagramController = TextEditingController();
-  final TextEditingController _twitterController = TextEditingController();
-  final TextEditingController _whatsappController = TextEditingController();
-
-  late List<WebsiteSection> _sections;
+  final _slug = TextEditingController();
+  final _facebook = TextEditingController();
+  final _instagram = TextEditingController();
+  final _twitter = TextEditingController();
+  final _whatsapp = TextEditingController();
+  List<Map<String, dynamic>> _sections = [];
+  bool _published = false;
+  bool _loading = true;
+  bool _saving = false;
 
   @override
   void initState() {
     super.initState();
-    _sections = [
-      WebsiteSection(id: 'hero', title: 'القسم الرئيسي', isEnabled: true),
-      WebsiteSection(id: 'about', title: 'من نحن', isEnabled: true),
-      WebsiteSection(id: 'services', title: 'الخدمات', isEnabled: true),
-      WebsiteSection(id: 'doctors', title: 'الأطباء', isEnabled: true),
-      WebsiteSection(id: 'why_choose_us', title: 'لماذا نحن', isEnabled: true),
-      WebsiteSection(id: 'gallery', title: 'معرض الصور', isEnabled: true),
-      WebsiteSection(id: 'testimonials', title: 'آراء العملاء', isEnabled: true),
-      WebsiteSection(id: 'faq', title: 'الأسئلة الشائعة', isEnabled: true),
-      WebsiteSection(id: 'contact', title: 'اتصل بنا', isEnabled: true),
-      WebsiteSection(id: 'booking', title: 'حجز موعد', isEnabled: true),
-    ];
-    
-    _initFromCache();
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _initFromState();
-      _fetchSettings();
-    });
+    _load();
   }
 
   @override
   void dispose() {
-    _domainController.dispose();
-    _facebookController.dispose();
-    _instagramController.dispose();
-    _twitterController.dispose();
-    _whatsappController.dispose();
+    _slug.dispose();
+    _facebook.dispose();
+    _instagram.dispose();
+    _twitter.dispose();
+    _whatsapp.dispose();
     super.dispose();
   }
-  
-  void _initFromCache() {
-    final cachedData = HiveService.getSettingsBox().get('website');
-    if (cachedData != null) {
-      try {
-        final data = jsonDecode(cachedData);
-        final settings = data['data'] ?? data['settings'] ?? data;
-        if (settings != null) {
-          final slug = settings['domain'] ?? settings['slug'];
-          if (slug != null && slug.toString().isNotEmpty) {
-            _domainController.text = slug.toString();
-          }
-          _facebookController.text = settings['socialFacebook'] ?? _facebookController.text;
-          _instagramController.text = settings['socialInstagram'] ?? _instagramController.text;
-          _twitterController.text = settings['socialTwitter'] ?? _twitterController.text;
-          _whatsappController.text = settings['socialWhatsapp'] ?? _whatsappController.text;
-        }
-      } catch (e) {
-        // Handle parsing error quietly
-      }
-    }
 
-    final clinicDataStr = HiveService.getSettingsBox().get('clinic');
-    if (clinicDataStr != null) {
-      try {
-        final clinicData = jsonDecode(clinicDataStr);
-        final c = clinicData['data'] ?? clinicData['clinic'] ?? clinicData;
-        if (c != null && c['slug'] != null && c['slug'].toString().isNotEmpty) {
-          if (_domainController.text.isEmpty) {
-            _domainController.text = c['slug'].toString();
-          }
-        }
-      } catch (e) {}
-    }
-  }
-
-  void _initFromState() {
-    final authState = ref.read(authStateProvider);
-    final clinic = authState.clinic;
-    if (clinic != null) {
-      final slug = clinic['slug'];
-      if (slug != null && slug.toString().isNotEmpty) {
-        _domainController.text = slug.toString();
-      }
-      if (clinic['settings'] != null) {
-        final settings = clinic['settings'];
-        if (settings['socialFacebook'] != null) _facebookController.text = settings['socialFacebook'];
-        if (settings['socialInstagram'] != null) _instagramController.text = settings['socialInstagram'];
-        if (settings['socialTwitter'] != null) _twitterController.text = settings['socialTwitter'];
-        if (settings['socialWhatsapp'] != null) _whatsappController.text = settings['socialWhatsapp'];
-      }
-    }
-  }
-
-  Future<void> _fetchSettings() async {
+  Future<void> _load() async {
     try {
       final dio = ref.read(dioProvider);
-      final response = await dio.get(ApiEndpoints.settings);
-      if (response.statusCode == 200) {
-        final data = response.data;
-        
-        HiveService.getSettingsBox().put('website', jsonEncode(data));
-        
-        final settings = data['data'] ?? data['settings'] ?? data;
-        if (settings != null) {
-          final slug = settings['domain'] ?? settings['slug'];
-          if (slug != null && slug.toString().isNotEmpty) {
-            final clinicDataStr = HiveService.getSettingsBox().get('clinic');
-            Map<String, dynamic> cMap = {};
-            if (clinicDataStr != null) {
-              try { cMap = jsonDecode(clinicDataStr); } catch (_) {}
-            }
-            cMap['slug'] = slug.toString();
-            HiveService.getSettingsBox().put('clinic', jsonEncode(cMap));
-          }
-
-          if (mounted) {
-            setState(() {
-              if (slug != null && slug.toString().isNotEmpty) {
-                _domainController.text = slug.toString();
-              }
-              _facebookController.text = settings['socialFacebook'] ?? _facebookController.text;
-              _instagramController.text = settings['socialInstagram'] ?? _instagramController.text;
-              _twitterController.text = settings['socialTwitter'] ?? _twitterController.text;
-              _whatsappController.text = settings['socialWhatsapp'] ?? _whatsappController.text;
-            });
-          }
-        }
-      }
-    } catch (e) {
-      // Keep existing data on error
+      final responses = await Future.wait([dio.get(ApiEndpoints.website), dio.get(ApiEndpoints.settings)]);
+      final siteData = responses[0].data['data'] as Map?;
+      final clinic = siteData?['clinic'] as Map?;
+      final website = siteData?['website'] as Map?;
+      final settings = responses[1].data['data'] as Map?;
+      if (!mounted) return;
+      setState(() {
+        _slug.text = clinic?['slug']?.toString() ?? '';
+        _published = website?['isPublished'] as bool? ?? false;
+        _sections = ((website?['sections'] as List?) ?? []).map((entry) => Map<String, dynamic>.from(entry as Map)).toList();
+        _facebook.text = settings?['socialFacebook']?.toString() ?? '';
+        _instagram.text = settings?['socialInstagram']?.toString() ?? '';
+        _twitter.text = settings?['socialTwitter']?.toString() ?? '';
+        _whatsapp.text = settings?['socialWhatsapp']?.toString() ?? '';
+      });
+    } catch (error) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('تعذر تحميل إعدادات الموقع: $error')));
+    } finally {
+      if (mounted) setState(() => _loading = false);
     }
   }
 
   Future<void> _saveSettings() async {
-    setState(() {
-      _isSaving = true;
-    });
+    setState(() => _saving = true);
     try {
       final dio = ref.read(dioProvider);
-      final settingsData = {
-        'socialFacebook': _facebookController.text,
-        'socialInstagram': _instagramController.text,
-        'socialTwitter': _twitterController.text,
-        'socialWhatsapp': _whatsappController.text,
-      };
-      
-      final newSlug = _domainController.text.trim();
-      await dio.put(ApiEndpoints.settings, data: settingsData);
-      if (newSlug.isNotEmpty) {
-        await dio.put('${ApiEndpoints.settings}/clinic', data: { 'slug': newSlug });
-      }
-
-      // Update both local caches immediately
-      final websiteCache = {
-        'domain': newSlug,
-        'slug': newSlug,
-        ...settingsData,
-      };
-      await HiveService.getSettingsBox().put('website', jsonEncode(websiteCache));
-
-      final clinicDataStr = HiveService.getSettingsBox().get('clinic');
-      Map<String, dynamic> cMap = {};
-      if (clinicDataStr != null) {
-        try { cMap = jsonDecode(clinicDataStr); } catch (_) {}
-      }
-      cMap['slug'] = newSlug;
-      await HiveService.getSettingsBox().put('clinic', jsonEncode(cMap));
-      
-      if (mounted) {
-        ToastUtil.showSuccess(context, 'تم حفظ التغييرات بنجاح');
-      }
-    } catch (e) {
-      if (mounted) {
-        ToastUtil.showError(context, 'حدث خطأ أثناء الحفظ');
-      }
+      final responses = await Future.wait([
+        dio.put(ApiEndpoints.website, data: {'slug': _slug.text.trim(), 'isPublished': _published}),
+        dio.put(ApiEndpoints.settings, data: {
+          'socialFacebook': _facebook.text.trim(),
+          'socialInstagram': _instagram.text.trim(),
+          'socialTwitter': _twitter.text.trim(),
+          'socialWhatsapp': _whatsapp.text.trim(),
+        }),
+      ]);
+      if (responses.any((response) => response.data['success'] != true)) throw Exception('لم يتم حفظ جميع التغييرات');
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم حفظ إعدادات الموقع')));
+    } catch (error) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error.toString())));
     } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  Future<void> _toggleSection(int index, bool enabled) async {
+    final original = _sections[index];
+    setState(() => _sections[index] = {...original, 'isEnabled': enabled});
+    try {
+      final response = await ref.read(dioProvider).patch('${ApiEndpoints.websiteSections}/${original['id']}', data: {'isEnabled': enabled});
+      if (response.data['success'] != true) throw Exception(response.data['error'] ?? 'تعذر تحديث القسم');
+    } catch (error) {
       if (mounted) {
-        setState(() {
-          _isSaving = false;
-        });
+        setState(() => _sections[index] = original);
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error.toString())));
       }
     }
   }
+
+  Future<void> _reorder(int oldIndex, int newIndex) async {
+    if (oldIndex < newIndex) newIndex -= 1;
+    setState(() {
+      final section = _sections.removeAt(oldIndex);
+      _sections.insert(newIndex, section);
+    });
+    try {
+      final response = await ref.read(dioProvider).put(ApiEndpoints.websiteSections, data: {
+        'sections': [for (var index = 0; index < _sections.length; index++) {'id': _sections[index]['id'], 'sortOrder': index}],
+      });
+      if (response.data['success'] != true) throw Exception(response.data['error'] ?? 'تعذر ترتيب الأقسام');
+    } catch (error) {
+      await _load();
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error.toString())));
+    }
+  }
+
+  Future<void> _editSection(int index) async {
+    final section = _sections[index];
+    final title = TextEditingController(text: section['title']?.toString() ?? '');
+    final content = TextEditingController(text: section['content'] == null ? '{}' : const JsonEncoder.withIndent('  ').convert(section['content']));
+    final updated = await showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('تعديل ${_sectionLabel(section)}'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(controller: title, decoration: const InputDecoration(labelText: 'العنوان')),
+              const SizedBox(height: 12),
+              TextField(controller: content, minLines: 4, maxLines: 10, decoration: const InputDecoration(labelText: 'المحتوى بصيغة JSON', border: OutlineInputBorder())),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('إلغاء')),
+          FilledButton(
+            onPressed: () {
+              try {
+                final decoded = jsonDecode(content.text);
+                if (decoded is! Map) throw const FormatException();
+                Navigator.pop(context, {'title': title.text.trim().isEmpty ? null : title.text.trim(), 'content': decoded});
+              } catch (_) {
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('اكتب المحتوى ككائن JSON صحيح')));
+              }
+            },
+            child: const Text('حفظ'),
+          ),
+        ],
+      ),
+    );
+    if (updated == null) return;
+    try {
+      final response = await ref.read(dioProvider).patch('${ApiEndpoints.websiteSections}/${section['id']}', data: updated);
+      if (response.data['success'] != true) throw Exception(response.data['error'] ?? 'تعذر تعديل القسم');
+      if (mounted) setState(() => _sections[index] = Map<String, dynamic>.from(response.data['data'] as Map));
+    } catch (error) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error.toString())));
+    }
+  }
+
+  String _sectionLabel(Map<String, dynamic> section) => section['title']?.toString().isNotEmpty == true ? section['title'].toString() : section['type']?.toString() ?? 'قسم';
 
   @override
   Widget build(BuildContext context) {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        backgroundColor: Colors.white,
         appBar: AppBar(
-          backgroundColor: Colors.white,
-          elevation: 0,
-          scrolledUnderElevation: 0,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios, color: Color(0xFF0F172A), size: 20),
-            onPressed: () => Navigator.pop(context),
-          ),
-          title: const Text(
-            'إعدادات الموقع الإلكتروني',
-            style: TextStyle(
-              fontFamily: 'IBMPlexSansArabic',
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: Color(0xFF0F172A),
-            ),
-          ),
-          centerTitle: true,
+          title: const Text('إعدادات الموقع الإلكتروني'),
+          actions: [IconButton(onPressed: _loading ? null : _load, icon: const Icon(Icons.refresh))],
         ),
-        body: SafeArea(
-          child: ListView(
-            padding: const EdgeInsets.all(20.0),
-            children: [
-              _buildSectionTitle('المعلومات الأساسية'),
-              const SizedBox(height: 16),
-              _buildSubdomainField(),
-              const SizedBox(height: 16),
-              _buildLogoUpload(),
-              
-              const SizedBox(height: 32),
-              _buildSectionTitle('أقسام الموقع الإلكتروني'),
-              const SizedBox(height: 8),
-              const Text(
-                'قم بسحب وإفلات الأقسام لترتيبها، أو تفعيلها وتعطيلها.',
-                style: TextStyle(
-                  fontFamily: 'IBMPlexSansArabic',
-                  fontSize: 15,
-                  color: Color(0xFF64748B),
-                ),
-              ),
-              const SizedBox(height: 16),
-              ReorderableListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: _sections.length,
-                proxyDecorator: (Widget child, int index, Animation<double> animation) {
-                  return Material(
-                    color: Colors.transparent,
-                    elevation: 0,
-                    child: Opacity(
-                      opacity: 0.85,
-                      child: child,
-                    ),
-                  );
-                },
-                onReorder: (oldIndex, newIndex) {
-                  setState(() {
-                    if (oldIndex < newIndex) {
-                      newIndex -= 1;
-                    }
-                    final item = _sections.removeAt(oldIndex);
-                    _sections.insert(newIndex, item);
-                  });
-                },
-                itemBuilder: (context, index) {
-                  final section = _sections[index];
-                  return Material(
-                    key: ValueKey(section.id),
-                    color: Colors.transparent,
-                    child: Container(
-                      margin: const EdgeInsets.only(bottom: 12),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: const Color(0xFFE2E8F0)),
-                      ),
-                      child: _buildToggleRow(
-                        title: section.title,
-                        value: section.isEnabled,
-                        onChanged: (v) {
-                          setState(() {
-                            section.isEnabled = v;
-                          });
-                        },
-                        onEdit: () => _showEditSectionModal(section),
-                      ),
-                    ),
-                  );
-                },
-              ),
-              
-              const SizedBox(height: 32),
-              _buildSectionTitle('روابط التواصل الاجتماعي'),
-              const SizedBox(height: 16),
-              _buildTextField(
-                label: 'فيسبوك',
-                controller: _facebookController,
-                isEnglish: true,
-              ),
-              const SizedBox(height: 16),
-              _buildTextField(
-                label: 'إنستغرام',
-                controller: _instagramController,
-                isEnglish: true,
-              ),
-              const SizedBox(height: 16),
-              _buildTextField(
-                label: 'تويتر',
-                controller: _twitterController,
-                isEnglish: true,
-              ),
-              const SizedBox(height: 16),
-              _buildTextField(
-                label: 'واتساب',
-                controller: _whatsappController,
-                isEnglish: true,
-              ),
-            ],
-          ),
-        ),
-        bottomNavigationBar: Container(
-          padding: const EdgeInsets.all(20),
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            border: Border(
-              top: BorderSide(color: Color(0xFFE2E8F0)),
-            ),
-          ),
-          child: SafeArea(
-            child: ElevatedButton(
-              onPressed: _isSaving ? null : _saveSettings,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF2563EB),
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(50),
-                ),
-                padding: const EdgeInsets.symmetric(vertical: 16),
-              ),
-              child: _isSaving
-                  ? const SizedBox(
-                      height: 24,
-                      width: 24,
-                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                    )
-                  : const Text(
-                      'حفظ التغييرات',
-                      style: TextStyle(
-                        fontFamily: 'IBMPlexSansArabic',
-                        fontSize: 15,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.white,
-                      ),
-                    ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSectionTitle(String title) {
-    return Text(
-      title,
-      style: const TextStyle(
-        fontFamily: 'IBMPlexSansArabic',
-        fontSize: 15,
-        fontWeight: FontWeight.w500,
-        color: Color(0xFF0F172A),
-      ),
-    );
-  }
-
-  Widget _buildSubdomainField() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'رابط الموقع',
-          style: TextStyle(
-            fontFamily: 'IBMPlexSansArabic',
-            fontSize: 15,
-            fontWeight: FontWeight.w500,
-            color: Color(0xFF475569),
-          ),
-        ),
-        const SizedBox(height: 8),
-        Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFFE2E8F0)),
-          ),
-          child: Row(
-            textDirection: TextDirection.ltr,
-            children: [
-              Expanded(
-                child: TextFormField(
-                  controller: _domainController,
-                  textDirection: TextDirection.ltr,
-                  keyboardType: TextInputType.text,
-                  style: const TextStyle(
-                    fontFamily: 'IBMPlexSansArabic',
-                    fontSize: 15,
-                    color: Color(0xFF0F172A),
-                  ),
-                  decoration: const InputDecoration(
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  ),
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                decoration: const BoxDecoration(
-                  color: Color(0xFFF8FAFC),
-                  borderRadius: BorderRadius.horizontal(right: Radius.circular(12)),
-                  border: Border(left: BorderSide(color: Color(0xFFE2E8F0))),
-                ),
-                child: const Text(
-                  '.beyoondgroup.com',
-                  textDirection: TextDirection.ltr,
-                  style: TextStyle(
-                    fontFamily: 'IBMPlexSansArabic',
-                    fontSize: 15,
-                    color: Color(0xFF64748B),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildToggleRow({
-    required String title,
-    required bool value,
-    required ValueChanged<bool> onChanged,
-    required VoidCallback onEdit,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Expanded(
-            child: Row(
-              children: [
-                const Icon(Icons.drag_indicator, color: Color(0xFF94A3B8), size: 20),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontFamily: 'IBMPlexSansArabic',
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                      color: Color(0xFF0F172A),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 8),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              IconButton(
-                icon: const Icon(Icons.edit_outlined, color: Color(0xFF2563EB), size: 20),
-                onPressed: onEdit,
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-              ),
-              const SizedBox(width: 12),
-              Switch(
-                value: value,
-                onChanged: onChanged,
-                activeColor: Colors.white,
-                activeTrackColor: const Color(0xFF2563EB),
-                inactiveThumbColor: Colors.white,
-                inactiveTrackColor: const Color(0xFFCBD5E1),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTextField({
-    required String label,
-    required TextEditingController controller,
-    bool isEnglish = false,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontFamily: 'IBMPlexSansArabic',
-            fontSize: 15,
-            fontWeight: FontWeight.w500,
-            color: Color(0xFF475569),
-          ),
-        ),
-        const SizedBox(height: 8),
-        TextFormField(
-          controller: controller,
-          textDirection: isEnglish ? TextDirection.ltr : TextDirection.rtl,
-          keyboardType: TextInputType.text,
-          style: const TextStyle(
-            fontFamily: 'IBMPlexSansArabic',
-            fontSize: 15,
-            color: Color(0xFF0F172A),
-          ),
-          decoration: InputDecoration(
-            filled: true,
-            fillColor: Colors.white,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFF2563EB)),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildLogoUpload() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'شعار العيادة',
-          style: TextStyle(
-            fontFamily: 'IBMPlexSansArabic',
-            fontSize: 15,
-            fontWeight: FontWeight.w500,
-            color: Color(0xFF475569),
-          ),
-        ),
-        const SizedBox(height: 8),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: const Color(0xFFF8FAFC),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: const Color(0xFFE2E8F0),
-              style: BorderStyle.solid,
-            ),
-          ),
-          child: Column(
-            children: [
-              const Icon(Icons.cloud_upload_outlined, size: 36, color: Color(0xFF94A3B8)),
-              const SizedBox(height: 8),
-              const Text(
-                'اضغط لرفع شعار جديد',
-                style: TextStyle(
-                  fontFamily: 'IBMPlexSansArabic',
-                  fontSize: 15,
-                  fontWeight: FontWeight.w500,
-                  color: Color(0xFF0F172A),
-                ),
-              ),
-              const SizedBox(height: 4),
-              const Text(
-                'PNG, JPG حتى 5MB',
-                textDirection: TextDirection.ltr,
-                style: TextStyle(
-                  fontFamily: 'IBMPlexSansArabic',
-                  fontSize: 10,
-                  color: Color(0xFF64748B),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  void _showEditSectionModal(WebsiteSection section) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) {
-        return Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-          ),
-          child: Directionality(
-            textDirection: TextDirection.rtl,
-            child: Container(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
+        body: _loading
+            ? const Center(child: CircularProgressIndicator())
+            : ListView(
+                padding: const EdgeInsets.all(16),
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'تعديل ${section.title}',
-                        style: const TextStyle(
-                          fontFamily: 'IBMPlexSansArabic',
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          color: Color(0xFF0F172A),
-                        ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.close, color: Color(0xFF64748B), size: 20),
-                        onPressed: () => Navigator.pop(context),
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                      ),
-                    ],
+                  SwitchListTile(
+                    title: const Text('نشر الموقع'),
+                    subtitle: const Text('إتاحة موقع العيادة للزوار.'),
+                    value: _published,
+                    onChanged: (value) => setState(() => _published = value),
                   ),
+                  const SizedBox(height: 12),
+                  TextField(controller: _slug, textDirection: TextDirection.ltr, decoration: const InputDecoration(labelText: 'النطاق الفرعي', border: OutlineInputBorder(), helperText: 'أحرف إنجليزية صغيرة وأرقام وشرطة فقط')),
                   const SizedBox(height: 20),
-                  if (section.id == 'hero') ...[
-                    _buildModalTextField('العنوان الرئيسي'),
-                    const SizedBox(height: 12),
-                    _buildModalTextField('النص الفرعي'),
-                    const SizedBox(height: 12),
-                    _buildModalTextField('نص الزر'),
-                  ] else if (section.id == 'about') ...[
-                    _buildModalTextField('النص'),
-                    const SizedBox(height: 12),
-                    _buildModalTextField('رابط الصورة'),
-                  ] else ...[
-                    _buildModalTextField('محتوى القسم'),
-                  ],
-                  const SizedBox(height: 24),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () => Navigator.pop(context),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF2563EB),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: const Text(
-                        'حفظ',
-                        style: TextStyle(
-                          fontFamily: 'IBMPlexSansArabic',
-                          fontSize: 15,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.white,
-                        ),
-                      ),
+                  const Text('روابط التواصل', style: TextStyle(fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 8),
+                  TextField(controller: _facebook, decoration: const InputDecoration(labelText: 'Facebook')),
+                  TextField(controller: _instagram, decoration: const InputDecoration(labelText: 'Instagram')),
+                  TextField(controller: _twitter, decoration: const InputDecoration(labelText: 'X / Twitter')),
+                  TextField(controller: _whatsapp, decoration: const InputDecoration(labelText: 'WhatsApp')),
+                  const SizedBox(height: 16),
+                  FilledButton(onPressed: _saving ? null : _saveSettings, child: _saving ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2)) : const Text('حفظ إعدادات النشر')),
+                  const SizedBox(height: 28),
+                  const Text('أقسام الموقع', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                  const SizedBox(height: 8),
+                  if (_sections.isEmpty) const Padding(padding: EdgeInsets.all(24), child: Center(child: Text('لا توجد أقسام متاحة للموقع')))
+                  else SizedBox(
+                    height: _sections.length * 72.0,
+                    child: ReorderableListView.builder(
+                      shrinkWrap: true,
+                      itemCount: _sections.length,
+                      onReorder: _reorder,
+                      itemBuilder: (context, index) {
+                        final section = _sections[index];
+                        return Card(
+                          key: ValueKey(section['id']),
+                          child: ListTile(
+                            leading: const Icon(Icons.drag_handle),
+                            title: Text(_sectionLabel(section)),
+                            subtitle: Text(section['type']?.toString() ?? ''),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(onPressed: () => _editSection(index), icon: const Icon(Icons.edit_outlined)),
+                                Switch(value: section['isEnabled'] as bool? ?? false, onChanged: (value) => _toggleSection(index, value)),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ],
               ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildModalTextField(String label) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontFamily: 'IBMPlexSansArabic',
-            fontSize: 15,
-            fontWeight: FontWeight.w500,
-            color: Color(0xFF475569),
-          ),
-        ),
-        const SizedBox(height: 6),
-        TextFormField(
-          style: const TextStyle(
-            fontFamily: 'IBMPlexSansArabic',
-            fontSize: 13,
-            color: Color(0xFF0F172A),
-          ),
-          decoration: InputDecoration(
-            filled: true,
-            fillColor: const Color(0xFFF8FAFC),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: Color(0xFF2563EB)),
-            ),
-          ),
-        ),
-      ],
+      ),
     );
   }
 }

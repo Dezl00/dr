@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:pinput/pinput.dart';
 import '../../../core/api/dio_client.dart';
-import '../../../core/api/api_endpoints.dart';
 
 class OtpVerificationScreen extends StatefulWidget {
   final String token;
@@ -15,6 +14,7 @@ class OtpVerificationScreen extends StatefulWidget {
 
 class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
   final _codeController = TextEditingController();
+  late String _registrationToken;
   bool _isLoading = false;
   
   Timer? _timer;
@@ -24,6 +24,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
   @override
   void initState() {
     super.initState();
+    _registrationToken = widget.token;
     _startTimer();
   }
 
@@ -54,11 +55,45 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     });
   }
 
-  void _resendOtp() async {
-    // Here you would call your backend to resend the OTP.
-    // For now, we simulate success and restart the timer.
-    _startTimer();
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم إعادة إرسال رمز التحقق')));
+  Future<void> _resendOtp() async {
+    if (!_canResend || _isLoading) return;
+    setState(() => _isLoading = true);
+    try {
+      final response = await DioClient().dio.post('/auth/resend-otp', data: {
+        'token': _registrationToken,
+      });
+      if (response.data['success'] != true) {
+        throw Exception(response.data['error'] ?? 'تعذر إعادة إرسال الرمز');
+      }
+      final newToken = response.data['registrationToken']?.toString();
+      if (newToken == null || newToken.isEmpty) {
+        throw Exception('تعذر تحديث جلسة التسجيل');
+      }
+      _registrationToken = newToken;
+      _codeController.clear();
+      _startTimer();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('تم إرسال رمز تحقق جديد')),
+        );
+      }
+    } on DioException catch (error) {
+      if (mounted) {
+        final data = error.response?.data;
+        final message = data is Map ? data['error']?.toString() : null;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(message ?? 'تعذر إعادة إرسال الرمز'), backgroundColor: Colors.red),
+        );
+      }
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(error.toString().replaceFirst('Exception: ', '')), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   void _verifyOtp() async {
@@ -70,8 +105,8 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     setState(() => _isLoading = true);
     try {
       final dio = DioClient().dio;
-      final response = await dio.post('${ApiEndpoints.baseUrl}/auth/verify-otp', data: {
-        'token': widget.token,
+      final response = await dio.post('/auth/verify-otp', data: {
+        'token': _registrationToken,
         'code': _codeController.text,
       });
 

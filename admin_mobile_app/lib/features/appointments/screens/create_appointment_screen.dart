@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/appointment_provider.dart';
+import '../../patients/providers/patient_provider.dart';
+import '../../../core/providers/doctors_provider.dart';
+import '../../../core/providers/services_provider.dart';
 
 class CreateAppointmentScreen extends ConsumerStatefulWidget {
   const CreateAppointmentScreen({super.key});
@@ -93,6 +96,9 @@ class _CreateAppointmentScreenState extends ConsumerState<CreateAppointmentScree
 
   @override
   Widget build(BuildContext context) {
+    final patients = ref.watch(patientStateProvider).items;
+    final doctors = ref.watch(doctorsProvider);
+    final services = ref.watch(servicesProvider);
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -119,10 +125,11 @@ class _CreateAppointmentScreenState extends ConsumerState<CreateAppointmentScree
                   filled: true,
                   fillColor: Colors.white,
                 ),
-                items: [
-                  DropdownMenuItem(value: 'mock-patient-1', child: Text('مريض افتراضي 1', style: TextStyle(fontFamily: 'IBMPlexSansArabic'))),
-                ],
-                onChanged: (val) => _selectedPatientId = val,
+                items: patients.map((patient) => DropdownMenuItem<String>(
+                  value: patient.id,
+                  child: Text('${patient.fullName} — ${patient.phone}', style: const TextStyle(fontFamily: 'IBMPlexSansArabic'), overflow: TextOverflow.ellipsis),
+                )).toList(),
+                onChanged: (val) => setState(() => _selectedPatientId = val),
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
@@ -133,10 +140,11 @@ class _CreateAppointmentScreenState extends ConsumerState<CreateAppointmentScree
                   filled: true,
                   fillColor: Colors.white,
                 ),
-                items: [
-                  DropdownMenuItem(value: 'mock-doc-1', child: Text('طبيب افتراضي 1', style: TextStyle(fontFamily: 'IBMPlexSansArabic'))),
-                ],
-                onChanged: (val) => _selectedDoctorId = val,
+                items: doctors.map((doctor) => DropdownMenuItem<String>(
+                  value: doctor['id']?.toString(),
+                  child: Text(doctor['fullName']?.toString() ?? 'طبيب', style: const TextStyle(fontFamily: 'IBMPlexSansArabic')),
+                )).toList(),
+                onChanged: (val) => setState(() => _selectedDoctorId = val),
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
@@ -147,10 +155,11 @@ class _CreateAppointmentScreenState extends ConsumerState<CreateAppointmentScree
                   filled: true,
                   fillColor: Colors.white,
                 ),
-                items: [
-                  DropdownMenuItem(value: 'mock-srv-1', child: Text('خدمة افتراضية 1', style: TextStyle(fontFamily: 'IBMPlexSansArabic'))),
-                ],
-                onChanged: (val) => _selectedServiceId = val,
+                items: services.map((service) => DropdownMenuItem<String>(
+                  value: service['id']?.toString(),
+                  child: Text(service['name']?.toString() ?? 'خدمة', style: const TextStyle(fontFamily: 'IBMPlexSansArabic')),
+                )).toList(),
+                onChanged: (val) => setState(() => _selectedServiceId = val),
               ),
               const SizedBox(height: 24),
               OutlinedButton.icon(
@@ -211,7 +220,7 @@ class _CreateAppointmentScreenState extends ConsumerState<CreateAppointmentScree
                 onPressed: _isLoading ? null : _submit,
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.all(16),
-                  backgroundColor: Colors.white,
+                  backgroundColor: const Color(0xFF2563EB),
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   elevation: 0,

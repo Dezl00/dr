@@ -1,7 +1,14 @@
 
 class ApiEndpoints {
   // Production Server
-  static const String baseUrl = 'https://www.beyoondgroup.com/api/v1';
+  static const String baseUrl = String.fromEnvironment(
+    'API_BASE_URL',
+    defaultValue: 'https://www.beyoondgroup.com/api/v1',
+  );
+  static const String websiteRootDomain = String.fromEnvironment(
+    'WEBSITE_ROOT_DOMAIN',
+    defaultValue: 'beyoondgroup.com',
+  );
 
   // Auth
   static const String login = '/auth/login';
@@ -26,6 +33,8 @@ class ApiEndpoints {
   static const String services = '/services';
   static const String leads = '/crm/leads';
   static const String inventory = '/inventory';
+  static const String website = '/website';
+  static const String websiteSections = '/website/sections';
   
   // Settings
   static const String settings = '/settings';

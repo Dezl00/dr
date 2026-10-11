@@ -1,72 +1,66 @@
 import { prisma } from './db/prisma'
+import { sendSms, type SmsResult } from './whysms'
 
-interface SMSServiceProps {
+export type AppointmentSmsType = 'CONFIRMATION' | 'REMINDER' | 'CANCELLATION' | 'COMPLETED' | 'NO_SHOW'
+
+interface SmsServiceProps {
   clinicId: string
   patientId: string
-  doctorId?: string
-  serviceId?: string
+  serviceId?: string | null
   date: Date
   startTime: string
-  type: 'CONFIRMATION' | 'REMINDER' | 'CANCELLATION' | 'COMPLETED'
+  type: AppointmentSmsType
 }
 
-export async function sendAppointmentSMS({ clinicId, patientId, doctorId, serviceId, date, startTime, type }: SMSServiceProps) {
+function dateLabel(date: Date, timezone: string) {
+  return new Intl.DateTimeFormat('ar-EG', {
+    calendar: 'gregory',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    timeZone: timezone,
+  }).format(date)
+}
+
+export async function sendAppointmentSMS({ clinicId, patientId, serviceId, date, startTime, type }: SmsServiceProps): Promise<SmsResult> {
   try {
-    const settings = await prisma.clinicSettings.findUnique({
-      where: { clinicId }
-    })
+    const [settings, clinic, patient, service] = await Promise.all([
+      prisma.clinicSettings.findUnique({ where: { clinicId } }),
+      prisma.clinic.findUnique({ where: { id: clinicId }, select: { id: true, name: true, timezone: true } }),
+      prisma.patient.findFirst({ where: { id: patientId, clinicId }, select: { fullName: true, phone: true } }),
+      serviceId ? prisma.service.findFirst({ where: { id: serviceId, clinicId }, select: { name: true } }) : null,
+    ])
 
-    // Default settings if the clinic hasn't configured them yet
-    const notifyBookingConfirmation = settings?.notifyBookingConfirmation ?? true
-    const notifyAppointmentReminder = settings?.notifyAppointmentReminder ?? true
-    const notifyBookingCancellation = settings?.notifyBookingCancellation ?? true
-    const notifyVisitCompletion = settings?.notifyVisitCompletion ?? true
+    if (!clinic) return { success: false, error: 'Clinic not found' }
+    if (!patient?.phone) return { success: false, error: 'Patient has no phone number' }
 
-    // Check if notification is enabled for this type
-    if (type === 'CONFIRMATION' && !notifyBookingConfirmation) return { success: false, error: 'مغلق من الإعدادات' }
-    if (type === 'REMINDER' && !notifyAppointmentReminder) return { success: false, error: 'مغلق من الإعدادات' }
-    if (type === 'CANCELLATION' && !notifyBookingCancellation) return { success: false, error: 'مغلق من الإعدادات' }
-    if (type === 'COMPLETED' && !notifyVisitCompletion) return { success: false, error: 'مغلق من الإعدادات' }
+    if (type === 'CONFIRMATION' && settings?.notifyBookingConfirmation === false) return { success: false, error: 'Disabled in clinic settings' }
+    if (type === 'REMINDER' && settings?.notifyAppointmentReminder === false) return { success: false, error: 'Disabled in clinic settings' }
+    if (type === 'CANCELLATION' && settings?.notifyBookingCancellation === false) return { success: false, error: 'Disabled in clinic settings' }
+    if ((type === 'COMPLETED' || type === 'NO_SHOW') && settings?.notifyVisitCompletion === false) return { success: false, error: 'Disabled in clinic settings' }
 
-    const clinic = await prisma.clinic.findUnique({ where: { id: clinicId } })
-    const patient = await prisma.patient.findUnique({ where: { id: patientId } })
-    
-    if (!patient?.phone) return { success: false, error: 'المريض لا يملك رقم هاتف' }
-    if (!clinic) return { success: false, error: 'العيادة غير موجودة' }
+    const appointmentDate = dateLabel(date, clinic.timezone || 'Africa/Cairo')
+    const serviceName = service?.name ?? 'الاستشارة'
+    const message = (() => {
+      switch (type) {
+        case 'CONFIRMATION':
+          return `مرحباً ${patient.fullName}، تم تأكيد حجزك في ${clinic.name} لخدمة ${serviceName} يوم ${appointmentDate} الساعة ${startTime}.`
+        case 'REMINDER':
+          return `تذكير من ${clinic.name}: لديك موعد يوم ${appointmentDate} الساعة ${startTime}.`
+        case 'CANCELLATION':
+          return `مرحباً ${patient.fullName}، تم إلغاء موعدك في ${clinic.name} يوم ${appointmentDate}.`
+        case 'COMPLETED':
+          return `مرحباً ${patient.fullName}، نشكرك لزيارتك ${clinic.name}. نتمنى لك دوام الصحة والعافية.`
+        case 'NO_SHOW':
+          return `مرحباً ${patient.fullName}، فاتنا استقبالكم في موعد ${clinic.name} يوم ${appointmentDate}. يمكنكم التواصل معنا لحجز موعد جديد.`
+      }
+    })()
 
-    const service = serviceId ? await prisma.service.findUnique({ where: { id: serviceId } }) : null
-
-    let message = ''
-    const formattedDate = date.toISOString().split('T')[0]
-    const serviceName = service ? service.name : 'استشارة'
-
-    switch (type) {
-      case 'CONFIRMATION':
-        message = `مرحباً ${patient.fullName}، تم تأكيد حجزك في ${clinic.name} لخدمة (${serviceName}) يوم ${formattedDate} الساعة ${startTime}.`
-        break
-      case 'REMINDER':
-        message = `تذكير: لديك موعد قادم في ${clinic.name} يوم ${formattedDate} الساعة ${startTime}.`
-        break
-      case 'CANCELLATION':
-        message = `مرحباً ${patient.fullName}، تم إلغاء موعدك في ${clinic.name} يوم ${formattedDate}.`
-        break
-      case 'COMPLETED':
-        message = `مرحباً ${patient.fullName}، شكراً لزيارتك ${clinic.name}. نتمنى لك دوام الصحة والعافية.`
-        break
-    }
-
-    // Call WhySMS API
-    const { sendSms } = await import('./whysms')
     const result = await sendSms(patient.phone, message)
-    
-    if (result.success) {
-      console.log(`[SMS Gateway] Sent to ${patient.phone}: ${message}`)
-    }
-    
+    if (!result.success) console.error('Appointment SMS failed', { clinicId, patientId, type, reason: result.error })
     return result
-
-  } catch (error: any) {
-    console.error('Failed to send SMS:', error)
-    return { success: false, error: error.message }
+  } catch (error) {
+    console.error('Appointment SMS failed unexpectedly', { clinicId, patientId, type })
+    return { success: false, error: 'Unable to send appointment SMS' }
   }
 }

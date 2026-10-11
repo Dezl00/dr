@@ -1,110 +1,88 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class SecuritySettingsScreen extends StatelessWidget {
+import '../../../core/api/api_endpoints.dart';
+import '../../auth/providers/auth_provider.dart';
+
+class SecuritySettingsScreen extends ConsumerStatefulWidget {
   const SecuritySettingsScreen({super.key});
+
+  @override
+  ConsumerState<SecuritySettingsScreen> createState() => _SecuritySettingsScreenState();
+}
+
+class _SecuritySettingsScreenState extends ConsumerState<SecuritySettingsScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final _currentPassword = TextEditingController();
+  final _newPassword = TextEditingController();
+  final _confirmation = TextEditingController();
+  bool _saving = false;
+
+  @override
+  void dispose() {
+    _currentPassword.dispose();
+    _newPassword.dispose();
+    _confirmation.dispose();
+    super.dispose();
+  }
+
+  Future<void> _changePassword() async {
+    if (!_formKey.currentState!.validate()) return;
+    setState(() => _saving = true);
+    try {
+      final response = await ref.read(dioProvider).put(ApiEndpoints.profileSettings, data: {
+        'currentPassword': _currentPassword.text,
+        'newPassword': _newPassword.text,
+      });
+      if (response.data['success'] != true) throw Exception(response.data['error'] ?? 'تعذر تغيير كلمة المرور');
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم تغيير كلمة المرور')));
+      Navigator.pop(context);
+    } catch (error) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error.toString())));
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        backgroundColor: Colors.white,
-        appBar: AppBar(
-          backgroundColor: Colors.white,
-          elevation: 0,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios, color: Color(0xFF0F172A)),
-            onPressed: () => Navigator.pop(context),
-          ),
-          title: const Text(
-            'الأمان والخصوصية',
-            style: TextStyle(
-              fontFamily: 'IBMPlexSansArabic',
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF0F172A),
-            ),
-          ),
-          centerTitle: true,
-        ),
+        appBar: AppBar(title: const Text('الأمان والخصوصية')),
         body: SafeArea(
-          child: ListView(
-            padding: const EdgeInsets.all(20.0),
-            children: [
-              _buildTextField(label: 'كلمة المرور الحالية', isPassword: true),
-              const SizedBox(height: 16),
-              _buildTextField(label: 'كلمة المرور الجديدة', isPassword: true),
-              const SizedBox(height: 16),
-              _buildTextField(label: 'تأكيد كلمة المرور الجديدة', isPassword: true),
-              const SizedBox(height: 32),
-              ElevatedButton(
-                onPressed: () {},
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF2563EB),
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(50),
-                  ),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+          child: Form(
+            key: _formKey,
+            child: ListView(
+              padding: const EdgeInsets.all(20),
+              children: [
+                _passwordField('كلمة المرور الحالية', _currentPassword),
+                const SizedBox(height: 16),
+                _passwordField('كلمة المرور الجديدة', _newPassword, validator: (value) => value == null || value.length < 8 ? 'استخدم 8 أحرف على الأقل' : null),
+                const SizedBox(height: 16),
+                _passwordField('تأكيد كلمة المرور الجديدة', _confirmation, validator: (value) => value != _newPassword.text ? 'كلمتا المرور غير متطابقتين' : null),
+                const SizedBox(height: 32),
+                FilledButton(
+                  onPressed: _saving ? null : _changePassword,
+                  style: FilledButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
+                  child: _saving ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2)) : const Text('تغيير كلمة المرور'),
                 ),
-                child: const Text(
-                  'تغيير كلمة المرور',
-                  style: TextStyle(
-                    fontFamily: 'IBMPlexSansArabic',
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildTextField({required String label, bool isPassword = false}) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontFamily: 'IBMPlexSansArabic',
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF475569),
-          ),
-        ),
-        const SizedBox(height: 8),
-        TextFormField(
-          obscureText: isPassword,
-          textDirection: TextDirection.ltr,
-          style: const TextStyle(
-            fontFamily: 'IBMPlexSansArabic',
-            fontSize: 16,
-            color: Color(0xFF0F172A),
-          ),
-          decoration: InputDecoration(
-            filled: true,
-            fillColor: Colors.white,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: Color(0xFF2563EB)),
-            ),
-          ),
-        ),
-      ],
+  Widget _passwordField(String label, TextEditingController controller, {String? Function(String?)? validator}) {
+    return TextFormField(
+      controller: controller,
+      obscureText: true,
+      textDirection: TextDirection.ltr,
+      decoration: InputDecoration(labelText: label, border: const OutlineInputBorder()),
+      validator: validator ?? (value) => value == null || value.isEmpty ? 'هذا الحقل مطلوب' : null,
     );
   }
 }

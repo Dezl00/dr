@@ -11,7 +11,7 @@ import { sendAppointmentSMS } from '@/lib/sms'
 async function getActiveClinicId(userId: string): Promise<string> {
   const { session } = await getCurrentSession()
   const user = await requireAuth()
-  
+
   if (
     user.isAdmin &&
     session?.adminAccessClinicId &&
@@ -144,9 +144,7 @@ export async function updateAppointmentStatus(appointmentId: string, newStatus: 
   const user = await requireAuth()
   const clinicId = await getActiveClinicId(user.id)
   
-  const apt = await prisma.appointment.findUnique({
-    where: { id: appointmentId, clinicId }
-  })
+  const apt = await prisma.appointment.findFirst({ where: { id: appointmentId, clinicId } })
   
   if (!apt) throw new Error('Appointment not found')
   if (apt.status === newStatus) return
@@ -164,6 +162,8 @@ export async function updateAppointmentStatus(appointmentId: string, newStatus: 
       await sendAppointmentSMS({ clinicId, patientId: apt.patientId, serviceId: apt.serviceId || undefined, date: apt.date, startTime: apt.startTime, type: 'COMPLETED' })
     } else if (newStatus === 'CANCELLED') {
       await sendAppointmentSMS({ clinicId, patientId: apt.patientId, serviceId: apt.serviceId || undefined, date: apt.date, startTime: apt.startTime, type: 'CANCELLATION' })
+    } else if (newStatus === 'NO_SHOW') {
+      await sendAppointmentSMS({ clinicId, patientId: apt.patientId, serviceId: apt.serviceId || undefined, date: apt.date, startTime: apt.startTime, type: 'NO_SHOW' })
     }
   } catch (error) {
     console.error('SMS Error:', error)
@@ -176,9 +176,7 @@ export async function sendManualReminder(appointmentId: string) {
   const user = await requireAuth()
   const clinicId = await getActiveClinicId(user.id)
   
-  const apt = await prisma.appointment.findUnique({
-    where: { id: appointmentId, clinicId }
-  })
+  const apt = await prisma.appointment.findFirst({ where: { id: appointmentId, clinicId } })
   
   if (!apt) return { success: false, error: 'Appointment not found' }
   
@@ -380,15 +378,39 @@ export async function updateAppointment(id: string, formData: FormData) {
   const status = formData.get('status') as AppointmentStatus
   const date = formData.get('date') as string
   const startTime = formData.get('startTime') as string
-  
-  await prisma.appointment.update({
-    where: { id, clinicId },
+  const current = await prisma.appointment.findFirst({ where: { id, clinicId } })
+  if (!current) throw new Error('Appointment not found')
+  const nextDate = new Date(date)
+  if (Number.isNaN(nextDate.getTime())) throw new Error('Invalid appointment date')
+  const scheduleChanged = current.date.getTime() !== nextDate.getTime() || current.startTime !== startTime
+
+  const updated = await prisma.appointment.update({
+    where: { id: current.id },
     data: { 
-      status, 
-      date: new Date(date), 
-      startTime 
+      status,
+      date: nextDate,
+      startTime,
+      ...(scheduleChanged ? { reminderSentAt: null } : {}),
     }
   })
+
+  if (current.status !== updated.status) {
+    const type = updated.status === 'CANCELLED'
+      ? 'CANCELLATION'
+      : updated.status === 'COMPLETED'
+        ? 'COMPLETED'
+        : updated.status === 'NO_SHOW'
+          ? 'NO_SHOW'
+          : 'CONFIRMATION'
+    await sendAppointmentSMS({
+      clinicId,
+      patientId: updated.patientId,
+      serviceId: updated.serviceId,
+      date: updated.date,
+      startTime: updated.startTime,
+      type,
+    })
+  }
   
   revalidatePath(`/dashboard/appointments/${id}`)
   redirect('/dashboard/appointments')

@@ -18,6 +18,7 @@ class _CreateInventoryScreenState extends ConsumerState<CreateInventoryScreen> {
   final _nameController = TextEditingController();
   final _quantityController = TextEditingController();
   final _minQuantityController = TextEditingController();
+  final _unitController = TextEditingController(text: 'قطعة');
   
   bool _isLoading = false;
 
@@ -26,6 +27,7 @@ class _CreateInventoryScreenState extends ConsumerState<CreateInventoryScreen> {
     _nameController.dispose();
     _quantityController.dispose();
     _minQuantityController.dispose();
+    _unitController.dispose();
     super.dispose();
   }
 
@@ -41,6 +43,8 @@ class _CreateInventoryScreenState extends ConsumerState<CreateInventoryScreen> {
       
       final Map<String, dynamic> data = {
         'name': _nameController.text.trim(),
+        'unit': _unitController.text.trim(),
+        'quantity': int.tryParse(_quantityController.text.trim()) ?? 0,
       };
       
       if (_quantityController.text.isNotEmpty) {
@@ -104,6 +108,8 @@ class _CreateInventoryScreenState extends ConsumerState<CreateInventoryScreen> {
               _buildTextField('اسم العنصر', _nameController, isRequired: true),
               const SizedBox(height: 16),
               _buildTextField('الكمية', _quantityController, isNumber: true),
+              const SizedBox(height: 16),
+              _buildTextField('الوحدة', _unitController, isRequired: true),
               const SizedBox(height: 16),
               _buildTextField('الحد الأدنى للكمية', _minQuantityController, isNumber: true),
               const SizedBox(height: 32),

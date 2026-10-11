@@ -20,6 +20,7 @@ import '../../settings/screens/website_settings_screen.dart';
 import '../../team/screens/doctors_screen.dart';
 import '../../inventory/screens/inventory_screen.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../../core/api/api_endpoints.dart';
 
 class MoreMenuScreen extends ConsumerWidget {
   const MoreMenuScreen({super.key});
@@ -135,7 +136,7 @@ class MoreMenuScreen extends ConsumerWidget {
       return const SizedBox();
     }
 
-    final url = 'https://$slug.beyoondgroup.com';
+    final url = 'https://$slug.${ApiEndpoints.websiteRootDomain}';
 
     return Row(
       children: [

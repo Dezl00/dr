@@ -4,10 +4,17 @@ import 'package:dio/dio.dart';
 import '../../../core/api/dio_client.dart';
 import '../../../core/api/api_endpoints.dart';
 import '../../../core/services/notification_service.dart';
+import '../../../core/offline/hive_service.dart';
 
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 
-final dioProvider = Provider((ref) => DioClient().dio);
+final authInvalidatedProvider = StateProvider<int>((ref) => 0);
+
+final dioProvider = Provider((ref) => DioClient(
+  onUnauthorized: () async {
+    ref.read(authInvalidatedProvider.notifier).state++;
+  },
+).dio);
 
 final authStateProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
   return AuthNotifier(ref.read(dioProvider));
@@ -79,8 +86,22 @@ class AuthNotifier extends StateNotifier<AuthState> {
     await Future.delayed(const Duration(milliseconds: 1500));
     final token = await _storage.read(key: 'jwt_token');
     if (token != null) {
-      state = state.copyWith(isCheckingAuth: false, isAuthenticated: true);
-      _registerDeviceToken();
+      try {
+        final response = await _dio.get(ApiEndpoints.settings);
+        if (response.data['success'] != true) throw Exception('Invalid session');
+        final profile = await _dio.get(ApiEndpoints.profileSettings);
+        state = state.copyWith(
+          isCheckingAuth: false,
+          isAuthenticated: true,
+          clinic: Map<String, dynamic>.from(response.data['data'] as Map),
+          user: profile.data['data'] is Map ? Map<String, dynamic>.from(profile.data['data'] as Map) : null,
+        );
+        _registerDeviceToken();
+      } catch (_) {
+        await _storage.delete(key: 'jwt_token');
+        await HiveService.clearUserData();
+        state = AuthState(isCheckingAuth: false);
+      }
     } else {
       state = state.copyWith(isCheckingAuth: false, isAuthenticated: false);
     }
@@ -102,7 +123,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
       if (response.data['success'] == true) {
         if (response.data['token'] != null) {
           await _storage.write(key: 'jwt_token', value: response.data['token']);
-          state = state.copyWith(isLoading: false, isAuthenticated: true);
+          state = state.copyWith(
+            isLoading: false,
+            isAuthenticated: true,
+            user: response.data['user'] is Map ? Map<String, dynamic>.from(response.data['user'] as Map) : null,
+            clinic: response.data['clinic'] is Map ? Map<String, dynamic>.from(response.data['clinic'] as Map) : null,
+          );
           _registerDeviceToken();
         } else if (response.data['requireClinicSelection'] == true) {
           state = state.copyWith(
@@ -149,6 +175,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
           requireClinicSelection: false,
           tempEmail: null,
           tempPassword: null,
+          user: response.data['user'] is Map ? Map<String, dynamic>.from(response.data['user'] as Map) : null,
+          clinic: response.data['clinic'] is Map ? Map<String, dynamic>.from(response.data['clinic'] as Map) : null,
         );
         _registerDeviceToken();
       }
@@ -164,7 +192,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       final token = await notificationService.getToken();
       if (token != null) {
         await _dio.put(
-          '${ApiEndpoints.baseUrl}/settings/device-token',
+          '/settings/device-token',
           data: {'fcmToken': token},
         );
       }
@@ -176,6 +204,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   Future<void> logout() async {
     await _storage.delete(key: 'jwt_token');
-    state = state.copyWith(isAuthenticated: false);
+    await HiveService.clearUserData();
+    state = AuthState(isCheckingAuth: false);
   }
 }

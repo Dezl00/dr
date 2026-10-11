@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
-import { requireApiAuth } from "@/lib/auth/api-auth";
+import { requireApiPermission } from "@/lib/auth/api-auth";
 import { z } from "zod";
+import { sendAppointmentSMS } from "@/lib/sms";
 
 const appointmentSchema = z.object({
   patientId: z.string().min(1, "المريض مطلوب"),
@@ -15,7 +16,7 @@ const appointmentSchema = z.object({
 
 export async function GET(req: Request) {
   try {
-    const { clinic } = await requireApiAuth(req);
+    const { clinic } = await requireApiPermission(req, 'appointments.view');
     const url = new URL(req.url);
     
     // Default to today if no date provided
@@ -39,9 +40,7 @@ export async function GET(req: Request) {
         patient: {
           select: { id: true, fullName: true, phone: true }
         },
-        doctor: {
-          select: { id: true, user: { select: { fullName: true } } }
-        },
+        doctor: { select: { id: true, fullName: true, user: { select: { fullName: true } } } },
         service: {
           select: { id: true, name: true }
         }
@@ -65,10 +64,27 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    const { clinic } = await requireApiAuth(req);
+    const { clinic } = await requireApiPermission(req, 'appointments.create');
     const body = await req.json();
 
     const validatedData = appointmentSchema.parse(body);
+
+    const [patient, doctor, service] = await Promise.all([
+      prisma.patient.findFirst({ where: { id: validatedData.patientId, clinicId: clinic.id }, select: { id: true } }),
+      prisma.doctor.findFirst({ where: { id: validatedData.doctorId, clinicId: clinic.id, isActive: true }, select: { id: true } }),
+      validatedData.serviceId ? prisma.service.findFirst({ where: { id: validatedData.serviceId, clinicId: clinic.id, isActive: true }, select: { id: true } }) : Promise.resolve(null),
+    ]);
+    if (!patient || !doctor || (validatedData.serviceId && !service)) {
+      return NextResponse.json({ success: false, error: "بيانات الموعد لا تنتمي إلى العيادة" }, { status: 400 });
+    }
+
+    const date = new Date(validatedData.date);
+    if (Number.isNaN(date.getTime())) return NextResponse.json({ success: false, error: "تاريخ الموعد غير صحيح" }, { status: 400 });
+    const conflict = await prisma.appointment.findFirst({
+      where: { clinicId: clinic.id, doctorId: validatedData.doctorId, date, startTime: validatedData.startTime, status: { not: 'CANCELLED' } },
+      select: { id: true },
+    });
+    if (conflict) return NextResponse.json({ success: false, error: "الطبيب لديه موعد في هذا الوقت" }, { status: 409 });
 
     const newAppointment = await prisma.appointment.create({
       data: {
@@ -76,7 +92,7 @@ export async function POST(req: Request) {
         patientId: validatedData.patientId,
         doctorId: validatedData.doctorId,
         serviceId: validatedData.serviceId,
-        date: new Date(validatedData.date),
+        date,
         startTime: validatedData.startTime,
         endTime: validatedData.endTime,
         notes: validatedData.notes,
@@ -119,6 +135,20 @@ export async function POST(req: Request) {
       }
     } catch (pushErr) {
       console.error("Failed to send push notification:", pushErr);
+    }
+
+    // Booking confirmation is independent from the staff push notification.
+    // A provider failure never rolls back a valid appointment reservation.
+    const smsResult = await sendAppointmentSMS({
+      clinicId: clinic.id,
+      patientId: validatedData.patientId,
+      serviceId: validatedData.serviceId,
+      date,
+      startTime: validatedData.startTime,
+      type: 'CONFIRMATION',
+    });
+    if (!smsResult.success && smsResult.error !== 'Disabled in clinic settings') {
+      console.error('Appointment confirmation SMS was not sent', { appointmentId: newAppointment.id, reason: smsResult.error })
     }
 
     return NextResponse.json({

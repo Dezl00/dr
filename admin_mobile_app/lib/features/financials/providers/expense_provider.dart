@@ -46,7 +46,8 @@ class ExpenseNotifier extends BaseOfflineNotifier<Expense> {
 
   @override
   Future<Expense> updateApi(String id, Map<String, dynamic> data) async {
-    throw UnimplementedError('Update expense not implemented in API');
+    final updated = await _repository.updateExpense(id, data);
+    return Expense.fromJson(updated as Map<String, dynamic>);
   }
 
   @override
@@ -62,7 +63,13 @@ class ExpenseNotifier extends BaseOfflineNotifier<Expense> {
 
   @override
   Expense updateOfflineModel(Expense currentItem, Map<String, dynamic> data) {
-    throw UnimplementedError('Update expense not implemented offline');
+    return Expense(
+      id: currentItem.id,
+      category: data['category']?.toString() ?? currentItem.category,
+      amount: double.tryParse(data['amount']?.toString() ?? '') ?? currentItem.amount,
+      description: data['description']?.toString() ?? currentItem.description,
+      expenseDate: data['expenseDate'] != null ? DateTime.tryParse(data['expenseDate'].toString()) ?? currentItem.expenseDate : currentItem.expenseDate,
+    );
   }
 
   @override

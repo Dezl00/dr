@@ -21,7 +21,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     ref.listen(authStateProvider, (previous, next) {
       if (next.isAuthenticated == true) {
+        if (Navigator.of(context).canPop()) Navigator.of(context).pop();
         Navigator.pushReplacementNamed(context, '/dashboard');
+      } else if (next.requireClinicSelection && previous?.requireClinicSelection != true) {
+        _showClinicPicker(next.availableClinics);
       } else if (next.error != null && next.error!.isNotEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(next.error!)));
       }
@@ -111,6 +114,37 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   onPressed: () => Navigator.pushNamed(context, '/register'),
                   child: Text('إنشاء عيادة جديدة', style: TextStyle(fontFamily: 'IBMPlexSansArabic', fontSize: 16, color: const Color(0xFF2563EB), fontWeight: FontWeight.bold)),
                 ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showClinicPicker(List<dynamic> clinics) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      isDismissible: false,
+      builder: (sheetContext) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('اختر العيادة', style: TextStyle(fontFamily: 'IBMPlexSansArabic', fontSize: 20, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                const Text('لديك صلاحية في أكثر من عيادة.'),
+                const SizedBox(height: 12),
+                ...clinics.map((clinic) => ListTile(
+                  leading: const Icon(Icons.local_hospital_outlined),
+                  title: Text(clinic['name']?.toString() ?? 'عيادة'),
+                  subtitle: Text(clinic['role']?.toString() ?? ''),
+                  onTap: () => ref.read(authStateProvider.notifier).loginWithClinic(clinic['id']?.toString() ?? ''),
+                )),
               ],
             ),
           ),

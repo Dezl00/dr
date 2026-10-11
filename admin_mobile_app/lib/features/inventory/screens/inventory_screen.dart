@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/providers/inventory_provider.dart';
+import '../../../core/api/api_endpoints.dart';
+import '../../auth/providers/auth_provider.dart';
 import 'create_inventory_screen.dart';
 
 class InventoryScreen extends ConsumerWidget {
@@ -77,7 +79,7 @@ class InventoryScreen extends ConsumerWidget {
                         separatorBuilder: (context, index) => const SizedBox(height: 12),
                         itemBuilder: (context, index) {
                           final item = inventoryList[index];
-                          return _buildInventoryCard(item);
+                          return _buildInventoryCard(context, ref, item);
                         },
                       ),
               ),
@@ -108,11 +110,14 @@ class InventoryScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildInventoryCard(dynamic item) {
+  Widget _buildInventoryCard(BuildContext context, WidgetRef ref, dynamic item) {
     final name = item['name'] ?? 'اسم العنصر';
     final quantity = (item['quantity'] ?? 0).toString(); // English numbers
     
-    return Container(
+    return InkWell(
+      onTap: () => _showStockMovement(context, ref, item),
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
       decoration: BoxDecoration(
         color: Colors.white,
         border: Border.all(color: const Color(0xFFE2E8F0)),
@@ -157,6 +162,54 @@ class InventoryScreen extends ConsumerWidget {
           ),
         ],
       ),
+      ),
     );
+  }
+
+  Future<void> _showStockMovement(BuildContext context, WidgetRef ref, dynamic item) async {
+    final quantity = TextEditingController();
+    String type = 'IN';
+    final submitted = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: Text('حركة مخزون: ${item['name'] ?? ''}'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              DropdownButtonFormField<String>(
+                value: type,
+                items: const [
+                  DropdownMenuItem(value: 'IN', child: Text('إضافة كمية')),
+                  DropdownMenuItem(value: 'OUT', child: Text('صرف كمية')),
+                  DropdownMenuItem(value: 'ADJUSTMENT', child: Text('تعيين الرصيد')),
+                ],
+                onChanged: (value) => setState(() => type = value ?? 'IN'),
+              ),
+              const SizedBox(height: 12),
+              TextField(controller: quantity, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'الكمية', border: OutlineInputBorder())),
+            ],
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('إلغاء')),
+            FilledButton(
+              onPressed: () async {
+                final value = int.tryParse(quantity.text.trim());
+                if (value == null || value < 0 || (type != 'ADJUSTMENT' && value == 0)) return;
+                try {
+                  final response = await ref.read(dioProvider).post('${ApiEndpoints.inventory}/${item['id']}/transactions', data: {'type': type, 'quantity': value});
+                  if (response.data['success'] != true) throw Exception(response.data['error'] ?? 'تعذر تسجيل الحركة');
+                  if (dialogContext.mounted) Navigator.pop(dialogContext, true);
+                } catch (error) {
+                  if (dialogContext.mounted) ScaffoldMessenger.of(dialogContext).showSnackBar(SnackBar(content: Text(error.toString())));
+                }
+              },
+              child: const Text('حفظ'),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (submitted == true) await ref.read(inventoryProvider.notifier).fetchData();
   }
 }
