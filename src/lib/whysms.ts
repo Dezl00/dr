@@ -75,8 +75,11 @@ export async function sendSms(phone: string, message: string) {
     return { success: true, dummy: true, error: 'API KEY MISSING IN ENV' }
   }
 
+  const isArabic = /[\u0600-\u06FF]/.test(message);
+  const primaryType = isArabic ? 'unicode' : 'plain';
+
   try {
-    const response = await fetch('https://bulk.whysms.com/api/http/sms/send', {
+    let response = await fetch('https://bulk.whysms.com/api/http/sms/send', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -86,25 +89,67 @@ export async function sendSms(phone: string, message: string) {
         api_token: apiKey,
         recipient: formattedPhone,
         sender_id: senderId,
-        type: 'plain',
+        type: primaryType,
         message: message,
       }),
-    })
+    });
+
+    // If unicode/plain failed and senderId is VERIFYX, retry with type 'otp'
+    if (!response.ok && senderId === 'VERIFYX') {
+      console.warn(`WhySMS ${primaryType} failed with ${response.status}, retrying with otp type...`);
+      response = await fetch('https://bulk.whysms.com/api/http/sms/send', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({
+          api_token: apiKey,
+          recipient: formattedPhone,
+          sender_id: senderId,
+          type: 'otp',
+          message: message,
+        }),
+      });
+    }
 
     if (!response.ok) {
-      const errorText = await response.text()
-      console.error('WhySMS API Error:', errorText)
-      return { success: false, error: `WhySMS Error: ${response.status} - ${errorText}` }
+      const errorText = await response.text();
+      console.error('WhySMS API Error:', errorText);
+      return { success: false, error: `WhySMS Error: ${response.status} - ${errorText}` };
     }
 
-    const data = await response.json()
+    const data = await response.json();
     if (data.status === 'error') {
-      return { success: false, error: `WhySMS API Error: ${data.message}` }
+      // Retry with otp if senderId is VERIFYX
+      if (senderId === 'VERIFYX' && primaryType !== 'otp') {
+        const retryRes = await fetch('https://bulk.whysms.com/api/http/sms/send', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+          body: JSON.stringify({
+            api_token: apiKey,
+            recipient: formattedPhone,
+            sender_id: senderId,
+            type: 'otp',
+            message: message,
+          }),
+        });
+        if (retryRes.ok) {
+          const retryData = await retryRes.json();
+          if (retryData.status !== 'error') {
+            return { success: true, data: retryData };
+          }
+        }
+      }
+      return { success: false, error: `WhySMS API Error: ${data.message}` };
     }
     
-    return { success: true, data }
+    return { success: true, data };
   } catch (error: any) {
-    console.error('WhySMS Network Error:', error)
-    return { success: false, error: `Network Error: ${error.message}` }
+    console.error('WhySMS Network Error:', error);
+    return { success: false, error: `Network Error: ${error.message}` };
   }
 }

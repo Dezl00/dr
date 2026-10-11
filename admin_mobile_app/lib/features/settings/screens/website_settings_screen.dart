@@ -7,6 +7,7 @@ import 'package:dio/dio.dart';
 import '../../../core/api/api_endpoints.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../../core/offline/hive_service.dart';
+import '../../../core/utils/toast_util.dart';
 
 class WebsiteSection {
   final String id;
@@ -75,7 +76,10 @@ class _WebsiteSettingsScreenState extends ConsumerState<WebsiteSettingsScreen> {
         final data = jsonDecode(cachedData);
         final settings = data['data'] ?? data['settings'] ?? data;
         if (settings != null) {
-          _domainController.text = settings['domain'] ?? settings['slug'] ?? _domainController.text;
+          final slug = settings['domain'] ?? settings['slug'];
+          if (slug != null && slug.toString().isNotEmpty) {
+            _domainController.text = slug.toString();
+          }
           _facebookController.text = settings['socialFacebook'] ?? _facebookController.text;
           _instagramController.text = settings['socialInstagram'] ?? _instagramController.text;
           _twitterController.text = settings['socialTwitter'] ?? _twitterController.text;
@@ -85,19 +89,35 @@ class _WebsiteSettingsScreenState extends ConsumerState<WebsiteSettingsScreen> {
         // Handle parsing error quietly
       }
     }
+
+    final clinicDataStr = HiveService.getSettingsBox().get('clinic');
+    if (clinicDataStr != null) {
+      try {
+        final clinicData = jsonDecode(clinicDataStr);
+        final c = clinicData['data'] ?? clinicData['clinic'] ?? clinicData;
+        if (c != null && c['slug'] != null && c['slug'].toString().isNotEmpty) {
+          if (_domainController.text.isEmpty) {
+            _domainController.text = c['slug'].toString();
+          }
+        }
+      } catch (e) {}
+    }
   }
 
   void _initFromState() {
     final authState = ref.read(authStateProvider);
     final clinic = authState.clinic;
     if (clinic != null) {
-      _domainController.text = clinic['slug'] ?? '';
+      final slug = clinic['slug'];
+      if (slug != null && slug.toString().isNotEmpty) {
+        _domainController.text = slug.toString();
+      }
       if (clinic['settings'] != null) {
         final settings = clinic['settings'];
-        _facebookController.text = settings['socialFacebook'] ?? '';
-        _instagramController.text = settings['socialInstagram'] ?? '';
-        _twitterController.text = settings['socialTwitter'] ?? '';
-        _whatsappController.text = settings['socialWhatsapp'] ?? '';
+        if (settings['socialFacebook'] != null) _facebookController.text = settings['socialFacebook'];
+        if (settings['socialInstagram'] != null) _instagramController.text = settings['socialInstagram'];
+        if (settings['socialTwitter'] != null) _twitterController.text = settings['socialTwitter'];
+        if (settings['socialWhatsapp'] != null) _whatsappController.text = settings['socialWhatsapp'];
       }
     }
   }
@@ -113,9 +133,22 @@ class _WebsiteSettingsScreenState extends ConsumerState<WebsiteSettingsScreen> {
         
         final settings = data['data'] ?? data['settings'] ?? data;
         if (settings != null) {
+          final slug = settings['domain'] ?? settings['slug'];
+          if (slug != null && slug.toString().isNotEmpty) {
+            final clinicDataStr = HiveService.getSettingsBox().get('clinic');
+            Map<String, dynamic> cMap = {};
+            if (clinicDataStr != null) {
+              try { cMap = jsonDecode(clinicDataStr); } catch (_) {}
+            }
+            cMap['slug'] = slug.toString();
+            HiveService.getSettingsBox().put('clinic', jsonEncode(cMap));
+          }
+
           if (mounted) {
             setState(() {
-              _domainController.text = settings['domain'] ?? settings['slug'] ?? _domainController.text;
+              if (slug != null && slug.toString().isNotEmpty) {
+                _domainController.text = slug.toString();
+              }
               _facebookController.text = settings['socialFacebook'] ?? _facebookController.text;
               _instagramController.text = settings['socialInstagram'] ?? _instagramController.text;
               _twitterController.text = settings['socialTwitter'] ?? _twitterController.text;
@@ -142,31 +175,34 @@ class _WebsiteSettingsScreenState extends ConsumerState<WebsiteSettingsScreen> {
         'socialWhatsapp': _whatsappController.text,
       };
       
+      final newSlug = _domainController.text.trim();
       await dio.put(ApiEndpoints.settings, data: settingsData);
-      await dio.put('${ApiEndpoints.settings}/clinic', data: { 'slug': _domainController.text });
+      if (newSlug.isNotEmpty) {
+        await dio.put('${ApiEndpoints.settings}/clinic', data: { 'slug': newSlug });
+      }
+
+      // Update both local caches immediately
+      final websiteCache = {
+        'domain': newSlug,
+        'slug': newSlug,
+        ...settingsData,
+      };
+      await HiveService.getSettingsBox().put('website', jsonEncode(websiteCache));
+
+      final clinicDataStr = HiveService.getSettingsBox().get('clinic');
+      Map<String, dynamic> cMap = {};
+      if (clinicDataStr != null) {
+        try { cMap = jsonDecode(clinicDataStr); } catch (_) {}
+      }
+      cMap['slug'] = newSlug;
+      await HiveService.getSettingsBox().put('clinic', jsonEncode(cMap));
       
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'تم حفظ التغييرات بنجاح',
-              style: TextStyle(fontFamily: 'IBMPlexSansArabic'),
-            ),
-            backgroundColor: Colors.green,
-          ),
-        );
+        ToastUtil.showSuccess(context, 'تم حفظ التغييرات بنجاح');
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'حدث خطأ أثناء الحفظ',
-              style: TextStyle(fontFamily: 'IBMPlexSansArabic'),
-            ),
-            backgroundColor: Colors.red,
-          ),
-        );
+        ToastUtil.showError(context, 'حدث خطأ أثناء الحفظ');
       }
     } finally {
       if (mounted) {
@@ -229,9 +265,13 @@ class _WebsiteSettingsScreenState extends ConsumerState<WebsiteSettingsScreen> {
                 physics: const NeverScrollableScrollPhysics(),
                 itemCount: _sections.length,
                 proxyDecorator: (Widget child, int index, Animation<double> animation) {
-                  return Opacity(
-                    opacity: 0.7,
-                    child: child,
+                  return Material(
+                    color: Colors.transparent,
+                    elevation: 0,
+                    child: Opacity(
+                      opacity: 0.85,
+                      child: child,
+                    ),
                   );
                 },
                 onReorder: (oldIndex, newIndex) {
@@ -245,23 +285,26 @@ class _WebsiteSettingsScreenState extends ConsumerState<WebsiteSettingsScreen> {
                 },
                 itemBuilder: (context, index) {
                   final section = _sections[index];
-                  return Container(
+                  return Material(
                     key: ValueKey(section.id),
-                    margin: const EdgeInsets.only(bottom: 12),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0xFFE2E8F0)),
-                    ),
-                    child: _buildToggleRow(
-                      title: section.title,
-                      value: section.isEnabled,
-                      onChanged: (v) {
-                        setState(() {
-                          section.isEnabled = v;
-                        });
-                      },
-                      onEdit: () => _showEditSectionModal(section),
+                    color: Colors.transparent,
+                    child: Container(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                      ),
+                      child: _buildToggleRow(
+                        title: section.title,
+                        value: section.isEnabled,
+                        onChanged: (v) {
+                          setState(() {
+                            section.isEnabled = v;
+                          });
+                        },
+                        onEdit: () => _showEditSectionModal(section),
+                      ),
                     ),
                   );
                 },
@@ -423,22 +466,30 @@ class _WebsiteSettingsScreenState extends ConsumerState<WebsiteSettingsScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Row(
-            children: [
-              const Icon(Icons.drag_indicator, color: Color(0xFF94A3B8), size: 20),
-              const SizedBox(width: 8),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontFamily: 'IBMPlexSansArabic',
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                  color: Color(0xFF0F172A),
+          Expanded(
+            child: Row(
+              children: [
+                const Icon(Icons.drag_indicator, color: Color(0xFF94A3B8), size: 20),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontFamily: 'IBMPlexSansArabic',
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF0F172A),
+                    ),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
+          const SizedBox(width: 8),
           Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
               IconButton(
                 icon: const Icon(Icons.edit_outlined, color: Color(0xFF2563EB), size: 20),

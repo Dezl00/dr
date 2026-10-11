@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 
 import '../../../core/offline/hive_service.dart';
+import '../../../core/utils/toast_util.dart';
 import '../../settings/screens/settings_screen.dart';
 import '../../services/screens/services_screen.dart';
 import '../../team/screens/team_screen.dart';
@@ -104,9 +105,26 @@ class MoreMenuScreen extends ConsumerWidget {
     try {
       final clinicDataStr = HiveService.getSettingsBox().get('clinic');
       if (clinicDataStr != null) {
-        final Map<String, dynamic> clinicData = jsonDecode(clinicDataStr);
-        slug = clinicData['slug'] as String? ?? '';
-      } else {
+        final dynamic decoded = jsonDecode(clinicDataStr);
+        final c = decoded is Map ? (decoded['data'] ?? decoded['clinic'] ?? decoded) : null;
+        if (c is Map && c['slug'] != null && c['slug'].toString().isNotEmpty) {
+          slug = c['slug'].toString();
+        }
+      }
+      if (slug.isEmpty) {
+        final websiteDataStr = HiveService.getSettingsBox().get('website');
+        if (websiteDataStr != null) {
+          final dynamic decoded = jsonDecode(websiteDataStr);
+          final w = decoded is Map ? (decoded['data'] ?? decoded['settings'] ?? decoded) : null;
+          if (w is Map) {
+            final s = w['domain'] ?? w['slug'];
+            if (s != null && s.toString().isNotEmpty) {
+              slug = s.toString();
+            }
+          }
+        }
+      }
+      if (slug.isEmpty) {
         slug = clinic?['slug'] as String? ?? '';
       }
     } catch (e) {
@@ -150,7 +168,7 @@ class MoreMenuScreen extends ConsumerWidget {
                 Share.share(url);
               } catch (e) {
                 Clipboard.setData(ClipboardData(text: url));
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم نسخ الرابط!')));
+                ToastUtil.showSuccess(context, 'تم نسخ الرابط!');
               }
             },
             icon: const Icon(Icons.share_outlined, size: 20),

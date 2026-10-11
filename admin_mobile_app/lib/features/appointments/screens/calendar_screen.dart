@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart' hide TextDirection;
 import 'package:url_launcher/url_launcher.dart';
+import 'package:dio/dio.dart';
 import 'dart:async';
 
 import '../../../core/widgets/error_state_widget.dart';
@@ -13,6 +14,7 @@ import '../../search/screens/search_screen.dart';
 import '../../../core/api/dio_client.dart';
 import '../../../core/api/api_endpoints.dart';
 import '../../../core/services/notification_service.dart';
+import '../../../core/utils/toast_util.dart';
 
 final statusFilterProvider = StateProvider<String>((ref) => 'الكل');
 final optimisticStatusProvider = StateProvider.family<String?, String>((ref, id) => null);
@@ -576,7 +578,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
   }
 }
 
-class _AppointmentDetailsSheet extends ConsumerWidget {
+class _AppointmentDetailsSheet extends ConsumerStatefulWidget {
   final Appointment appointment;
   final String Function(String) toEnglishNumbers;
 
@@ -584,6 +586,13 @@ class _AppointmentDetailsSheet extends ConsumerWidget {
     required this.appointment,
     required this.toEnglishNumbers,
   });
+
+  @override
+  ConsumerState<_AppointmentDetailsSheet> createState() => _AppointmentDetailsSheetState();
+}
+
+class _AppointmentDetailsSheetState extends ConsumerState<_AppointmentDetailsSheet> {
+  bool _isSendingReminder = false;
 
   String _formatTime(String? time) {
     if (time == null || time.isEmpty) return '';
@@ -600,8 +609,8 @@ class _AppointmentDetailsSheet extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final status = ref.watch(optimisticStatusProvider(appointment.id)) ?? appointment.status;
+  Widget build(BuildContext context) {
+    final status = ref.watch(optimisticStatusProvider(widget.appointment.id)) ?? widget.appointment.status;
 
     return Directionality(
       textDirection: TextDirection.rtl,
@@ -643,7 +652,7 @@ class _AppointmentDetailsSheet extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        appointment.patientName,
+                        widget.appointment.patientName,
                         style: const TextStyle(
                           fontFamily: 'IBMPlexSansArabic',
                           color: Color(0xFF0F172A),
@@ -653,7 +662,7 @@ class _AppointmentDetailsSheet extends ConsumerWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        toEnglishNumbers(appointment.patientPhone),
+                        widget.toEnglishNumbers(widget.appointment.patientPhone),
                         style: const TextStyle(
                           fontFamily: 'IBMPlexSansArabic',
                           color: Color(0xFF475569),
@@ -667,14 +676,14 @@ class _AppointmentDetailsSheet extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 24),
-            _buildDetailRow(Icons.calendar_today_outlined, 'التاريخ', toEnglishNumbers(DateFormat('yyyy-MM-dd', 'en').format(appointment.date))),
+            _buildDetailRow(Icons.calendar_today_outlined, 'التاريخ', widget.toEnglishNumbers(DateFormat('yyyy-MM-dd', 'en').format(widget.appointment.date))),
             const SizedBox(height: 12),
-            _buildDetailRow(Icons.access_time_outlined, 'الوقت', '${_formatTime(appointment.startTime)} - ${_formatTime(appointment.endTime)}', isLtr: true),
+            _buildDetailRow(Icons.access_time_outlined, 'الوقت', '${_formatTime(widget.appointment.startTime)} - ${_formatTime(widget.appointment.endTime)}', isLtr: true),
             const SizedBox(height: 12),
-            _buildDetailRow(Icons.medical_services_outlined, 'الخدمة', appointment.serviceName ?? 'غير محدد'),
-            if (appointment.notes != null && appointment.notes!.isNotEmpty) ...[
+            _buildDetailRow(Icons.medical_services_outlined, 'الخدمة', widget.appointment.serviceName ?? 'غير محدد'),
+            if (widget.appointment.notes != null && widget.appointment.notes!.isNotEmpty) ...[
               const SizedBox(height: 12),
-              _buildDetailRow(Icons.notes_outlined, 'ملاحظات', appointment.notes!),
+              _buildDetailRow(Icons.notes_outlined, 'ملاحظات', widget.appointment.notes!),
             ],
             const SizedBox(height: 24),
             const Text(
@@ -726,23 +735,39 @@ class _AppointmentDetailsSheet extends ConsumerWidget {
             SizedBox(
               width: double.infinity,
               height: 48,
-              child: ElevatedButton.icon(
-                onPressed: () => _sendReminder(context),
+              child: ElevatedButton(
+                onPressed: _isSendingReminder ? null : () => _sendReminder(context),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF2563EB),
+                  disabledBackgroundColor: const Color(0xFF93C5FD),
                   elevation: 0,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
                 ),
-                icon: const Icon(Icons.sms_outlined, color: Colors.white),
-                label: const Text(
-                  'إرسال تذكير SMS',
-                  style: TextStyle(
-                    fontFamily: 'IBMPlexSansArabic',
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                ),
+                child: _isSendingReminder
+                    ? const SizedBox(
+                        width: 22,
+                        height: 22,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.sms_outlined, color: Colors.white, size: 20),
+                          SizedBox(width: 8),
+                          Text(
+                            'إرسال تذكير SMS',
+                            style: TextStyle(
+                              fontFamily: 'IBMPlexSansArabic',
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ],
+                      ),
               ),
             ),
             const SizedBox(height: 16),
@@ -783,15 +808,15 @@ class _AppointmentDetailsSheet extends ConsumerWidget {
   }
 
   Future<void> _updateStatus(BuildContext context, WidgetRef ref, String newStatus) async {
-    ref.read(optimisticStatusProvider(appointment.id).notifier).state = newStatus;
+    ref.read(optimisticStatusProvider(widget.appointment.id).notifier).state = newStatus;
     try {
       final dio = DioClient().dio;
-      await dio.patch('${ApiEndpoints.appointments}/${appointment.id}/status', data: {'status': newStatus});
+      await dio.patch('${ApiEndpoints.appointments}/${widget.appointment.id}/status', data: {'status': newStatus});
       
       if (!context.mounted) return;
       ref.read(appointmentStateProvider.notifier).fetchData();
       
-      // SMS is now sent automatically from the backend on status change
+      // SMS is sent automatically from backend on status change
       if (context.mounted) {
         final statusAr = {
           'CONFIRMED': 'مؤكد',
@@ -800,51 +825,55 @@ class _AppointmentDetailsSheet extends ConsumerWidget {
           'SCHEDULED': 'مجدول',
           'NO_SHOW': 'لم يحضر',
         };
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'تم تغيير الحالة إلى ${statusAr[newStatus] ?? newStatus} وإرسال رسالة SMS للمريض',
-              style: const TextStyle(fontFamily: 'IBMPlexSansArabic'),
-            ),
-            backgroundColor: const Color(0xFF10B981),
-          ),
+        ToastUtil.showSuccess(
+          context,
+          'تم تغيير الحالة إلى ${statusAr[newStatus] ?? newStatus} وإرسال رسالة SMS للمريض',
         );
       }
     } catch (e) {
-      ref.read(optimisticStatusProvider(appointment.id).notifier).state = appointment.status;
+      ref.read(optimisticStatusProvider(widget.appointment.id).notifier).state = widget.appointment.status;
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('فشل في تحديث الحالة', style: TextStyle(fontFamily: 'IBMPlexSansArabic'))),
-        );
+        ToastUtil.showError(context, 'فشل في تحديث الحالة');
       }
     }
   }
 
   Future<void> _sendReminder(BuildContext context) async {
+    if (_isSendingReminder) return;
+    setState(() {
+      _isSendingReminder = true;
+    });
+
     try {
       final dio = DioClient().dio;
-      final response = await dio.post('${ApiEndpoints.appointments}/${appointment.id}/remind');
+      final response = await dio.post('${ApiEndpoints.appointments}/${widget.appointment.id}/remind');
       if (context.mounted) {
-        if (response.data['success'] == true) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('تم إرسال رسالة التذكير SMS بنجاح', style: TextStyle(fontFamily: 'IBMPlexSansArabic')),
-              backgroundColor: Color(0xFF10B981),
-            ),
-          );
+        if (response.data != null && response.data['success'] == true) {
+          ToastUtil.showSuccess(context, 'تم إرسال رسالة التذكير SMS بنجاح');
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('فشل الإرسال: ${response.data['error'] ?? 'خطأ غير معروف'}', style: const TextStyle(fontFamily: 'IBMPlexSansArabic')),
-            ),
+          ToastUtil.showError(
+            context,
+            response.data?['error']?.toString() ?? 'فشل في إرسال التذكير',
           );
         }
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('فشل في إرسال التذكير', style: TextStyle(fontFamily: 'IBMPlexSansArabic'))),
-        );
+        String msg = 'فشل في إرسال التذكير';
+        if (e is DioException) {
+          if (e.response?.data != null && e.response?.data is Map && e.response?.data['error'] != null) {
+            msg = e.response!.data['error'].toString();
+          } else if (e.message != null && e.message!.isNotEmpty) {
+            msg = e.message!;
+          }
+        }
+        ToastUtil.showError(context, msg);
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSendingReminder = false;
+        });
       }
     }
   }

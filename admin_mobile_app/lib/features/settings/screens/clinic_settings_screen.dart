@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../../core/api/api_endpoints.dart';
 import '../../../core/offline/hive_service.dart';
+import '../../../core/utils/toast_util.dart';
 
 class ClinicSettingsScreen extends ConsumerStatefulWidget {
   const ClinicSettingsScreen({super.key});
@@ -108,15 +109,11 @@ class _ClinicSettingsScreenState extends ConsumerState<ClinicSettingsScreen> {
       );
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('تم حفظ الإعدادات بنجاح')),
-        );
+        ToastUtil.showSuccess(context, 'تم حفظ الإعدادات بنجاح');
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('حدث خطأ أثناء الحفظ')),
-        );
+        ToastUtil.showError(context, 'حدث خطأ أثناء الحفظ');
       }
     } finally {
       if (mounted) {

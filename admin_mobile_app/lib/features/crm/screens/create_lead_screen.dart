@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import '../../../core/api/api_endpoints.dart';
 import '../../../core/providers/leads_provider.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../../core/utils/toast_util.dart';
 
 class CreateLeadScreen extends ConsumerStatefulWidget {
   const CreateLeadScreen({Key? key}) : super(key: key);
@@ -49,40 +50,16 @@ class _CreateLeadScreenState extends ConsumerState<CreateLeadScreen> {
       ref.read(leadsProvider.notifier).fetchData();
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'تم إضافة العميل بنجاح',
-              style: TextStyle(fontFamily: 'IBMPlexSansArabic'),
-            ),
-            backgroundColor: Colors.green,
-          ),
-        );
+        ToastUtil.showSuccess(context, 'تم إضافة العميل بنجاح');
         Navigator.pop(context);
       }
     } on DioException catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'حدث خطأ: ${e.message}',
-              style: const TextStyle(fontFamily: 'IBMPlexSansArabic'),
-            ),
-            backgroundColor: Colors.red,
-          ),
-        );
+        ToastUtil.showError(context, 'حدث خطأ: ${e.message}');
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'حدث خطأ: $e',
-              style: const TextStyle(fontFamily: 'IBMPlexSansArabic'),
-            ),
-            backgroundColor: Colors.red,
-          ),
-        );
+        ToastUtil.showError(context, 'حدث خطأ أثناء الإضافة');
       }
     } finally {
       if (mounted) {

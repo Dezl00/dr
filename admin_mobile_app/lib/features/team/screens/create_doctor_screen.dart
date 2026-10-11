@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/api/dio_client.dart';
 import '../../../core/api/api_endpoints.dart';
 import '../../../core/providers/doctors_provider.dart';
+import '../../../core/utils/toast_util.dart';
 
 class CreateDoctorScreen extends ConsumerStatefulWidget {
   const CreateDoctorScreen({Key? key}) : super(key: key);
@@ -42,28 +43,12 @@ class _CreateDoctorScreenState extends ConsumerState<CreateDoctorScreen> {
       ref.read(doctorsProvider.notifier).fetchData();
       
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'تم إضافة الطبيب بنجاح',
-              style: TextStyle(fontFamily: 'IBMPlexSansArabic'),
-            ),
-            backgroundColor: Colors.green,
-          ),
-        );
+        ToastUtil.showSuccess(context, 'تم إضافة الطبيب بنجاح');
         Navigator.pop(context);
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'حدث خطأ أثناء إضافة الطبيب',
-              style: TextStyle(fontFamily: 'IBMPlexSansArabic'),
-            ),
-            backgroundColor: Colors.red,
-          ),
-        );
+        ToastUtil.showError(context, 'حدث خطأ أثناء إضافة الطبيب');
       }
     } finally {
       if (mounted) {

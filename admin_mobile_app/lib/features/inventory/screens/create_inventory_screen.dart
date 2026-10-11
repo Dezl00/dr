@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import '../../../core/api/api_endpoints.dart';
 import '../../../core/providers/inventory_provider.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../../core/utils/toast_util.dart';
 
 class CreateInventoryScreen extends ConsumerStatefulWidget {
   const CreateInventoryScreen({Key? key}) : super(key: key);
@@ -55,12 +56,7 @@ class _CreateInventoryScreenState extends ConsumerState<CreateInventoryScreen> {
       if (response.statusCode == 200 || response.statusCode == 201) {
         if (mounted) {
           ref.read(inventoryProvider.notifier).fetchData();
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('تمت إضافة العنصر بنجاح', style: TextStyle(fontFamily: 'IBMPlexSansArabic')),
-              backgroundColor: Colors.green,
-            ),
-          );
+          ToastUtil.showSuccess(context, 'تمت إضافة العنصر بنجاح');
           Navigator.pop(context);
         }
       } else {
@@ -68,12 +64,7 @@ class _CreateInventoryScreenState extends ConsumerState<CreateInventoryScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('حدث خطأ: ${e.toString()}', style: const TextStyle(fontFamily: 'IBMPlexSansArabic')),
-            backgroundColor: Colors.red,
-          ),
-        );
+        ToastUtil.showError(context, 'حدث خطأ: ${e.toString()}');
       }
     } finally {
       if (mounted) {

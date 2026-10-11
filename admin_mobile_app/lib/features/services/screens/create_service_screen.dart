@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import '../../../core/api/api_endpoints.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../../core/providers/services_provider.dart';
+import '../../../core/utils/toast_util.dart';
 
 class CreateServiceScreen extends ConsumerStatefulWidget {
   const CreateServiceScreen({Key? key}) : super(key: key);
@@ -53,41 +54,17 @@ class _CreateServiceScreenState extends ConsumerState<CreateServiceScreen> {
       await dio.post(ApiEndpoints.services, data: data);
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'تم إضافة الخدمة بنجاح',
-              style: TextStyle(fontFamily: 'IBMPlexSansArabic'),
-            ),
-            backgroundColor: Colors.green,
-          ),
-        );
+        ToastUtil.showSuccess(context, 'تم إضافة الخدمة بنجاح');
         ref.read(servicesProvider.notifier).fetchData();
         Navigator.pop(context);
       }
     } on DioException catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'حدث خطأ: ${e.message}',
-              style: const TextStyle(fontFamily: 'IBMPlexSansArabic'),
-            ),
-            backgroundColor: Colors.red,
-          ),
-        );
+        ToastUtil.showError(context, 'حدث خطأ: ${e.message}');
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'حدث خطأ غير متوقع',
-              style: const TextStyle(fontFamily: 'IBMPlexSansArabic'),
-            ),
-            backgroundColor: Colors.red,
-          ),
-        );
+        ToastUtil.showError(context, 'حدث خطأ غير متوقع');
       }
     } finally {
       if (mounted) {
