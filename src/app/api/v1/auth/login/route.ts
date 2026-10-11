@@ -116,10 +116,10 @@ export async function POST(req: Request) {
       }
     });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error("Mobile Login API error:", error);
     return NextResponse.json(
-      { success: false, error: "حدث خطأ في الخادم، يرجى المحاولة لاحقاً" },
+      { success: false, error: error?.message || "حدث خطأ في الخادم، يرجى المحاولة لاحقاً" },
       { status: 500 }
     );
   }
