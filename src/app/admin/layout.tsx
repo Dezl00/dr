@@ -3,6 +3,8 @@ import { AdminShell } from '@/components/admin/admin-shell'
 import { ThemeProvider } from '@/components/shared/theme-provider'
 import type { Metadata } from 'next'
 
+export const dynamic = 'force-dynamic'
+
 export const metadata: Metadata = {
   title: 'لوحة إدارة المنصة | DRS',
 }

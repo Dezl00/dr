@@ -3,6 +3,8 @@ import { redirect } from 'next/navigation'
 import { VerifyOtpForm } from '@/components/auth/verify-otp-form'
 import type { Metadata } from 'next'
 
+export const dynamic = 'force-dynamic'
+
 export const metadata: Metadata = {
   title: 'تأكيد رقم الهاتف | DRS',
   description: 'قم بتأكيد رقم هاتفك للاستمرار',

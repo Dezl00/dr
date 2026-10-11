@@ -1,6 +1,7 @@
 import { requireSuperAdmin } from "@/lib/auth/dal";
 import PlanForm from "@/components/admin/PlanForm";
 
+export const dynamic = 'force-dynamic';
 export const metadata = { title: "إضافة باقة - مدير النظام" };
 
 export default async function NewPlanPage() {

@@ -6,6 +6,8 @@ import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import { ClinicColorsForm } from './clinic-colors-form'
 
+export const dynamic = 'force-dynamic'
+
 export default async function AdminClinicDetailPage({
   params,
 }: {

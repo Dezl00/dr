@@ -7,6 +7,8 @@ import { Toaster } from '@/components/ui/toaster'
 import { getUserPermissions } from '@/lib/permissions/service'
 import type { Metadata } from 'next'
 
+export const dynamic = 'force-dynamic'
+
 export const metadata: Metadata = {
   title: 'لوحة التحكم | DRS',
 }

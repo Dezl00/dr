@@ -2,6 +2,7 @@ import { requireSuperAdmin } from "@/lib/auth/dal";
 import { prisma } from "@/lib/db/prisma";
 import PlatformSettingsForm from "@/components/admin/PlatformSettingsForm";
 
+export const dynamic = 'force-dynamic';
 export const metadata = { title: "إعدادات المنصة - مدير النظام" };
 
 export default async function AdminSettingsPage() {

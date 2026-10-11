@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db/prisma";
 import PlanForm from "@/components/admin/PlanForm";
 import { notFound } from "next/navigation";
 
+export const dynamic = 'force-dynamic';
 export const metadata = { title: "تعديل الباقة - مدير النظام" };
 
 export default async function EditPlanPage({

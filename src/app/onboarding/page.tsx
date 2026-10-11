@@ -3,6 +3,8 @@ import { requireAuth } from '@/lib/auth/dal'
 import { prisma } from '@/lib/db/prisma'
 import { cookies } from 'next/headers'
 
+export const dynamic = 'force-dynamic'
+
 export default async function OnboardingPage() {
   const user = await requireAuth()
 

@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db/prisma";
 import Link from "next/link";
 import { PlusCircle, Pencil, Trash2 } from "lucide-react";
 
+export const dynamic = 'force-dynamic';
 export const metadata = { title: "الباقات - مدير النظام" };
 
 export default async function AdminPlansPage() {

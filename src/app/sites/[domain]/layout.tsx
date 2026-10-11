@@ -3,6 +3,8 @@ import { resolveTenant } from '@/lib/tenant/resolver'
 import { prisma } from '@/lib/db/prisma'
 import type { Metadata } from 'next'
 
+export const dynamic = 'force-dynamic'
+
 interface TenantLayoutProps {
   children: React.ReactNode
   params: Promise<{ domain: string }>

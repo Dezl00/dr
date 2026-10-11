@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db/prisma";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
 
+export const dynamic = 'force-dynamic';
 export const metadata = { title: "سجل التدقيق - مدير النظام" };
 
 export default async function AdminAuditLogsPage() {

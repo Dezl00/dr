@@ -2,6 +2,8 @@ import { prisma } from '@/lib/db/prisma'
 import { Building2, Users, CreditCard, Globe } from 'lucide-react'
 import { StatsCard } from '@/components/dashboard/stats-card'
 
+export const dynamic = 'force-dynamic'
+
 export default async function AdminOverviewPage() {
   const [clinicsCount, usersCount, activeSubscriptions, domainsCount] = await Promise.all([
     prisma.clinic.count({ where: { status: 'ACTIVE' } }),

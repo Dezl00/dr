@@ -1,6 +1,7 @@
 import { requireSuperAdmin } from "@/lib/auth/dal";
 import { prisma } from "@/lib/db/prisma";
 
+export const dynamic = 'force-dynamic';
 export const metadata = { title: "الخطوط - مدير النظام" };
 
 export default async function AdminFontsPage() {
