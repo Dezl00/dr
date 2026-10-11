@@ -1,0 +1,21 @@
+name: Send appointment reminders
+
+on:
+  schedule:
+    # Offset from the top of the hour to reduce scheduler contention.
+    - cron: '7 * * * *'
+  workflow_dispatch:
+
+jobs:
+  send-reminders:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger the secured reminder job
+        env:
+          APP_URL: https://www.beyoondgroup.com
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          test -n "$CRON_SECRET"
+          curl --fail-with-body --retry 2 --retry-delay 10 \
+            --header "Authorization: Bearer $CRON_SECRET" \
+            "$APP_URL/api/cron/appointment-reminders"
