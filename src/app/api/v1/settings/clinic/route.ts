@@ -5,7 +5,7 @@ import { requireApiPermission } from "@/lib/auth/api-auth"
 
 const clinicSchema = z.object({
   name: z.string().trim().min(2).max(150).optional(),
-  slug: z.string().trim().regex(/^[a-z0-9-]+$/).min(2).max(63).optional(),
+  slug: z.string().trim().toLowerCase().regex(/^[a-z0-9-]+$/).min(2).max(63).optional(),
 }).refine((data) => Object.keys(data).length > 0, "أرسل قيمة واحدة على الأقل للتحديث")
 
 export async function PUT(req: Request) {

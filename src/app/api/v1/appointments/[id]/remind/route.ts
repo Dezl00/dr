@@ -10,7 +10,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     const { id } = await params
     const appointment = await prisma.appointment.findFirst({ where: { id, clinicId: clinic.id } })
     if (!appointment) return NextResponse.json({ success: false, error: 'الموعد غير موجود' }, { status: 404 })
-    if (appointment.status === 'CANCELLED') {
+    if (appointment.status === 'CANCELLED' || (appointment.status as string)?.toUpperCase() === 'CANCELLED') {
       return NextResponse.json({ success: false, error: 'لا يمكن إرسال تذكير لموعد ملغى' }, { status: 400 })
     }
 
@@ -21,6 +21,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       date: appointment.date,
       startTime: appointment.startTime,
       type: 'REMINDER',
+      status: appointment.status,
     })
     if (!result.success) {
       const status = result.error === 'Disabled in clinic settings' ? 409 : 503

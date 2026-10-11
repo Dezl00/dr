@@ -1,14 +1,10 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/foundation.dart';
 
-import '../../../core/offline/hive_service.dart';
 import '../../../core/utils/toast_util.dart';
-import '../../settings/screens/settings_screen.dart';
 import '../../services/screens/services_screen.dart';
 import '../../team/screens/team_screen.dart';
 import '../../crm/screens/leads_screen.dart';
@@ -27,8 +23,10 @@ class MoreMenuScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final liveSlug = ref.watch(clinicSlugProvider);
     final authState = ref.watch(authStateProvider);
     final clinic = authState.clinic;
+    final currentSlug = liveSlug.isNotEmpty ? liveSlug : (clinic?['slug'] as String? ?? '');
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -38,7 +36,7 @@ class MoreMenuScreen extends ConsumerWidget {
           children: [
             _buildClinicHeader(clinic),
             const SizedBox(height: 24),
-            _buildWebsiteActions(context, clinic),
+            _buildWebsiteActions(context, currentSlug),
             const SizedBox(height: 32),
             const Text(
               'أقسام العيادة',
@@ -100,38 +98,7 @@ class MoreMenuScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildWebsiteActions(BuildContext context, Map<String, dynamic>? clinic) {
-    String slug = '';
-    
-    try {
-      final clinicDataStr = HiveService.getSettingsBox().get('clinic');
-      if (clinicDataStr != null) {
-        final dynamic decoded = jsonDecode(clinicDataStr);
-        final c = decoded is Map ? (decoded['data'] ?? decoded['clinic'] ?? decoded) : null;
-        if (c is Map && c['slug'] != null && c['slug'].toString().isNotEmpty) {
-          slug = c['slug'].toString();
-        }
-      }
-      if (slug.isEmpty) {
-        final websiteDataStr = HiveService.getSettingsBox().get('website');
-        if (websiteDataStr != null) {
-          final dynamic decoded = jsonDecode(websiteDataStr);
-          final w = decoded is Map ? (decoded['data'] ?? decoded['settings'] ?? decoded) : null;
-          if (w is Map) {
-            final s = w['domain'] ?? w['slug'];
-            if (s != null && s.toString().isNotEmpty) {
-              slug = s.toString();
-            }
-          }
-        }
-      }
-      if (slug.isEmpty) {
-        slug = clinic?['slug'] as String? ?? '';
-      }
-    } catch (e) {
-      slug = clinic?['slug'] as String? ?? '';
-    }
-
+  Widget _buildWebsiteActions(BuildContext context, String slug) {
     if (slug.isEmpty) {
       return const SizedBox();
     }

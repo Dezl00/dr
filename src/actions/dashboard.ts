@@ -179,6 +179,9 @@ export async function sendManualReminder(appointmentId: string) {
   const apt = await prisma.appointment.findFirst({ where: { id: appointmentId, clinicId } })
   
   if (!apt) return { success: false, error: 'Appointment not found' }
+  if (apt.status === 'CANCELLED') {
+    return { success: false, error: 'لا يمكن إرسال تذكير لموعد ملغى' }
+  }
   
   try {
     const { sendAppointmentSMS } = await import('@/lib/sms')
@@ -188,7 +191,8 @@ export async function sendManualReminder(appointmentId: string) {
       serviceId: apt.serviceId || undefined, 
       date: apt.date, 
       startTime: apt.startTime, 
-      type: 'REMINDER' 
+      type: 'REMINDER',
+      status: apt.status,
     })
     return result || { success: true }
   } catch (error: any) {

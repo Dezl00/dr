@@ -4,7 +4,7 @@ import { prisma } from "@/lib/db/prisma"
 import { requireApiPermission } from "@/lib/auth/api-auth"
 
 const websiteSchema = z.object({
-  slug: z.string().trim().regex(/^[a-z0-9-]+$/).min(2).max(63).optional(),
+  slug: z.string().trim().toLowerCase().regex(/^[a-z0-9-]+$/).min(2).max(63).optional(),
   isPublished: z.boolean().optional(),
 })
 

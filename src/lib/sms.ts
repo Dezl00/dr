@@ -10,6 +10,7 @@ interface SmsServiceProps {
   date: Date
   startTime: string
   type: AppointmentSmsType
+  status?: string
 }
 
 function dateLabel(date: Date, timezone: string) {
@@ -22,7 +23,10 @@ function dateLabel(date: Date, timezone: string) {
   }).format(date)
 }
 
-export async function sendAppointmentSMS({ clinicId, patientId, serviceId, date, startTime, type }: SmsServiceProps): Promise<SmsResult> {
+export async function sendAppointmentSMS({ clinicId, patientId, serviceId, date, startTime, type, status }: SmsServiceProps): Promise<SmsResult> {
+  if (type === 'REMINDER' && (status === 'CANCELLED' || status?.toUpperCase() === 'CANCELLED')) {
+    return { success: false, error: 'لا يمكن إرسال تذكير لموعد ملغى' }
+  }
   try {
     const [settings, clinic, patient, service] = await Promise.all([
       prisma.clinicSettings.findUnique({ where: { clinicId } }),

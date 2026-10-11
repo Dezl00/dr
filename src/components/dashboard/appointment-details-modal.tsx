@@ -116,11 +116,11 @@ export function AppointmentDetailsModal({
           <Button 
             variant="outline" 
             onClick={handleSendReminder} 
-            disabled={loading}
+            disabled={loading || statusLabel === 'ملغي' || statusLabel === 'CANCELLED'}
             className="w-full sm:w-auto flex items-center gap-2"
           >
             <Bell className="w-4 h-4" />
-            {loading ? 'جاري الإرسال...' : 'إرسال تذكير يدوي (SMS)'}
+            {loading ? 'جاري الإرسال...' : (statusLabel === 'ملغي' || statusLabel === 'CANCELLED') ? 'الموعد ملغي (لا يمكن إرسال تذكير)' : 'إرسال تذكير يدوي (SMS)'}
           </Button>
         </div>
       </DialogContent>

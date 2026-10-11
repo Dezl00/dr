@@ -44,6 +44,17 @@ export async function PUT(req: Request) {
       }
     }
 
+    const rawSlug = body.slug ?? body.domain;
+    if (typeof rawSlug === 'string' && rawSlug.trim().length >= 2) {
+      const cleanSlug = rawSlug.trim().toLowerCase();
+      if (/^[a-z0-9-]+$/.test(cleanSlug)) {
+        await prisma.clinic.update({
+          where: { id: clinic.id },
+          data: { slug: cleanSlug },
+        }).catch(() => {});
+      }
+    }
+
     const updatedSettings = await prisma.clinicSettings.upsert({
       where: { clinicId: clinic.id },
       update: data,

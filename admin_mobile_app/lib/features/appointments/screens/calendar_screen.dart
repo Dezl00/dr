@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart' hide TextDirection;
-import 'package:url_launcher/url_launcher.dart';
 import 'package:dio/dio.dart';
 import 'dart:async';
 
@@ -611,6 +610,7 @@ class _AppointmentDetailsSheetState extends ConsumerState<_AppointmentDetailsShe
   @override
   Widget build(BuildContext context) {
     final status = ref.watch(optimisticStatusProvider(widget.appointment.id)) ?? widget.appointment.status;
+    final isCancelled = status == 'CANCELLED' || status == 'الملغي';
 
     return Directionality(
       textDirection: TextDirection.rtl,
@@ -736,10 +736,15 @@ class _AppointmentDetailsSheetState extends ConsumerState<_AppointmentDetailsShe
               width: double.infinity,
               height: 48,
               child: ElevatedButton(
-                onPressed: _isSendingReminder ? null : () => _sendReminder(context),
+                onPressed: (_isSendingReminder || isCancelled)
+                    ? () {
+                        if (isCancelled) {
+                          ToastUtil.showError(context, 'لا يمكن إرسال تذكير لموعد ملغى');
+                        }
+                      }
+                    : () => _sendReminder(context),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF2563EB),
-                  disabledBackgroundColor: const Color(0xFF93C5FD),
+                  backgroundColor: isCancelled ? const Color(0xFF94A3B8) : const Color(0xFF2563EB),
                   elevation: 0,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
                 ),
@@ -752,14 +757,14 @@ class _AppointmentDetailsSheetState extends ConsumerState<_AppointmentDetailsShe
                           strokeWidth: 2,
                         ),
                       )
-                    : const Row(
+                    : Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.sms_outlined, color: Colors.white, size: 20),
-                          SizedBox(width: 8),
+                          Icon(isCancelled ? Icons.block : Icons.sms_outlined, color: Colors.white, size: 20),
+                          const SizedBox(width: 8),
                           Text(
-                            'إرسال تذكير SMS',
-                            style: TextStyle(
+                            isCancelled ? 'الموعد ملغي (لا يمكن إرسال تذكير)' : 'إرسال تذكير SMS',
+                            style: const TextStyle(
                               fontFamily: 'IBMPlexSansArabic',
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
@@ -839,6 +844,12 @@ class _AppointmentDetailsSheetState extends ConsumerState<_AppointmentDetailsShe
   }
 
   Future<void> _sendReminder(BuildContext context) async {
+    final currentStatus = ref.read(optimisticStatusProvider(widget.appointment.id)) ?? widget.appointment.status;
+    if (currentStatus == 'CANCELLED' || currentStatus == 'الملغي') {
+      ToastUtil.showError(context, 'لا يمكن إرسال تذكير لموعد ملغى');
+      return;
+    }
+
     if (_isSendingReminder) return;
     setState(() {
       _isSendingReminder = true;

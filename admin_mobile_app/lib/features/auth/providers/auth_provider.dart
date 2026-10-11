@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:dio/dio.dart';
@@ -74,7 +75,7 @@ class AuthState {
 
 
 class AuthNotifier extends StateNotifier<AuthState> {
-  final _dio;
+  final Dio _dio;
   final _storage = const FlutterSecureStorage();
 
   AuthNotifier(this._dio) : super(AuthState()) {
@@ -202,9 +203,95 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
 
+  void updateClinic(Map<String, dynamic> newClinic) {
+    state = state.copyWith(clinic: {...?state.clinic, ...newClinic});
+  }
+
+  void updateClinicSlug(String newSlug) {
+    final currentClinic = state.clinic ?? {};
+    state = state.copyWith(clinic: {...currentClinic, 'slug': newSlug});
+  }
+
   Future<void> logout() async {
     await _storage.delete(key: 'jwt_token');
     await HiveService.clearUserData();
     state = AuthState(isCheckingAuth: false);
   }
 }
+
+final clinicSlugProvider = StateNotifierProvider<ClinicSlugNotifier, String>((ref) {
+  return ClinicSlugNotifier(ref);
+});
+
+class ClinicSlugNotifier extends StateNotifier<String> {
+  final Ref _ref;
+
+  ClinicSlugNotifier(this._ref) : super('') {
+    _init();
+  }
+
+  void _init() {
+    try {
+      final clinicDataStr = HiveService.getSettingsBox().get('clinic');
+      if (clinicDataStr != null) {
+        final decoded = jsonDecode(clinicDataStr);
+        final c = decoded is Map ? (decoded['data'] ?? decoded['clinic'] ?? decoded) : null;
+        if (c is Map && c['slug'] != null && c['slug'].toString().isNotEmpty) {
+          state = c['slug'].toString();
+          return;
+        }
+      }
+      final websiteDataStr = HiveService.getSettingsBox().get('website');
+      if (websiteDataStr != null) {
+        final decoded = jsonDecode(websiteDataStr);
+        final w = decoded is Map ? (decoded['data'] ?? decoded['settings'] ?? decoded) : null;
+        if (w is Map) {
+          final s = w['domain'] ?? w['slug'];
+          if (s != null && s.toString().isNotEmpty) {
+            state = s.toString();
+            return;
+          }
+        }
+      }
+    } catch (_) {}
+
+    final authClinic = _ref.read(authStateProvider).clinic;
+    if (authClinic != null && authClinic['slug'] != null) {
+      state = authClinic['slug'].toString();
+    }
+  }
+
+  void setSlug(String slug) {
+    state = slug;
+    try {
+      final box = HiveService.getSettingsBox();
+      final clinicDataStr = box.get('clinic');
+      Map<String, dynamic> clinicMap = {};
+      if (clinicDataStr != null) {
+        try {
+          final decoded = jsonDecode(clinicDataStr);
+          if (decoded is Map) {
+            clinicMap = Map<String, dynamic>.from(decoded['data'] ?? decoded);
+          }
+        } catch (_) {}
+      }
+      clinicMap['slug'] = slug;
+      box.put('clinic', jsonEncode(clinicMap));
+
+      final websiteDataStr = box.get('website');
+      Map<String, dynamic> websiteMap = {};
+      if (websiteDataStr != null) {
+        try {
+          final decoded = jsonDecode(websiteDataStr);
+          if (decoded is Map) {
+            websiteMap = Map<String, dynamic>.from(decoded['data'] ?? decoded);
+          }
+        } catch (_) {}
+      }
+      websiteMap['domain'] = slug;
+      websiteMap['slug'] = slug;
+      box.put('website', jsonEncode(websiteMap));
+    } catch (_) {}
+  }
+}
+
