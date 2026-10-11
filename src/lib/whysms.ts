@@ -122,7 +122,7 @@ export async function sendSms(phone: string, message: string) {
     const data = await response.json();
     if (data.status === 'error') {
       // Retry with otp if senderId is VERIFYX
-      if (senderId === 'VERIFYX' && primaryType !== 'otp') {
+      if (senderId === 'VERIFYX') {
         const retryRes = await fetch('https://bulk.whysms.com/api/http/sms/send', {
           method: 'POST',
           headers: {
