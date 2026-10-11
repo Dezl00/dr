@@ -82,9 +82,11 @@ export async function GET(req: Request) {
   } catch (error: any) {
     console.error("Dashboard Stats API error:", error);
     
-    // Check if it's an auth error to return 401
-    if (error.message && (error.message.includes('Unauthorized') || error.message.includes('Forbidden'))) {
+    if (error.message?.includes('Unauthorized')) {
       return NextResponse.json({ success: false, error: error.message }, { status: 401 });
+    }
+    if (error.message?.includes('Forbidden')) {
+      return NextResponse.json({ success: false, error: error.message }, { status: 403 });
     }
 
     return NextResponse.json(

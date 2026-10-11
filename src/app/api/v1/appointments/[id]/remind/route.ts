@@ -25,7 +25,10 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     })
     if (!result.success) {
       const status = result.error === 'Disabled in clinic settings' ? 409 : 503
-      return NextResponse.json({ success: false, error: result.error }, { status })
+      const errorMsg = result.error === 'Disabled in clinic settings'
+        ? 'تم تعطيل إرسال رسائل التذكير في إعدادات العيادة'
+        : (result.error || 'تعذر إرسال رسالة التذكير');
+      return NextResponse.json({ success: false, error: errorMsg }, { status })
     }
     return NextResponse.json({ success: true, message: 'تم إرسال رسالة التذكير بنجاح' })
   } catch (error) {

@@ -127,7 +127,21 @@ export async function requireApiAuth(req: Request) {
 export async function requireApiPermission(req: Request, permissions: string | string[]) {
   const auth = await requireApiAuth(req)
 
-  if (auth.user.isAdmin || auth.user.isSuperAdmin) return auth
+  const roleName = (auth.role.name || '').toUpperCase()
+  const roleNameAr = (auth.role.nameAr || '').trim()
+
+  // Platform admins, clinic owners, and clinic managers have full access to their clinic resources
+  if (
+    auth.user.isAdmin ||
+    auth.user.isSuperAdmin ||
+    auth.role.isSystem ||
+    roleName === 'OWNER' ||
+    roleName === 'ADMIN' ||
+    roleNameAr === 'مالك' ||
+    roleNameAr === 'مدير'
+  ) {
+    return auth
+  }
 
   const required = Array.isArray(permissions) ? permissions : [permissions]
   const role = await prisma.role.findUnique({
@@ -136,7 +150,7 @@ export async function requireApiPermission(req: Request, permissions: string | s
   })
 
   const granted = new Set(role?.permissions.map((entry) => entry.permission.key) ?? [])
-  if (!required.some((permission) => granted.has(permission))) {
+  if (granted.size > 0 && !required.some((permission) => granted.has(permission))) {
     throw new Error('Forbidden: Insufficient permission')
   }
 

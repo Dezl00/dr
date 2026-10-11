@@ -99,22 +99,24 @@ class MoreMenuScreen extends ConsumerWidget {
   }
 
   Widget _buildWebsiteActions(BuildContext context, String slug) {
-    if (slug.isEmpty) {
-      return const SizedBox();
-    }
-
-    final url = 'https://$slug.${ApiEndpoints.websiteRootDomain}';
+    final hasSlug = slug.trim().isNotEmpty;
+    final url = hasSlug ? 'https://${slug.trim()}.${ApiEndpoints.websiteRootDomain}' : '';
 
     return Row(
       children: [
         Expanded(
           child: ElevatedButton.icon(
             onPressed: () async {
+              if (!hasSlug) {
+                ToastUtil.showError(context, 'يرجى إدخال وتحديد رابط الموقع في إعدادات الموقع أولاً');
+                return;
+              }
               final uri = Uri.parse(url);
               try {
                 await launchUrl(uri, mode: LaunchMode.externalApplication);
               } catch (e) {
-                // Fallback
+                Clipboard.setData(ClipboardData(text: url));
+                ToastUtil.showSuccess(context, 'تم نسخ الرابط!');
               }
             },
             icon: const Icon(Icons.open_in_new, size: 20),
@@ -132,6 +134,10 @@ class MoreMenuScreen extends ConsumerWidget {
         Expanded(
           child: OutlinedButton.icon(
             onPressed: () {
+              if (!hasSlug) {
+                ToastUtil.showError(context, 'يرجى إدخال وتحديد رابط الموقع في إعدادات الموقع أولاً');
+                return;
+              }
               try {
                 Share.share(url);
               } catch (e) {

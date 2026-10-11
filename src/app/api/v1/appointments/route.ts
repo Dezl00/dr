@@ -55,8 +55,11 @@ export async function GET(req: Request) {
       }
     });
   } catch (error: any) {
-    if (error.message?.includes('Unauthorized') || error.message?.includes('Forbidden')) {
+    if (error.message?.includes('Unauthorized')) {
       return NextResponse.json({ success: false, error: error.message }, { status: 401 });
+    }
+    if (error.message?.includes('Forbidden')) {
+      return NextResponse.json({ success: false, error: error.message }, { status: 403 });
     }
     return NextResponse.json({ success: false, error: "حدث خطأ أثناء جلب المواعيد" }, { status: 500 });
   }
@@ -161,8 +164,11 @@ export async function POST(req: Request) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ success: false, error: error.errors[0].message }, { status: 400 });
     }
-    if (error.message?.includes('Unauthorized') || error.message?.includes('Forbidden')) {
+    if (error.message?.includes('Unauthorized')) {
       return NextResponse.json({ success: false, error: error.message }, { status: 401 });
+    }
+    if (error.message?.includes('Forbidden')) {
+      return NextResponse.json({ success: false, error: error.message }, { status: 403 });
     }
     return NextResponse.json({ success: false, error: "حدث خطأ أثناء حجز الموعد" }, { status: 500 });
   }

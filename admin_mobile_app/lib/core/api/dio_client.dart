@@ -10,8 +10,8 @@ class DioClient {
   DioClient({this.onUnauthorized}) {
     _dio = Dio(BaseOptions(
       baseUrl: ApiEndpoints.baseUrl,
-      connectTimeout: const Duration(seconds: 10),
-      receiveTimeout: const Duration(seconds: 10),
+      connectTimeout: const Duration(seconds: 35),
+      receiveTimeout: const Duration(seconds: 35),
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
@@ -28,10 +28,14 @@ class DioClient {
         return handler.next(options);
       },
       onError: (DioException e, handler) async {
-        // Handle 401 Unauthorized globally (e.g. redirect to login)
+        // Handle 401 Unauthorized globally only if the server confirms invalid/expired auth
         if (e.response?.statusCode == 401 && e.requestOptions.headers['Authorization'] != null) {
-          await _storage.delete(key: 'jwt_token');
-          await onUnauthorized?.call();
+          final data = e.response?.data;
+          final errorMsg = data is Map ? (data['error']?.toString() ?? '') : (data?.toString() ?? '');
+          if (errorMsg.contains('token') || errorMsg.contains('inactive') || errorMsg.contains('User not found') || errorMsg.isEmpty) {
+            await _storage.delete(key: 'jwt_token');
+            await onUnauthorized?.call();
+          }
         }
         return handler.next(e);
       },

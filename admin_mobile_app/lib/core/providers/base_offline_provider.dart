@@ -104,9 +104,10 @@ abstract class BaseOfflineNotifier<T> extends StateNotifier<OfflineState<T>> {
         hasReachedMax: 1 >= totalPages,
       );
     } catch (e) {
+      // If cached items exist, keep displaying them without triggering a blocking error screen
       state = state.copyWith(
         isLoading: false,
-        error: e.toString(),
+        error: state.items.isEmpty ? e.toString() : null,
       );
     }
   }
@@ -131,7 +132,7 @@ abstract class BaseOfflineNotifier<T> extends StateNotifier<OfflineState<T>> {
     } catch (e) {
       state = state.copyWith(
         isFetchingMore: false,
-        error: e.toString(),
+        error: null,
       );
     }
   }

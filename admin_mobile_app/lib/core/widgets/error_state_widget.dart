@@ -9,8 +9,31 @@ class ErrorStateWidget extends StatelessWidget {
     required this.onRetry,
   });
 
+  String _getFriendlyErrorMessage(String raw) {
+    final lower = raw.toLowerCase();
+    if (lower.contains('timeout') ||
+        lower.contains('connect') ||
+        lower.contains('requestoptions') ||
+        lower.contains('socketexception') ||
+        lower.contains('xmlhttprequest') ||
+        lower.contains('abort')) {
+      return 'تعذر الاتصال بالخادم، يرجى التحقق من اتصال الإنترنت والمحاولة مجدداً';
+    }
+    if (lower.contains('401') || lower.contains('unauthorized')) {
+      return 'انتهت صلاحية الجلسة، يرجى تسجيل الدخول مجدداً';
+    }
+    if (lower.contains('403') || lower.contains('forbidden')) {
+      return 'ليس لديك صلاحية للوصول إلى هذه البيانات';
+    }
+    if (raw.startsWith('Exception: ')) {
+      return raw.replaceFirst('Exception: ', '').trim();
+    }
+    return raw;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final displayError = _getFriendlyErrorMessage(error);
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24.0),
@@ -30,18 +53,24 @@ class ErrorStateWidget extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            Text(
+            const Text(
               'حدث خطأ',
-              style: TextStyle(fontFamily: 'IBMPlexSansArabic', fontSize: 18,
+              style: TextStyle(
+                fontFamily: 'IBMPlexSansArabic',
+                fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: const Color(0xFF0F172A),
+                color: Color(0xFF0F172A),
               ),
             ),
             const SizedBox(height: 8),
             Text(
-              error,
+              displayError,
               textAlign: TextAlign.center,
-              style: TextStyle(fontFamily: 'IBMPlexSansArabic', color: const Color(0xFF64748B),
+              style: const TextStyle(
+                fontFamily: 'IBMPlexSansArabic',
+                color: Color(0xFF64748B),
+                fontSize: 14,
+                height: 1.5,
               ),
             ),
             const SizedBox(height: 24),

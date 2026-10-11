@@ -1,20 +1,49 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/widgets/skeleton_loader.dart';
+import '../../../core/widgets/error_state_widget.dart';
 import '../../../core/api/dio_client.dart';
 import '../../../core/api/api_endpoints.dart';
-import '../../auth/providers/auth_provider.dart';
+import '../../../core/offline/hive_service.dart';
 import '../../search/screens/search_screen.dart';
 import '../../notifications/screens/notifications_screen.dart';
-import '../../appointments/screens/calendar_screen.dart';
 import '../../appointments/screens/create_appointment_screen.dart';
-import '../../patients/screens/patients_screen.dart';
 import '../providers/dashboard_provider.dart';
 
 final dashboardStatsProvider = FutureProvider.autoDispose<Map<String, dynamic>>((ref) async {
-  final dio = DioClient().dio;
-  final response = await dio.get('${ApiEndpoints.baseUrl}/dashboard/stats');
-  return response.data['data'];
+  final box = HiveService.getSettingsBox();
+  final cached = box.get('dashboard_stats');
+  Map<String, dynamic>? cachedMap;
+  if (cached != null) {
+    try {
+      cachedMap = jsonDecode(cached) as Map<String, dynamic>;
+    } catch (_) {}
+  }
+
+  try {
+    final dio = DioClient().dio;
+    final response = await dio.get(ApiEndpoints.stats);
+    if (response.statusCode == 200 && response.data != null && response.data['data'] != null) {
+      final data = response.data['data'] as Map<String, dynamic>;
+      await box.put('dashboard_stats', jsonEncode(data));
+      return data;
+    }
+    if (cachedMap != null) return cachedMap;
+    return (response.data?['data'] as Map<String, dynamic>?) ?? <String, dynamic>{};
+  } catch (e) {
+    if (cachedMap != null) return cachedMap;
+    return {
+      'stats': {
+        'todaysAppointments': 0,
+        'totalPatients': 0,
+        'completedCount': 0,
+        'upcomingCount': 0,
+      },
+      'todaysList': <dynamic>[],
+      'upcomingList': <dynamic>[],
+    };
+  }
 });
 
 class HomeOverviewScreen extends ConsumerWidget {
@@ -189,7 +218,10 @@ class HomeOverviewScreen extends ConsumerWidget {
                     SkeletonLoader(width: double.infinity, height: 200),
                   ],
                 ),
-                error: (error, stack) => Center(child: Text('حدث خطأ: $error')),
+                error: (error, stack) => ErrorStateWidget(
+                  error: error.toString(),
+                  onRetry: () => ref.refresh(dashboardStatsProvider),
+                ),
                 data: (data) {
                   final stats = data['stats'];
                   final todaysList = (data['todaysList'] as List<dynamic>?) ?? [];

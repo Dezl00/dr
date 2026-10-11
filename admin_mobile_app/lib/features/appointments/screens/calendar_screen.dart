@@ -874,6 +874,8 @@ class _AppointmentDetailsSheetState extends ConsumerState<_AppointmentDetailsShe
         if (e is DioException) {
           if (e.response?.data != null && e.response?.data is Map && e.response?.data['error'] != null) {
             msg = e.response!.data['error'].toString();
+          } else if (e.type == DioExceptionType.connectionTimeout || e.type == DioExceptionType.receiveTimeout) {
+            msg = 'تعذر الاتصال بالخادم، يرجى التحقق من اتصال الإنترنت.';
           } else if (e.message != null && e.message!.isNotEmpty) {
             msg = e.message!;
           }
