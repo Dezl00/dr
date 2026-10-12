@@ -1,4 +1,4 @@
-package com.example.admin_mobile_app
+package com.eyadaty.app
 
 import io.flutter.embedding.android.FlutterActivity
 
