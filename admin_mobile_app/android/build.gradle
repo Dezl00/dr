@@ -17,7 +17,7 @@ allprojects {
 
 rootProject.ext {
     set('compileSdkVersion', 35)
-    set('minSdkVersion', 23)
+    set('minSdkVersion', 24)
 }
 
 rootProject.buildDir = "../build"
