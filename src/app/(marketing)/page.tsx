@@ -91,10 +91,18 @@ export default function HomePage() {
 
       {/* Footer */}
       <footer className="w-full border-t bg-background py-8">
-        <div className="container mx-auto max-w-7xl px-4 sm:px-6 flex flex-col items-center justify-center text-center">
+        <div className="container mx-auto max-w-7xl px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between text-center gap-4">
           <p className="text-sm text-muted-foreground font-medium">
-            &copy; {new Date().getFullYear()} منصة DRS لإدارة عيادات الأسنان. جميع الحقوق محفوظة.
+            &copy; {new Date().getFullYear()} منصة DRS لإدارة عيادات الأسنان. جميع الحقوق محفوظة لمجموعة بيوند.
           </p>
+          <div className="flex items-center gap-6 text-sm text-muted-foreground">
+            <Link href="/privacy" className="hover:text-primary transition-colors">
+              سياسة الخصوصية
+            </Link>
+            <Link href="/login" className="hover:text-primary transition-colors">
+              تسجيل الدخول
+            </Link>
+          </div>
         </div>
       </footer>
     </div>
