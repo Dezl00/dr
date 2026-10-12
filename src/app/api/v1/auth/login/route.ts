@@ -87,6 +87,35 @@ export async function POST(req: Request) {
       );
     }
 
+    // Check if user had a scheduled deletion and cancel it because they logged in again
+    try {
+      const recentDeletionRequest = await prisma.auditLog.findFirst({
+        where: {
+          resourceId: user.id,
+          action: 'USER_DELETED',
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+
+      if (recentDeletionRequest && (recentDeletionRequest.metadata as any)?.status === 'PENDING_15_DAYS') {
+        await prisma.auditLog.create({
+          data: {
+            action: 'USER_UPDATED',
+            resource: 'User',
+            resourceId: user.id,
+            actorId: user.id,
+            metadata: {
+              type: 'ACCOUNT_DELETION_CANCELLED_BY_LOGIN',
+              cancelledAt: new Date().toISOString(),
+              message: 'تم إلغاء طلب حذف الحساب بنجاح لتسجيل الدخول مرة أخرى قبل انتهاء مهلة الـ 15 يوماً.',
+            },
+          },
+        });
+      }
+    } catch (e) {
+      // Non-blocking
+    }
+
     // 5. Generate JWT Token
     const token = await signMobileToken({
       userId: user.id,

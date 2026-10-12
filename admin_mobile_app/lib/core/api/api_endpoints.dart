@@ -42,4 +42,7 @@ class ApiEndpoints {
   
   // Doctors
   static const String doctors = '/doctors';
+  
+  // Deletion
+  static const String deleteAccount = '/auth/delete-account';
 }

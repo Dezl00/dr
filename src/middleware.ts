@@ -24,8 +24,14 @@ export default function middleware(request: NextRequest) {
   const rootDomain = 'beyoondgroup.com'
   const { pathname } = url
 
-  // ─── Skip API routes and public static/policy pages ───
-  if (pathname.startsWith('/api/') || pathname === '/privacy' || pathname.startsWith('/privacy/')) {
+  // ─── Skip API routes and public static/policy/deletion pages ───
+  if (
+    pathname.startsWith('/api/') ||
+    pathname === '/privacy' ||
+    pathname.startsWith('/privacy/') ||
+    pathname === '/delete-account' ||
+    pathname.startsWith('/delete-account/')
+  ) {
     return NextResponse.next()
   }
 

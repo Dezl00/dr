@@ -174,11 +174,12 @@ export default function PrivacyPolicyPage() {
             <div className="rounded-xl border p-4 bg-muted/20 space-y-2 text-sm sm:text-base">
               <p className="font-semibold text-foreground">طريقة طلب الحذف:</p>
               <ul className="list-disc list-inside space-y-1 text-muted-foreground pr-2">
-                <li>من خلال التطبيق: الانتقال إلى صفحة <strong>الإعدادات &gt; الأمان &gt; طلب حذف الحساب</strong>.</li>
-                <li>أو عبر إرسال بريد إلكتروني مباشر إلى: <a href="mailto:privacy@beyoondgroup.com" className="text-primary font-semibold hover:underline">privacy@beyoondgroup.com</a> بعنوان &quot;طلب حذف حساب وبيانات عيادتي&quot;.</li>
+                <li>من خلال التطبيق: الانتقال إلى صفحة <strong>المزيد &gt; إعدادات الحساب &gt; حذف الحساب نهائياً</strong>.</li>
+                <li>من خلال صفحة الويب المخصصة لطلب الحذف: <Link href="/delete-account" className="text-primary font-semibold hover:underline">صفحة طلب حذف الحساب والبيانات</Link>.</li>
+                <li>أو عبر إرسال بريد إلكتروني مباشر إلى: <a href="mailto:mohamedalshobaky27@gmail.com" className="text-primary font-semibold hover:underline">mohamedalshobaky27@gmail.com</a> بعنوان &quot;طلب حذف حساب وبيانات عيادتي&quot;.</li>
               </ul>
               <p className="text-xs text-muted-foreground mt-2">
-                عند استلام الطلب، يتم حذف الحساب وسجلاته بشكل نهائي وغير قابل للاسترجاع خلال 30 يوماً كحد أقصى، باستثناء البيانات التي يفرض القانون الاحتفاظ بها للأغراض المحاسبية أو القانونية.
+                عند تقديم الطلب، يتم جدولة الحذف النهائي للحساب وبيانات العيادة والموقع خلال 15 يوماً، مع إمكانية إلغاء الطلب في أي وقت بتسجيل الدخول مجدداً خلال هذه الفترة.
               </p>
             </div>
           </section>
