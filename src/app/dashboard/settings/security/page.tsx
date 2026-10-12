@@ -49,6 +49,22 @@ export default async function SecuritySettingsPage() {
         
         <Button type="submit">تحديث كلمة المرور</Button>
       </form>
+
+      {/* Danger Zone */}
+      <div className="mt-12 pt-8 border-t">
+        <div className="rounded-xl border border-red-200 bg-red-50/50 p-6">
+          <h3 className="text-base font-bold text-red-900 mb-2">منطقة الخطر - حذف الحساب والبيانات</h3>
+          <p className="text-sm text-red-700 leading-relaxed mb-4">
+            عند طلب حذف الحساب، سيتم إيقاف حسابك وجدولة الحذف النهائي لكافة بياناتك وعيادتك وموقعك الإلكتروني خلال 15 يوماً. يمكنك إلغاء الطلب بتسجيل الدخول مجدداً قبل انقضاء المدة.
+          </p>
+          <a
+            href="/delete-account"
+            className="inline-flex items-center justify-center rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-red-700 transition-colors"
+          >
+            الانتقال لصفحة طلب حذف الحساب
+          </a>
+        </div>
+      </div>
     </div>
   )
 }
