@@ -37,3 +37,9 @@ next-env.d.ts
 # prisma
 prisma/migrations/
 firebase-admin-key.json  
+
+# android release & keys
+release_build/
+*.jks
+*.jks.old
+**/key.properties
